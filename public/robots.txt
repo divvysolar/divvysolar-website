@@ -1,0 +1,14 @@
+# *
+User-agent: *
+Allow: /
+
+# *
+User-agent: *
+Disallow: /admin
+Disallow: /api
+
+# Host
+Host: https://divvysolar.in
+
+# Sitemaps
+Sitemap: https://divvysolar.in/sitemap.xml
