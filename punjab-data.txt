@@ -1,0 +1,132 @@
+ldh|Aggar Nagar Enclave|10|R|2021
+ldh|Rajguru Nagar Aggar Nagar|10|R|2021
+ldh|VPO Rachhin Raikot|7.48|R|2020
+ldh|Kalakh Majri Road Dehlon|10|R|2021
+ldh|Jogi Majra Maloudh|3.96|R|2021
+ldh|Acropolis Industries Dhandari|29|I|2021
+ldh|APLOM Industries Jaspal Bangur|30|I|2021
+ldh|BS Jandu Steel Tibba Road (2022)|12|I|2022
+ldh|Sohal Industries Bondal Samrala|40|I|2022
+ldh|Sanjeev Bassi Farm GT Road Hussainpura|50|I|2022
+ldh|BS Jandu Steel Tibba Road (2024)|12|I|2024
+ldh|Suraj Parkash Kapoor|8|R|2022
+ldh|Rajinder Singh Sunny Enclave Mohali|8|R|2022
+ldh|Harjinder Kaur Model Gram|15|R|2022
+ldh|Solutions Packaging Canal Road Tibba|55|I|2022
+ldh|Rajinder Chugh New Deep Nagar|10|R|2023
+ldh|Anil Kumar Jain Grand Villa Sukhmani|10|R|2023
+ldh|Anita Walia Flower Enclave|10|R|2023
+ldh|Major Singh Atam Nagar|10|R|2023
+ldh|Kewal Singh Urban Estate Phase 1|9.81|R|2023
+ldh|Harpal Singh Saini Model House|10|R|2023
+ldh|Raj Partap Singh Friends Colony Sahnewal|7.92|R|2024
+ldh|Dalbir Singh Bholapur Rajgarh Fusion|5|R|2024
+ldh|Balraj Verma VPO Ramgarh Chandigarh Rd|7.56|R|2024
+ldh|Ajmer Singh Shimlapuri|5|R|2024
+ldh|Wazir Chand Sood BRS Nagar Block D|10|R|2024
+ldh|Rajinder Arora Ashok Vihar|10|R|2024
+ldh|Gurpreet Singh Gill Road|5|R|2024
+ldh|Bhagwant Singh Basant Avenue|5|R|2024
+ldh|Bharat Bhushan Atam Nagar Haibowal|3|R|2024
+ldh|R P Engineering Kohara Chandigarh Rd|300|I|2024
+ldh|Harkrishan Cold Store Rachhin (2024)|100|I|2024
+ldh|KLM Creations Indra Colony|60|I|2025
+mlk|VP Goyal Near Civil Hospital|10|R|2020
+mlk|Savita Goyal Som Sons Colony|7.15|R|2020
+mlk|Sanjiv Kumar Pandher Colony Thandi Sarak|8.45|R|2020
+mlk|Ravinder Gupta Som Sons Colony|10|R|2020
+mlk|Parshotam Lal|10|R|2021
+mlk|Kanta Rani Mahavir Nagar|10|R|2021
+mlk|Manoj Kumar|10|R|2021
+mlk|Rajeev Bansal Samsung Colony|6.7|R|2021
+mlk|Radhe Shyam Kinger Khan Avenue|7|R|2021
+mlk|Naresh Kumar Railway Road Shastari Nagar|6|R|2021
+mlk|Vee Kay Garments Club Chowk|8|I|2022
+mlk|Bharat Bhushan Pandher Colony|8|R|2022
+mlk|Manvi Sales Naudha Rani Road|10|I|2022
+mlk|Jain Enterprises Naudha Rani Road|10|I|2022
+mlk|New Janta Nursery Ludhiana Road|10|I|2022
+mlk|Suraj Corporation Madevi Road|8|I|2022
+mlk|Jain Textile Old Lohtia Bazar|15|I|2022
+mlk|Masjid Suleh Khan Hader Sairakh Road|20|R|2022
+mlk|Al Falah School The Mall|42|I|2023
+mlk|Chand Industries Ludhiana Bye Pass|35|I|2023
+mlk|Vinod Kumar Inside Cotton Railway Road|7.035|R|2023
+mlk|Pushp Raj Jain Model Town|8|R|2023
+mlk|Sukhjeewan Dhir Dhuri Road|8|R|2023
+mlk|Sarvesh Kathuria VIP Colony|6.03|R|2023
+mlk|DR MP Garg Railway Road Opp Civil Hospital|8.04|R|2023
+mlk|Jay Kay Sales Adampal Road Industrial|30|I|2023
+mlk|Gulzar Shah Jamalpura|7.63|R|2024
+mlk|J Star Iron Industries Madevi Road|40|I|2024
+mlk|Baltej Singh|5|R|2024
+mlk|Gurmail Kaur|10|R|2024
+mlk|Munish Jain Loha Bazar|7|R|2024
+mlk|Deepak Garg Railway Road|8|R|2025
+sgr|Gurdwara Singh Sabha Ahmedgarh|10|I|2021
+sgr|Labh Singh Jitwal Kalan|5.6|R|2021
+sgr|Bhawana Devi Samsung Colony|8.13|R|2021
+sgr|Ajeev Ahluwalia Thandi Sadak|10|R|2021
+sgr|VPO Moonak Ward 11|10|R|2021
+sgr|Sukhdev Singh Jitwal Kalan|2.97|R|2021
+sgr|Amrik Singh Jitwal Kalan|3.96|R|2021
+sgr|Ajay Kumar Patiala Road|10|R|2021
+sgr|Kanta Rani Mahavir Nagar Sangrur|10|R|2021
+sgr|Vishal Aggarwal Railway Road|9.72|R|2024
+sgr|Shiv Bhole Flour Mill VPO Balran|151.62|I|2024
+sgr|Salim Khan Mohalla Madina|7.5|R|2024
+moh|Kitabo Devi Sunny Enclave Sec 125|9.43|R|2020
+moh|Manjit Kaur Phase 3 Focal Point|30|R|2021
+moh|Metals And Metals Phase 8 Industrial|30|I|2022
+moh|Rajinder Singh Sunny Enclave Sec 123|8|R|2022
+moh|Beas Bhardwaj Ward 4 Kharar|3|R|2022
+moh|Hari Parkash Sharma Phase 1|3|R|2022
+moh|CV Sharma Sector 70|10|R|2023
+moh|Gurudwara Guru Granth Sahib Phase 1|20|I|2023
+moh|RVL Poly Industries Saidpura (2023)|156|I|2023
+moh|Madhu Bala Sahauran Kharar|4.86|R|2024
+moh|Rohit Takyar Gharuan SAS Nagar|4.77|R|2024
+moh|Manish Goel Ward 7 Kharar|4.77|R|2024
+moh|BS Company Industrial Phase 1 SAS Nagar|10|I|2024
+moh|Mangal Singh Sunny Enclave Sec 123|8|R|2024
+asr|Pram Singh Green Avenue|9.9|R|2021
+asr|Ramesh Kumar Krishna Square|9.9|R|2021
+asr|White House Sultanwind Gate|20|I|2023
+asr|Surinder Kumar Bros Tarn Taran Rd|65|I|2023
+asr|Ess Aar Embroideries Majitha Byepass|14|I|2024
+asr|ALA Foodstuff Gilwali Tarn Taran Road|19|I|2024
+gov|Puran Chand Sec 4B Shasti Nagar|10|R|2022
+gov|Jagpal Talwar Sec 2 Adarsh Nagar|7.87|R|2024
+gov|Suresh Kumar Mandi Gobindgarh|10|R|2024
+gov|JTL Steels GT Road Khanna Side|200|I|2024
+gov|Ravinder Kumar Mandi Gobindgarh|10|R|2024
+gov|Ishwar Cast Forge Focal Point|200|I|2025
+pat|Kanta Goyal Pathak Vihar|6|R|2020
+pat|Mumtaz Bano Bank Colony|5|R|2022
+pat|Harvinder Kumar Jindal Azad Nagar|6.3|R|2024
+khn|Sandeep Fertilizers New Grain Market|5.4|I|2022
+khn|Steel Corporation Village Alour|150|I|2025
+khn|Amba Steel GT Road Alour|150|I|2025
+fsg|Narain Company GT Road Mansi Govindgarh|45|I|2024
+fsg|Garden Valley School Village Sampli|30|I|2024
+fsg|Shakti Sharma Nabha Road Amloh|5|R|2024
+fsg|Rakesh Kumar Gupta Sec 21C|5|R|2024
+fsg|Gopala Steel Rolling Mills GT Road|200|I|2025
+bth|Jagdev Singh Mansa Road Kotshamir|4.95|R|2021
+bth|Rupinder Kaur Mansa Road Sushant City|2.97|R|2021
+bar|Gurucharan Singh Double Phatak Dhuri|4.95|R|2021
+bar|Sadhna Singla Dhuri Road Malerkotla|7|R|2021
+jal|Jaksh Industries Bulandpur|150|I|2022
+jal|Johnson Metal Hoshiarpur Road|7|I|2022
+mor|Garden Valley Educational Society|25|I|2022
+mor|Garden Valley International School 7|50|I|2024
+trn|KSP Fibre Sahib|200|I|2021
+trn|Ramandeep Singh Poultry Farm|8.91|R|2021
+ahm|Parveen Kumar Yash Painter Street|8|R|2021
+mac|Sarv Jan Sewa Village Bhattian|25|I|2022
+sam|Sarv Jan Sewa Educational Society 3|25|I|2022
+kha|Sarv Jan Sewa Educational Society 4|25|I|2022
+taj|Gurudwara Dera Baba Punjab Singh Ji|50|I|2024
+kap|Sohan Cold Storage Aujla Road|100|I|2025
+hsp|Prithi Cold Storage Garhshankar|70|I|2024
+der|RVL Poly Industries Saidpura (2024)|125|I|2024
