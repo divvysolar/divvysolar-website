@@ -8,7 +8,7 @@ const BlogHero = ({ title, date, author, image }) => {
     };
 
     return (
-        <div className="relative pt-40 pb-32 overflow-hidden w-full bg-[#f8fafc]">
+        <div className="relative pt-40 pb-32 overflow-hidden w-full bg-[#dde6f0]">
             {/* High-Impact Visual Banner */}
             <div className="absolute inset-0 z-0">
                 {image ? (
@@ -20,7 +20,7 @@ const BlogHero = ({ title, date, author, image }) => {
                             alt={title} 
                         />
                         {/* Advanced Gradient Overlays for Readability */}
-                        <div className="absolute inset-0 bg-gradient-to-b from-white/40 via-white/10 to-white" />
+                        <div className="absolute inset-0 bg-gradient-to-b from-white/40 via-white/10 to-[#dde6f0]" />
                         <div className="absolute inset-0 bg-gradient-to-r from-white/60 via-transparent to-white/60" />
                     </div>
                 ) : (

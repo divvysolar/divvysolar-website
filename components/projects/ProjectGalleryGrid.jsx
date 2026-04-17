@@ -78,8 +78,8 @@ export default function ProjectGalleryGrid() {
                                 </p>
 
                                 <div className="flex items-center gap-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300 delay-150">
-                                    <span className="flex items-center gap-1.5 text-xs font-bold text-emerald-400 bg-emerald-400/10 px-2.5 py-1 rounded-full border border-emerald-400/20">
-                                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                                    <span className="flex items-center gap-1.5 text-xs font-bold text-amber-500 bg-amber-500/10 px-2.5 py-1 rounded-full border border-amber-500/20">
+                                        <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse" />
                                         {project.status}
                                     </span>
                                     <span className="text-[10px] text-white/75 uppercase tracking-widest font-bold">
@@ -132,8 +132,8 @@ export default function ProjectGalleryGrid() {
                                 {selectedImage.city} Installation
                             </p>
                             <div className="flex items-center gap-2 mt-2">
-                                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                                <p className="text-sm font-medium text-emerald-400">{selectedImage.status}</p>
+                                <span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse" />
+                                <p className="text-sm font-medium text-amber-500">{selectedImage.status}</p>
                             </div>
                         </div>
                     </div>

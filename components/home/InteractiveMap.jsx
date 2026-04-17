@@ -620,9 +620,9 @@ export default function InteractiveMap({
                                     ))}
                                 </div>
 
-                                <div className="flex items-center gap-2.5 px-4 py-2.5 rounded-xl bg-emerald-50 border border-emerald-100">
-                                    <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse flex-shrink-0" />
-                                    <span className="text-xs font-bold text-emerald-700">{selected.status}</span>
+                                <div className="flex items-center gap-2.5 px-4 py-2.5 rounded-xl bg-amber-50 border border-amber-100">
+                                    <span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse flex-shrink-0" />
+                                    <span className="text-xs font-bold text-amber-700">{selected.status}</span>
                                     <span className="ml-auto text-[10px] text-gray-400">Real-time verified</span>
                                 </div>
 

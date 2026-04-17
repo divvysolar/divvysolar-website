@@ -124,6 +124,7 @@ const Navbar = () => {
                                     className="object-contain"
                                     priority
                                     quality={100}
+                                    style={{ imageRendering: '-webkit-optimize-contrast' }}
                                 />
                             </div>
                         </Link>

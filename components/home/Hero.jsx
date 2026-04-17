@@ -122,11 +122,12 @@ const Hero = () => {
 
                     {/* Description — original text, wider max-width = 3 lines */}
                     <p
-                        className="text-white/85 font-normal mb-8"
+                        className="text-white/95 font-normal mb-8"
                         style={{
                             fontSize: '0.92rem',
                             lineHeight: '1.7',
                             maxWidth: '520px',
+                            textShadow: '0 1px 2px rgba(0,0,0,0.2)'
                         }}
                     >
                         Divvy Solar delivers comprehensive, turnkey EPC solar projects for homes, businesses, and industry.
@@ -168,9 +169,10 @@ const Hero = () => {
                     <div
                         className="grid grid-cols-3 gap-0 mt-10 rounded-xl overflow-hidden divide-x divide-white/10 shadow-lg"
                         style={{
-                            border: '1px solid rgba(255,255,255,0.07)',
+                            border: '1px solid rgba(255,255,255,0.15)',
                             width: 'fit-content',
-                            backdropFilter: 'blur(10px)',
+                            backdropFilter: 'blur(8px)',
+                            boxShadow: '0 10px 30px -5px rgba(0,0,0,0.3)',
                         }}
                     >
                         {[

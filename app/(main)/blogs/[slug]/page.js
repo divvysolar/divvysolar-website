@@ -257,7 +257,7 @@ export default async function SingleBlogPage({ params }) {
     }
 
     return (
-        <article className="bg-white min-h-screen pb-24">
+        <article className="min-h-screen pb-24" style={{ background: 'linear-gradient(160deg, #dde6f0 0%, #edf2f7 50%, #dde6f0 100%)' }}>
             <BlogHero
                 title={blog.title}
                 date={blog.createdAt}
@@ -276,14 +276,20 @@ export default async function SingleBlogPage({ params }) {
 
                 <div
                     className="prose prose-lg mx-auto max-w-none 
-          prose-headings:font-medium prose-headings:tracking-tight
-          prose-p:text-gray-600 prose-p:leading-[1.9] prose-p:text-lg prose-p:font-normal
+          prose-headings:font-serif prose-headings:tracking-tight prose-headings:text-[#0a1122]
+          prose-p:text-gray-700 prose-p:leading-[1.9] prose-p:text-lg prose-p:font-normal
           prose-strong:text-black prose-strong:font-semibold
           prose-img:rounded-2xl prose-img:shadow-2xl
-          prose-li:text-gray-600 prose-li:leading-relaxed prose-li:font-normal
+          prose-li:text-gray-700 prose-li:leading-relaxed prose-li:font-normal
           prose-h2:text-black prose-h2:text-3xl prose-h2:mt-12 prose-h2:mb-6 prose-h2:font-bold
           prose-h3:text-slate-700 prose-h3:text-2xl prose-h3:mt-10 prose-h3:mb-4 prose-h3:font-semibold"
-                    dangerouslySetInnerHTML={{ __html: blog.content || '<p>Content missing.</p>' }}
+                    style={{ fontFamily: 'Inter' }}
+                    dangerouslySetInnerHTML={{ 
+                        __html: (blog.content || '').replace(
+                            /<h3>Why Choose (Divvy Solar|an Experienced EPC Partner)\??<\/h3>/g, 
+                            '<div style="display: inline-block; background-color: #0a0f1c; color: white; padding: 8px 20px; border-radius: 99px; margin-bottom: 20px; shadow: 0 4px 12px rgba(0,0,0,0.1);"><h3 style="color: white; font-family: Georgia, serif; margin: 0; font-size: 1.25rem; letter-spacing: 0.05em; text-transform: uppercase;">$0</h3></div>'
+                        )
+                    }}
                 />
 
                 {/* Footer */}

@@ -118,7 +118,7 @@ const Brands = () => {
                         id="brands-heading"
                         style={{
                             fontSize: 'clamp(1.8rem, 3vw, 2.4rem)',
-                            color: '#060c1a',
+                            color: '#0E1B3D',
                             letterSpacing: '-0.5px',
                             lineHeight: '1.1',
                             fontWeight: 900,
@@ -155,8 +155,8 @@ const Brands = () => {
                                 minWidth: '200px',
                                 minHeight: '110px',
                                 background: '#ffffff',
-                                border: '1.5px solid #d1dce8',
-                                boxShadow: '0 1px 4px rgba(0,0,0,0.06), 0 6px 20px rgba(0,0,0,0.08), inset 0 1px 0 #ffffff',
+                                border: '1px solid #e2e8f0',
+                                boxShadow: '0 2px 10px rgba(0,0,0,0.04), 0 1px 2px rgba(0,0,0,0.02)',
                                 padding: '22px 28px',
                             }}
                         >
@@ -175,7 +175,7 @@ const Brands = () => {
                                     fill
                                     sizes="(max-width: 640px) 120px, (max-width: 768px) 150px, 200px"
                                     className="object-contain transition-transform duration-300 group-hover:scale-105 p-1"
-                                    style={{ opacity: 1 }}
+                                    style={{ opacity: 1, imageRendering: '-webkit-optimize-contrast' }}
                                 />
                             </div>
                         </div>

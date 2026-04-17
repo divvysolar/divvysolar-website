@@ -45,7 +45,7 @@ const LatestBlogs = ({ blogs = [] }) => {
 
                     <div className="relative z-10 w-full max-w-4xl mx-auto">
                         {/* The clean, uniform heading */}
-                        <h2 className="text-[44px] md:text-[56px] font-normal text-[#111827] mb-6 tracking-[-0.01em] leading-tight" style={{ fontFamily: "Georgia, serif" }}>
+                        <h2 className="text-[44px] md:text-[56px] font-normal text-[#0E1B3D] mb-6 tracking-[-0.01em] leading-tight" style={{ fontFamily: "Georgia, serif" }}>
                             Latest News
                         </h2>
 

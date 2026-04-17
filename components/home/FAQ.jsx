@@ -114,7 +114,7 @@ const FAQ = () => {
                 position: 'relative',
                 overflow: 'hidden',
                 padding: '80px 0',
-                background: 'linear-gradient(135deg, #1e2d4a 0%, #1a2540 100%)',
+                background: '#0a0f1c',
             }}
         >
             {/* Dot pattern */}

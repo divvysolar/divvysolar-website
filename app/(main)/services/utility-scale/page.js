@@ -43,14 +43,16 @@ export default function UtilityScalePage() {
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
                         <div className="animate-slide-up lg:pr-10">
-                            <h3 className="text-[#0a1122] font-medium uppercase tracking-[0.2em] text-xs mb-4 opacity-70 pl-3 border-l-2 border-[#0a1122]">Why Choose Divvy Solar</h3>
-                            <h2 className="text-3xl md:text-5xl font-medium text-[#0a1122] mb-8 leading-tight tracking-tight">
-                                <span className="block whitespace-nowrap">Utility-Scale Solar EPC</span>
-                                <span className="block whitespace-nowrap text-[#0a1122]">Partner in India</span>
+                            <div className="inline-flex items-center bg-[#0a0f1c] text-white px-4 py-1.5 rounded-full mb-6 shadow-lg transform hover:scale-105 transition-transform duration-300">
+                                <h3 className="font-medium uppercase tracking-[0.2em] text-[10px]">Why Choose Divvy Solar</h3>
+                            </div>
+                            <h2 className="text-3xl md:text-5xl font-medium text-[#0a1122] mb-8 leading-tight tracking-tight" style={{ fontFamily: 'Georgia, serif' }}>
+                                <span className="block">Utility-Scale Solar EPC</span>
+                                <span className="block text-[#0e1b3d]">Partner in India</span>
                             </h2>
 
                             <div className="space-y-10 text-[#0a1122] text-lg leading-relaxed">
-                                <p className="text-xl font-normal leading-relaxed opacity-90">
+                                <p className="text-xl font-normal leading-relaxed opacity-90 text-gray-700">
                                     Our utility-scale plants are built for <span className="font-bold">grid connectivity, compliance, and long-term performance</span>, using proven components and strict quality controls. The result is a bankable solar asset that meets project timelines, safety standards, and operational expectations.
                                 </p>
 
@@ -58,22 +60,22 @@ export default function UtilityScalePage() {
                                     <div className="flex items-start group/item">
                                         <div className="flex-shrink-0 w-1.5 h-16 bg-[#0a1122] rounded-full mr-6 group-hover/item:scale-y-110 transition-transform"></div>
                                         <div>
-                                            <h4 className="font-medium text-[#0a1122] text-xl mb-1">Bankable Tier-1 Components</h4>
-                                            <p className="text-sm text-[#333333] uppercase tracking-wider font-normal">We source reliable modules, inverters, and BOS from trusted brands to ensure durability, efficiency, and consistent output.</p>
+                                            <h4 className="font-medium text-[#0a1122] text-xl mb-1" style={{ fontFamily: 'Georgia, serif' }}>Bankable Tier-1 Components</h4>
+                                            <p className="text-gray-600 text-base leading-relaxed font-normal">We source reliable modules, inverters, and BOS from trusted brands to ensure durability, efficiency, and consistent output.</p>
                                         </div>
                                     </div>
                                     <div className="flex items-start group/item">
                                         <div className="flex-shrink-0 w-1.5 h-16 bg-[#0a1122] rounded-full mr-6 group-hover/item:scale-y-110 transition-transform"></div>
                                         <div>
-                                            <h4 className="font-medium text-[#0a1122] text-xl mb-1">Expert Grid Engineering</h4>
-                                            <p className="text-sm text-[#333333] uppercase tracking-wider font-normal">End-to-end grid integration support, including evacuation planning, protection systems, and coordination for smooth connectivity.</p>
+                                            <h4 className="font-medium text-[#0a1122] text-xl mb-1" style={{ fontFamily: 'Georgia, serif' }}>Expert Grid Engineering</h4>
+                                            <p className="text-gray-600 text-base leading-relaxed font-normal">End-to-end grid integration support, including evacuation planning, protection systems, and coordination for smooth connectivity.</p>
                                         </div>
                                     </div>
                                     <div className="flex items-start group/item">
                                         <div className="flex-shrink-0 w-1.5 h-16 bg-[#0a1122] rounded-full mr-6 group-hover/item:scale-y-110 transition-transform"></div>
                                         <div>
-                                            <h4 className="font-medium text-[#0a1122] text-xl mb-1">Compliance-Ready Execution</h4>
-                                            <p className="text-sm text-[#333333] uppercase tracking-wider font-normal">Strong project governance with safety-first construction, documentation, and quality checks to meet regulatory and project requirements.</p>
+                                            <h4 className="font-medium text-[#0a1122] text-xl mb-1" style={{ fontFamily: 'Georgia, serif' }}>Compliance-Ready Execution</h4>
+                                            <p className="text-gray-600 text-base leading-relaxed font-normal">Strong project governance with safety-first construction, documentation, and quality checks to meet regulatory and project requirements.</p>
                                         </div>
                                     </div>
                                 </div>
@@ -123,7 +125,7 @@ export default function UtilityScalePage() {
                                         {feature.icon}
                                     </div>
                                 </div>
-                                <h3 className="text-xl font-medium text-[#0a1122] mb-4">{feature.title}</h3>
+                                <h3 className="text-xl font-medium text-[#0a1122] mb-4" style={{ fontFamily: 'Georgia, serif' }}>{feature.title}</h3>
                                 <p className="text-[#333333] text-sm md:text-base leading-relaxed max-w-[280px] text-center font-normal">{feature.desc}</p>
                             </div>
                         ))}

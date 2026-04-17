@@ -41,7 +41,7 @@ export default function AdminLogin() {
     };
 
     return (
-        <div className="min-h-screen flex items-center justify-center relative overflow-hidden bg-[#0f172a]" style={{ fontFamily: "'Inter', sans-serif" }}>
+        <div className="min-h-screen flex items-center justify-center relative overflow-hidden bg-[#0f172a]" style={{ fontFamily: "Inter" }}>
 
             {/* Background Orbs */}
             <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] rounded-full blur-[120px] opacity-20"

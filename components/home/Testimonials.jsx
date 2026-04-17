@@ -87,7 +87,7 @@ const Testimonials = () => {
     return (
         <section className="py-24 overflow-hidden" style={{ background: 'linear-gradient(180deg, #f8fafc 0%, #ffffff 50%, #f1f5f9 100%)' }}>
             <div className="max-w-7xl mx-auto px-4 mb-4 text-center">
-                <h2 className="text-4xl md:text-5xl font-extrabold text-[#0a0f1e] mb-5 tracking-tight" style={{ fontFamily: '"Georgia", serif' }}>
+                <h2 className="text-4xl md:text-5xl font-extrabold text-[#0E1B3D] mb-5 tracking-tight" style={{ fontFamily: '"Georgia", serif' }}>
                     What Our Customers Say
                 </h2>
                 {/* Divider */}

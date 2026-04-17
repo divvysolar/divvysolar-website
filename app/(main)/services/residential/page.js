@@ -43,14 +43,16 @@ export default function ResidentialPage() {
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
                         <div className="animate-slide-up lg:pr-10">
-                            <h3 className="text-[#0a1122] font-medium uppercase tracking-[0.2em] text-xs mb-4 opacity-70 pl-3 border-l-2 border-[#0a1122]">Why Choose Divvy Solar</h3>
-                            <h2 className="text-3xl md:text-5xl font-medium text-[#0a1122] mb-8 leading-tight tracking-tight">
-                                <span className="block whitespace-nowrap">Residential Solar Solutions</span>
-                                <span className="block whitespace-nowrap text-[#0a1122]">for Maximum Savings</span>
+                            <div className="inline-flex items-center bg-[#0a0f1c] text-white px-4 py-1.5 rounded-full mb-6 shadow-lg transform hover:scale-105 transition-transform duration-300">
+                                <h3 className="font-medium uppercase tracking-[0.2em] text-[10px]">Why Choose Divvy Solar</h3>
+                            </div>
+                            <h2 className="text-3xl md:text-5xl font-medium text-[#0a1122] mb-8 leading-tight tracking-tight" style={{ fontFamily: 'Georgia, serif' }}>
+                                <span className="block">Residential Solar Solutions</span>
+                                <span className="block text-[#0e1b3d]">for Maximum Savings</span>
                             </h2>
 
                             <div className="space-y-10 text-[#0a1122] text-lg leading-relaxed">
-                                <p className="text-xl font-normal leading-relaxed opacity-90">
+                                <p className="text-xl font-normal leading-relaxed opacity-90 text-gray-700">
                                     Turnkey residential solar EPC solutions for homes and independent villas across Haryana, Punjab, and Delhi NCR. From site survey and engineering to net-metering and commissioning, we build high-performance rooftop solar systems that eliminate high electricity bills and deliver long-term energy independence.
                                 </p>
 
@@ -58,22 +60,22 @@ export default function ResidentialPage() {
                                     <div className="flex items-start group/item">
                                         <div className="flex-shrink-0 w-1.5 h-16 bg-[#0a1122] rounded-full mr-6 group-hover/item:scale-y-110 transition-transform"></div>
                                         <div>
-                                            <h4 className="font-medium text-[#0a1122] text-xl mb-1">Complete EPC Solutions</h4>
-                                            <p className="text-sm text-[#333333] uppercase tracking-wider font-normal">End-to-end residential execution, from design and procurement to final testing and net-metering, managed by one expert team.</p>
+                                            <h4 className="font-medium text-[#0a1122] text-xl mb-1" style={{ fontFamily: 'Georgia, serif' }}>Complete EPC Solutions</h4>
+                                            <p className="text-gray-600 text-base leading-relaxed font-normal">End-to-end residential execution, from design and procurement to final testing and net-metering, managed by one expert team.</p>
                                         </div>
                                     </div>
                                     <div className="flex items-start group/item">
                                         <div className="flex-shrink-0 w-1.5 h-16 bg-[#0a1122] rounded-full mr-6 group-hover/item:scale-y-110 transition-transform"></div>
                                         <div>
-                                            <h4 className="font-medium text-[#0a1122] text-xl mb-1">High-Efficiency Systems</h4>
-                                            <p className="text-sm text-[#333333] uppercase tracking-wider font-normal">Optimized residential sizing with Tier-1 components to maximize generation and ensure the fastest return on your investment.</p>
+                                            <h4 className="font-medium text-[#0a1122] text-xl mb-1" style={{ fontFamily: 'Georgia, serif' }}>High-Efficiency Systems</h4>
+                                            <p className="text-gray-600 text-base leading-relaxed font-normal">Optimized residential sizing with Tier-1 components to maximize generation and ensure the fastest return on your investment.</p>
                                         </div>
                                     </div>
                                     <div className="flex items-start group/item">
                                         <div className="flex-shrink-0 w-1.5 h-16 bg-[#0a1122] rounded-full mr-6 group-hover/item:scale-y-110 transition-transform"></div>
                                         <div>
-                                            <h4 className="font-medium text-[#0a1122] text-xl mb-1">Precision Engineering</h4>
-                                            <p className="text-sm text-[#333333] uppercase tracking-wider font-normal">Weatherproof structural design, safe electrical wiring, and compliance-focused installation for reliable, lifelong home energy.</p>
+                                            <h4 className="font-medium text-[#0a1122] text-xl mb-1" style={{ fontFamily: 'Georgia, serif' }}>Precision Engineering</h4>
+                                            <p className="text-gray-600 text-base leading-relaxed font-normal">Weatherproof structural design, safe electrical wiring, and compliance-focused installation for reliable, lifelong home energy.</p>
                                         </div>
                                     </div>
                                 </div>
@@ -123,7 +125,7 @@ export default function ResidentialPage() {
                                         {feature.icon}
                                     </div>
                                 </div>
-                                <h3 className="text-xl font-medium text-[#0a1122] mb-4">{feature.title}</h3>
+                                <h3 className="text-xl font-medium text-[#0a1122] mb-4" style={{ fontFamily: 'Georgia, serif' }}>{feature.title}</h3>
                                 <p className="text-[#333333] text-sm md:text-base leading-relaxed max-w-[280px] text-center font-normal">{feature.desc}</p>
                             </div>
                         ))}
