@@ -64,8 +64,7 @@ export default function AboutPage() {
                                     <div className="text-4xl md:text-5xl font-black text-transparent bg-clip-text bg-gradient-to-br from-white to-white/50 mb-1">8+</div>
                                     <div className="text-sm md:text-base font-bold tracking-wide">Years of Excellence</div>
                                     <p className="text-white/85 mt-1.5 text-xs leading-relaxed max-w-sm">
-                                        Founded in 2018, Divvy Solar Power & Solutions Pvt. Ltd. is a leading solar EPC provider serving residential, commercial, and industrial clients across North India. Our mission: to make clean, reliable solar energy accessible through quality engineering, transparent processes, and a relentless focus on customer success.
-                                        .
+                                        Founded in 2018, Divvy Solar Power & Solutions Pvt. Ltd. is a leading solar EPC provider serving residential, commercial, and industrial clients across North India. Designs and delivers high-performing solar plants from smart engineering to flawless execution.
                                     </p>
                                 </div>
                             </div>
@@ -91,7 +90,7 @@ export default function AboutPage() {
             </section>
 
             {/* ─── Vision & Mission (Premium Editorial Layout) ─── */}
-            <section className="py-24 md:py-32 relative overflow-hidden bg-[#030712] selection:bg-[#FECB00] selection:text-black">
+            <section className="py-24 md:py-32 relative overflow-hidden bg-[#0a0f1c] selection:bg-[#FECB00] selection:text-black">
                 {/* Minimalist Background Grids */}
                 <div className="absolute inset-0 pointer-events-none">
                     <div className="absolute inset-0 opacity-[0.03]" style={{ backgroundImage: 'linear-gradient(rgba(255,255,255,1) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,1) 1px, transparent 1px)', backgroundSize: '64px 64px', backgroundPosition: 'center center' }} />
@@ -100,73 +99,85 @@ export default function AboutPage() {
                 </div>
 
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-
-                    {/* Editorial Header */}
-                    <div className="mb-20 grid grid-cols-1 lg:grid-cols-12 gap-8 items-end">
+                    <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-start">
+                        {/* Left Content: Editorial Header & Description */}
                         <div className="lg:col-span-7">
                             <span className="flex items-center gap-3 text-white/50 text-[10px] font-bold tracking-[0.3em] uppercase mb-6">
                                 <span className="w-8 h-[1px] bg-white/20"></span>
                                 Strategic Direction
                             </span>
-                            <h2 className="text-4xl md:text-5xl lg:text-7xl font-normal text-white leading-[1.1]" style={{ fontFamily: "'Century', 'Century Gothic', serif" }}>
+                            <h2 className="text-4xl md:text-5xl lg:text-7xl font-normal text-white leading-[1.1] mb-8" style={{ fontFamily: "Georgia, serif" }}>
                                 Engineering India’s <br className="hidden md:block" />
                                 <span className="text-transparent bg-clip-text bg-gradient-to-r from-yellow-100 to-[#FECB00] italic pr-2">Clean-Energy Future</span>
                             </h2>
-                        </div>
-                        <div className="lg:col-span-5 lg:pb-3">
-                            <p className="text-gray-400 text-sm md:text-base leading-relaxed font-light border-l border-white/10 pl-6">
+                            <p className="text-gray-300 text-base md:text-lg leading-relaxed font-light border-l border-[#FECB00]/30 pl-6 max-w-2xl mb-12">
                                 We are a solar EPC company focused on building reliable, performance-driven solar assets. Through strong engineering, quality procurement, and disciplined execution, we help homes, businesses, and industries move toward lower energy costs and a more sustainable future.
                             </p>
-                        </div>
-                    </div>
 
-                    {/* Premium Minimalist Layout */}
-                    <div className="max-w-4xl grid grid-cols-1 md:grid-cols-2 gap-6 relative">
-
-                        {/* Vision Card */}
-                        <div className="group relative rounded-2xl overflow-hidden bg-white/[0.02] border border-white/5 backdrop-blur-xl p-8 transition-all duration-500 hover:bg-white/[0.04] hover:border-white/10">
-                            <div className="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-blue-500/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-
-                            <div className="flex items-center justify-between mb-6">
-                                <div className="flex items-center gap-3">
-                                    <div className="w-10 h-10 rounded-full border border-white/10 flex items-center justify-center bg-white/5 shadow-inner">
-                                        <LightBulbIcon className="w-5 h-5 text-white/80 group-hover:text-[#FECB00] transition-colors duration-500" />
-                                    </div>
-                                    <span className="text-[10px] uppercase tracking-widest font-bold text-white/50 group-hover:text-white/80 transition-colors">Our Vision</span>
+                            {/* Authentic Trust Indicators */}
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mt-12 border-t border-white/5 pt-12">
+                                <div className="space-y-3">
+                                    <div className="text-[#FECB00] font-bold text-sm tracking-widest uppercase">Precision Engineering</div>
+                                    <p className="text-white/60 text-xs leading-relaxed">Customized site-specific designs for maximum energy generation and long-term durability.</p>
                                 </div>
-                                <span className="text-3xl font-black text-white/[0.05] pointer-events-none group-hover:text-white/[0.1] transition-colors" style={{ fontFamily: "'Century', serif" }}>01</span>
+                                <div className="space-y-3">
+                                    <div className="text-[#FECB00] font-bold text-sm tracking-widest uppercase">Premium Quality</div>
+                                    <p className="text-white/60 text-xs leading-relaxed">Sourcing only Tier-1 components from trusted global partners for reliable performance.</p>
+                                </div>
+                                <div className="space-y-3">
+                                    <div className="text-[#FECB00] font-bold text-sm tracking-widest uppercase">Safe Execution</div>
+                                    <p className="text-white/60 text-xs leading-relaxed">Adhering to strict safety standards and disciplined timelines for seamless installations.</p>
+                                </div>
                             </div>
-
-                            <h3 className="text-2xl font-normal text-white mb-4 tracking-tight" style={{ fontFamily: "'Century', serif" }}>
-                                Make Solar the First Choice
-                            </h3>
-
-                            <p className="text-white/50 text-sm leading-relaxed font-light">
-                                We envision an India where on-grid solar power is the default for homes and businesses, trusted for its savings, reliability, and environmental impact. By delivering consistent quality and transparent execution, we aim to make clean energy accessible at scale.
-                            </p>
                         </div>
 
-                        {/* Mission Card */}
-                        <div className="group relative rounded-2xl overflow-hidden bg-gradient-to-b from-[#FECB00]/5 to-transparent border border-[#FECB00]/10 p-8 transition-all duration-500 hover:from-[#FECB00]/10 hover:border-[#FECB00]/30">
-                            <div className="absolute top-0 right-0 w-full h-[1px] bg-gradient-to-r from-transparent via-[#FECB00]/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                        {/* Right Content: Vision & Mission stacked */}
+                        <div className="lg:col-span-5 flex flex-col gap-6">
+                            {/* Vision Card */}
+                            <div className="group relative rounded-2xl overflow-hidden bg-white/[0.02] border border-white/5 backdrop-blur-xl p-8 transition-all duration-500 hover:bg-white/[0.04] hover:border-white/10">
+                                <div className="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-blue-500/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
 
-                            <div className="flex items-center justify-between mb-6">
-                                <div className="flex items-center gap-3">
-                                    <div className="w-10 h-10 rounded-full border border-[#FECB00]/20 flex items-center justify-center bg-[#FECB00]/10 shadow-[0_0_15px_rgba(254,203,0,0.1)]">
-                                        <RocketLaunchIcon className="w-5 h-5 text-[#FECB00]" />
+                                <div className="flex items-center justify-between mb-6">
+                                    <div className="flex items-center gap-3">
+                                        <div className="w-10 h-10 rounded-full border border-white/10 flex items-center justify-center bg-white/5 shadow-inner">
+                                            <LightBulbIcon className="w-5 h-5 text-white/80 group-hover:text-[#FECB00] transition-colors duration-500" />
+                                        </div>
+                                        <span className="text-[10px] uppercase tracking-widest font-bold text-white/50 group-hover:text-white/80 transition-colors">Our Vision</span>
                                     </div>
-                                    <span className="text-[10px] uppercase tracking-widest font-bold text-[#FECB00]/70 group-hover:text-[#FECB00] transition-colors">Our Mission</span>
+                                    <span className="text-3xl font-black text-white/[0.05] pointer-events-none group-hover:text-white/[0.1] transition-colors" style={{ fontFamily: "Georgia, serif" }}>01</span>
                                 </div>
-                                <span className="text-3xl font-black text-[#FECB00]/[0.05] pointer-events-none group-hover:text-[#FECB00]/[0.1] transition-colors" style={{ fontFamily: "'Century', serif" }}>02</span>
+
+                                <h3 className="text-2xl font-normal text-white mb-4 tracking-tight" style={{ fontFamily: "Georgia, serif" }}>
+                                    Make Solar the First Choice
+                                </h3>
+
+                                <p className="text-white/50 text-sm leading-relaxed font-light">
+                                    We envision an India where on-grid solar power is the default for homes and businesses, trusted for its savings, reliability, and environmental impact. By delivering consistent quality and transparent execution, we aim to make clean energy accessible at scale.
+                                </p>
                             </div>
 
-                            <h3 className="text-2xl font-normal text-white mb-4 tracking-tight leading-snug" style={{ fontFamily: "'Century', serif" }}>
-                                Deliver Solar That Performs
-                            </h3>
+                            {/* Mission Card */}
+                            <div className="group relative rounded-2xl overflow-hidden bg-gradient-to-b from-[#FECB00]/5 to-transparent border border-[#FECB00]/10 p-8 transition-all duration-500 hover:from-[#FECB00]/10 hover:border-[#FECB00]/30">
+                                <div className="absolute top-0 right-0 w-full h-[1px] bg-gradient-to-r from-transparent via-[#FECB00]/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
 
-                            <p className="text-white/50 text-sm leading-relaxed font-light">
-                                Our mission is to provide end-to-end solar EPC solutions, from survey and design to commissioning and O&M, so every project delivers measurable output, safer operations, and long-term ROI for residential, commercial, industrial, and utility-scale customers.
-                            </p>
+                                <div className="flex items-center justify-between mb-6">
+                                    <div className="flex items-center gap-3">
+                                        <div className="w-10 h-10 rounded-full border border-[#FECB00]/20 flex items-center justify-center bg-[#FECB00]/10 shadow-[0_0_15px_rgba(254,203,0,0.1)]">
+                                            <RocketLaunchIcon className="w-5 h-5 text-[#FECB00]" />
+                                        </div>
+                                        <span className="text-[10px] uppercase tracking-widest font-bold text-[#FECB00]/70 group-hover:text-[#FECB00] transition-colors">Our Mission</span>
+                                    </div>
+                                    <span className="text-3xl font-black text-[#FECB00]/[0.05] pointer-events-none group-hover:text-[#FECB00]/[0.1] transition-colors" style={{ fontFamily: "Georgia, serif" }}>02</span>
+                                </div>
+
+                                <h3 className="text-2xl font-normal text-white mb-4 tracking-tight leading-snug" style={{ fontFamily: "Georgia, serif" }}>
+                                    Deliver Solar That Performs
+                                </h3>
+
+                                <p className="text-white/50 text-sm leading-relaxed font-light">
+                                    Our mission is to provide end-to-end solar EPC solutions, from survey and design to commissioning and O&M, so every project delivers measurable output, safer operations, and long-term ROI for residential, commercial, industrial, and utility-scale customers.
+                                </p>
+                            </div>
                         </div>
                     </div>
                 </div>

@@ -75,7 +75,7 @@ export default function AdminLayout({ children }) {
     const isActive = (href) => pathname === href || pathname.startsWith(`${href}/`);
 
     return (
-        <div className="min-h-screen bg-[#0f172a] flex" style={{ fontFamily: "'Inter', sans-serif" }}>
+        <div className="min-h-screen bg-[#0f172a] flex" style={{ fontFamily: "Inter" }}>
 
             {/* ─── Desktop Sidebar ─── */}
             <aside className="hidden md:flex w-64 flex-shrink-0 flex-col h-screen sticky top-0 bg-[#0f172a] border-r border-white/10">

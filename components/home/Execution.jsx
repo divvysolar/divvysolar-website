@@ -110,12 +110,12 @@ const Execution = () => {
                                     <div
                                         className="flex-shrink-0 w-[48px] h-[48px] rounded-lg flex items-center justify-center transition-all duration-300 group-hover:bg-[#fecb00] group-hover:border-[#fecb00]"
                                         style={{
-                                            background: '#ffffff',
-                                            border: '1.5px solid #e2e8f0',
-                                            boxShadow: '0 2px 6px rgba(0,0,0,0.06)',
+                                            background: '#0a0f1c',
+                                            border: '1.5px solid #0a0f1c',
+                                            boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
                                         }}
                                     >
-                                        <Icon className="w-5 h-5 transition-colors duration-300 group-hover:text-[#0e1b3d]" style={{ color: '#0e1b3d' }} aria-hidden="true" />
+                                        <Icon className="w-5 h-5 transition-colors duration-300 group-hover:text-[#0a0f1c]" style={{ color: '#ffffff' }} aria-hidden="true" />
                                     </div>
 
                                     {/* Text */}

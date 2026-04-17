@@ -501,8 +501,8 @@ export default function HaryanaProjectsPage() {
                                 icon: CheckCircleIcon,
                                 val: "1000+",
                                 label: "Solar Projects Delivered",
-                                color: "text-teal-600",
-                                bg: "bg-teal-50",
+                                color: "text-amber-600",
+                                bg: "bg-amber-50",
                             },
                             {
                                 icon: ChartBarIcon,
@@ -520,10 +520,10 @@ export default function HaryanaProjectsPage() {
                             },
                             {
                                 icon: SunIcon,
-                                val: '15,000+',
-                                label: 'Tons CO₂ Offset',
-                                color: 'text-emerald-400',
-                                bg: 'bg-emerald-400/5',
+                                val: '24/7',
+                                label: 'Remote Monitoring Support',
+                                color: 'text-amber-600',
+                                bg: 'bg-amber-50',
                             },
                         ].map((stat, idx) => (
                             <div
@@ -636,7 +636,7 @@ export default function HaryanaProjectsPage() {
 
             {/* BOTTOM CTA */}
             <div className="max-w-7xl mx-auto px-6 pb-32 lg:pb-32">
-                <div className="relative py-10 px-8 rounded-[2.5rem] overflow-hidden bg-gradient-to-br from-[#050a14] via-[#050a14] to-[#1e1405] text-center border border-white/10 shadow-2xl">
+                <div className="relative py-10 px-8 rounded-[2.5rem] overflow-hidden bg-[#0a0f1c] text-center border border-white/10 shadow-2xl">
                     <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(251,191,36,0.1),transparent_50%)]" />
                     <div className="relative z-10 flex flex-col items-center max-w-2xl mx-auto">
                         <h2

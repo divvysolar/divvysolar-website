@@ -63,21 +63,24 @@ const Footer = () => {
                     {/* ── Col 1: Brand ── */}
                     <div className="lg:col-span-3 flex flex-col gap-5">
                         <Link href="/" className="inline-block w-fit">
-                            <div className="relative h-12 w-48 transition-transform duration-300 hover:scale-105">
+                            <div className="relative h-14 w-52 transition-transform duration-300 hover:scale-105 bg-white/95 backdrop-blur-md rounded-full p-2.5 shadow-[0_10px_40px_-10px_rgba(0,0,0,0.2)] border border-white/20 flex items-center justify-center overflow-hidden">
+                                {/* Subtle premium gloss effect */}
+                                <div className="absolute inset-0 bg-gradient-to-tr from-white/0 via-white/30 to-white/0 pointer-events-none" />
                                 <Image
                                     src="/divvy_photo.png"
                                     alt="Divvy Solar Logo"
                                     fill
-                                    sizes="192px"
-                                    className="object-contain"
-                                    style={{ filter: 'invert(1) hue-rotate(180deg) brightness(1.2)' }}
+                                    sizes="208px"
+                                    className="object-contain p-2.5"
+                                    style={{ filter: 'none' }}
                                     quality={100}
                                 />
                             </div>
                         </Link>
 
                         <p className="text-gray-200 text-sm leading-relaxed max-w-[260px]">
-                            Renewable Energy For All. Reliable solar panel installation for homes, industries, and large-scale projects across India.
+                            Divvy Solar Power & Solutions Pvt. Ltd. is a trusted solar EPC company delivering end-to-end solar solutions across India, and we manage the complete lifecycle.
+
                         </p>
 
                         {/* Social icons */}
