@@ -126,7 +126,10 @@ export default function AdminLayout({ children }) {
                         </div>
                     </div>
                     <button
-                        onClick={() => signOut({ callbackUrl: '/admin' })}
+                        onClick={async () => {
+                            await signOut({ redirect: false });
+                            window.location.href = "/admin";
+                        }}
                         className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-150 text-white/50 hover:bg-red-500/10 hover:text-red-500"
                     >
                         <ArrowLeftOnRectangleIcon className="w-5 h-5" />
@@ -172,6 +175,31 @@ export default function AdminLayout({ children }) {
                                 );
                             })}
                         </nav>
+
+                        {/* Mobile User Footer */}
+                        <div className="p-3 border-t border-white/10">
+                            <div className="flex items-center gap-3 px-3 py-2 mb-2 rounded-xl bg-white/5">
+                                <div className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold text-white uppercase flex-shrink-0"
+                                    style={{ background: 'linear-gradient(135deg, #FECB00, #FAD02C)' }}>
+                                    {session?.user?.name?.[0] || 'A'}
+                                </div>
+                                <div className="flex-1 min-w-0">
+                                    <p className="text-white text-sm font-semibold truncate leading-none">{session?.user?.name || 'Admin'}</p>
+                                    <p className="text-white/50 text-xs truncate mt-0.5">{session?.user?.email}</p>
+                                </div>
+                            </div>
+                            <button
+                                onClick={async () => {
+                                    setMobileOpen(false);
+                                    await signOut({ redirect: false });
+                                    window.location.href = "/admin";
+                                }}
+                                className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-150 text-white/50 hover:bg-red-500/10 hover:text-red-500"
+                            >
+                                <ArrowLeftOnRectangleIcon className="w-5 h-5" />
+                                <span>Sign Out</span>
+                            </button>
+                        </div>
                     </aside>
                 </div>
             )}
