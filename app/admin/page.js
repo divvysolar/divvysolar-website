@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { SunIcon, LockClosedIcon, EnvelopeIcon } from "@heroicons/react/24/outline";
@@ -11,6 +11,13 @@ export default function AdminLogin() {
     const [error, setError] = useState("");
     const [loading, setLoading] = useState(false);
     const router = useRouter();
+
+    // Ensure state is cleared on mount
+    useEffect(() => {
+        setEmail("");
+        setPassword("");
+        setError("");
+    }, []);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -65,7 +72,7 @@ export default function AdminLogin() {
                 <div className="rounded-3xl p-8 backdrop-blur-xl relative overflow-hidden bg-white/5 border border-white/10 shadow-2xl transition-colors">
                     <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-[#FECB00] to-transparent opacity-50"></div>
 
-                    <form className="space-y-5" onSubmit={handleSubmit} method="post" action="#">
+                    <form className="space-y-5" onSubmit={handleSubmit} method="post" action="#" autoComplete="off">
                         {error && (
                             <div className="p-4 rounded-xl text-sm font-medium flex items-center gap-3 animate-fade-in"
                                 style={{ background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.2)', color: '#ef4444' }}>
@@ -86,7 +93,7 @@ export default function AdminLogin() {
                                     id="email"
                                     name="email"
                                     type="email"
-                                    autoComplete="email"
+                                    autoComplete="off"
                                     required
                                     value={email}
                                     onChange={(e) => setEmail(e.target.value)}
@@ -108,7 +115,7 @@ export default function AdminLogin() {
                                     id="password"
                                     name="password"
                                     type="password"
-                                    autoComplete="current-password"
+                                    autoComplete="new-password"
                                     required
                                     value={password}
                                     onChange={(e) => setPassword(e.target.value)}
