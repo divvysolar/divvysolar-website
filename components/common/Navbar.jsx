@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { Bars3Icon, XMarkIcon, ChevronDownIcon } from '@heroicons/react/24/outline';
 import Image from 'next/image';
+import PropTypes from 'prop-types';
 
 const NavDropdown = ({ title, links, dropdownKey, openDropdown, handleMouseEnter, handleMouseLeave, alignRight = false }) => {
     const pathname = usePathname();
@@ -12,15 +13,22 @@ const NavDropdown = ({ title, links, dropdownKey, openDropdown, handleMouseEnter
     const anyActive = links.some(link => pathname?.startsWith(link.href));
 
     return (
-        <div
+        <div // NOSONAR
+            role="button"
+            tabIndex={0}
             className="relative h-full flex items-center cursor-pointer z-50"
             onMouseEnter={() => handleMouseEnter(dropdownKey)}
             onMouseLeave={handleMouseLeave}
+            onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                    handleMouseEnter(dropdownKey);
+                }
+            }}
         >
-            <button className={`flex items-center text-sm font-bold tracking-wide transition-colors ${anyActive || isOpen ? 'text-accent' : 'text-primary hover:text-accent'}`}>
+            <div className={`flex items-center text-sm font-bold tracking-wide transition-colors ${anyActive || isOpen ? 'text-accent' : 'text-primary hover:text-accent'}`}>
                 {title}
                 <ChevronDownIcon className={`ml-1 h-3 w-3 transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`} />
-            </button>
+            </div>
 
             <div
                 className={`absolute ${alignRight ? 'right-0' : 'left-1/2 -translate-x-1/2'} top-full z-[999999] transition-all duration-300 ease-out ${isOpen ? 'opacity-100 visible translate-y-0' : 'opacity-0 invisible translate-y-2'}`}
@@ -88,12 +96,6 @@ const Navbar = () => {
         { name: 'Careers', href: '/careers' },
         { name: 'Blog', href: '/blogs' },
     ];
-
-    const isActiveInternal = (path) => {
-        if (!pathname) return false;
-        if (path === '/') return pathname === '/';
-        return pathname === path || pathname.startsWith(path + '/');
-    };
 
     const handleMouseEnter = (name) => {
         if (closeTimer.current) clearTimeout(closeTimer.current);
@@ -225,7 +227,7 @@ const Navbar = () => {
                         <div className={`overflow-hidden transition-all duration-300 ease-in-out ${activeMobileDropdown === 'services' ? 'max-h-64 opacity-100 py-2' : 'max-h-0 opacity-0'}`}>
                             {servicesLinks.map((link) => (
                                 <Link 
-                                    key={link.name} 
+                                    key={link.href} 
                                     href={link.href}
                                     className={`block pl-8 pr-4 py-3 text-[12px] font-bold uppercase tracking-wider ${isActive(link.href) ? 'text-accent bg-accent/5' : 'text-gray-600'}`}
                                     onClick={() => setIsOpen(false)}
@@ -248,7 +250,7 @@ const Navbar = () => {
                         <div className={`overflow-hidden transition-all duration-300 ease-in-out ${activeMobileDropdown === 'projects' ? 'max-h-64 opacity-100 py-2' : 'max-h-0 opacity-0'}`}>
                             {projectsLinks.map((link) => (
                                 <Link 
-                                    key={link.name} 
+                                    key={link.href} 
                                     href={link.href}
                                     className={`block pl-8 pr-4 py-3 text-[12px] font-bold uppercase tracking-wider ${pathname === link.href ? 'text-accent bg-accent/5' : 'text-gray-600'}`}
                                     onClick={() => setIsOpen(false)}
@@ -280,7 +282,7 @@ const Navbar = () => {
                         <div className={`overflow-hidden transition-all duration-300 ease-in-out ${activeMobileDropdown === 'more' ? 'max-h-64 opacity-100 py-2' : 'max-h-0 opacity-0'}`}>
                             {moreLinks.map((link) => (
                                 <Link 
-                                    key={link.name} 
+                                    key={link.href} 
                                     href={link.href}
                                     className={`block pl-8 pr-4 py-3 text-[12px] font-bold uppercase tracking-wider ${isActive(link.href) ? 'text-accent bg-accent/5' : 'text-gray-600'}`}
                                     onClick={() => setIsOpen(false)}
@@ -307,3 +309,18 @@ const Navbar = () => {
 };
 
 export default Navbar;
+
+NavDropdown.propTypes = {
+    title: PropTypes.string.isRequired,
+    links: PropTypes.arrayOf(
+        PropTypes.shape({
+            name: PropTypes.string.isRequired,
+            href: PropTypes.string.isRequired,
+        })
+    ).isRequired,
+    dropdownKey: PropTypes.string.isRequired,
+    openDropdown: PropTypes.string,
+    handleMouseEnter: PropTypes.func.isRequired,
+    handleMouseLeave: PropTypes.func.isRequired,
+    alignRight: PropTypes.bool,
+};

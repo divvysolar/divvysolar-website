@@ -85,9 +85,9 @@ const Footer = () => {
 
                         {/* Social icons */}
                         <div className="flex items-center gap-2.5">
-                            {socials.map((social, i) => (
+                            {socials.map((social) => (
                                 <a
-                                    key={i}
+                                    key={social.label}
                                     href={social.href}
                                     target="_blank"
                                     rel="noopener noreferrer"
@@ -108,8 +108,8 @@ const Footer = () => {
                             Quick Links
                         </h3>
                         <ul className="space-y-2.5">
-                            {quickLinks.map((link, i) => (
-                                <li key={i}>
+                            {quickLinks.map((link) => (
+                                <li key={link.label}>
                                     <Link
                                         href={link.href}
                                         className="text-gray-400 text-sm hover:text-[#fecb00] transition-colors duration-200 flex items-center gap-1.5 group"
@@ -128,14 +128,14 @@ const Footer = () => {
                             Our Offices
                         </h3>
                         <div className="grid grid-cols-2 gap-x-6 gap-y-5">
-                            {offices.map((office, i) => (
-                                <div key={i}>
+                            {offices.map((office) => (
+                                <div key={office.title}>
                                     <h4 className="text-[#fecb00] text-[10px] font-semibold uppercase tracking-widest mb-2">
                                         {office.title}
                                     </h4>
                                     <address className="not-italic text-gray-400 text-[13px] leading-[1.8]">
-                                        {office.lines.map((line, j) => (
-                                            <span key={j} className="block">{line}</span>
+                                        {office.lines.map((line) => (
+                                            <span key={line} className="block">{line}</span>
                                         ))}
                                     </address>
                                 </div>

@@ -10,6 +10,8 @@ const inter = Inter({
     display: 'swap',
 });
 
+import PropTypes from 'prop-types';
+
 export const metadata = {
     metadataBase: new URL('https://divvysolar.in'),
     title: {
@@ -22,7 +24,7 @@ export const metadata = {
 export default function RootLayout({ children }) {
     return (
         <html lang="en" className="scroll-smooth" suppressHydrationWarning>
-            <body className={`${inter.className} min-h-screen flex flex-col overflow-x-hidden`}>
+            <body className={`${inter.className} min-h-screen flex flex-col`}>
                 <StructuredData />
                 <AuthProvider>
                     {children}
@@ -32,3 +34,7 @@ export default function RootLayout({ children }) {
         </html>
     );
 }
+
+RootLayout.propTypes = {
+    children: PropTypes.node.isRequired,
+};
