@@ -21,10 +21,17 @@ export const metadata = {
     description: 'Divvy Solar provides reliable solar panel installation for homes, industries, and large-scale projects across India. Premium EPC solutions since 2018.',
 };
 
+export const viewport = {
+    width: 'device-width',
+    initialScale: 1,
+    maximumScale: 1,
+    userScalable: false,
+};
+
 export default function RootLayout({ children }) {
     return (
         <html lang="en" className="scroll-smooth" suppressHydrationWarning>
-            <body className={`${inter.className} min-h-screen flex flex-col`}>
+            <body className={`${inter.className} min-h-screen flex flex-col overflow-x-hidden`}>
                 <StructuredData />
                 <AuthProvider>
                     {children}
