@@ -34,7 +34,7 @@ const JOBS = [
     {
         id: "solar-technician",
         title: "Solar Technician",
-        location: "Ludhiana, Punjab",
+        location: "Haryana & Punjab",
         type: "Full-Time",
         department: "Operations",
         description: "We are looking for a skilled and reliable Solar Technician responsible for the installation, maintenance, and troubleshooting of solar power systems. The ideal candidate should have hands-on experience with solar panels, inverters, electrical wiring, and rooftop installations while ensuring safety and quality standards.",
