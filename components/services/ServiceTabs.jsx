@@ -13,7 +13,7 @@ const ServiceTabs = () => {
     ];
 
     return (
-        <div className="w-full bg-white/95 backdrop-blur-md border-b border-gray-100 sticky top-16 z-[90] hidden md:block shadow-sm">
+        <div className="w-full bg-white/95 backdrop-blur-md border-b border-gray-100 sticky top-[64px] z-[99998] shadow-sm overflow-x-auto no-scrollbar">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <nav className="-mb-px flex space-x-8" aria-label="Tabs">
                     {tabs.map((tab) => {

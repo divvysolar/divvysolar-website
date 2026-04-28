@@ -1,4 +1,3 @@
-import PageHero from "@/components/common/PageHero";
 import CareerBoard from "@/components/careers/CareerBoard";
 
 export const metadata = {

@@ -77,7 +77,7 @@ export default function AboutPage() {
                                     </div>
                                     <div>
                                         <h4 className="text-lg md:text-xl font-black text-primary leading-tight">DINESH AHUJA</h4>
-                                        <p className="text-accent font-bold text-xs tracking-widest uppercase mt-0.5">DIRECTOR</p>
+                                        <p className="text-accent font-bold text-xs tracking-widest uppercase mt-0.5">Chief Executive Officer</p>
                                     </div>
                                 </div>
                                 <p className="text-gray-800 italic text-sm leading-relaxed border-l-4 border-accent pl-3 font-semibold">

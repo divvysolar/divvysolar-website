@@ -91,9 +91,15 @@ const Navbar = () => {
         { name: 'Haryana Projects', href: '/projects/haryana' },
     ];
 
+    const careersLinks = [
+        { name: 'Open Positions', href: '/careers' },
+        // { name: 'Client Experiences', href: '/careers/client-experiences' },
+        { name: 'Life at Divvy Solar', href: '/careers/people-stories' },
+    ];
+
     const moreLinks = [
+        { name: 'About Us', href: '/about' },
         { name: 'Solar Calculator', href: '/calculator' },
-        { name: 'Careers', href: '/careers' },
         { name: 'Blog', href: '/blogs' },
     ];
 
@@ -160,12 +166,16 @@ const Navbar = () => {
                                 handleMouseLeave={handleMouseLeave}
                             />
 
-                            <Link
-                                href="/about"
-                                className={`text-sm font-bold tracking-wide transition-colors h-full flex items-center ${isActive('/about') ? 'text-accent' : 'text-primary hover:text-accent'}`}
-                            >
-                                ABOUT
-                            </Link>
+
+
+                            <NavDropdown
+                                title="CAREERS"
+                                links={careersLinks}
+                                dropdownKey="careers"
+                                openDropdown={openDropdown}
+                                handleMouseEnter={handleMouseEnter}
+                                handleMouseLeave={handleMouseLeave}
+                            />
 
                             <NavDropdown
                                 title="MORE"
@@ -217,7 +227,7 @@ const Navbar = () => {
 
                     {/* CORE SOLUTIONS ACCORDION */}
                     <div className="border-b border-gray-50">
-                        <button 
+                        <button
                             onClick={() => setActiveMobileDropdown(activeMobileDropdown === 'services' ? null : 'services')}
                             className="flex items-center justify-between w-full px-4 py-4 text-base font-black tracking-widest text-primary hover:text-accent transition-colors"
                         >
@@ -226,8 +236,8 @@ const Navbar = () => {
                         </button>
                         <div className={`overflow-hidden transition-all duration-300 ease-in-out ${activeMobileDropdown === 'services' ? 'max-h-64 opacity-100 py-2' : 'max-h-0 opacity-0'}`}>
                             {servicesLinks.map((link) => (
-                                <Link 
-                                    key={link.href} 
+                                <Link
+                                    key={link.href}
                                     href={link.href}
                                     className={`block pl-8 pr-4 py-3 text-[12px] font-bold uppercase tracking-wider ${isActive(link.href) ? 'text-accent bg-accent/5' : 'text-gray-600'}`}
                                     onClick={() => setIsOpen(false)}
@@ -240,7 +250,7 @@ const Navbar = () => {
 
                     {/* PROJECTS ACCORDION */}
                     <div className="border-b border-gray-50">
-                        <button 
+                        <button
                             onClick={() => setActiveMobileDropdown(activeMobileDropdown === 'projects' ? null : 'projects')}
                             className="flex items-center justify-between w-full px-4 py-4 text-base font-black tracking-widest text-primary hover:text-accent transition-colors"
                         >
@@ -249,8 +259,8 @@ const Navbar = () => {
                         </button>
                         <div className={`overflow-hidden transition-all duration-300 ease-in-out ${activeMobileDropdown === 'projects' ? 'max-h-64 opacity-100 py-2' : 'max-h-0 opacity-0'}`}>
                             {projectsLinks.map((link) => (
-                                <Link 
-                                    key={link.href} 
+                                <Link
+                                    key={link.href}
                                     href={link.href}
                                     className={`block pl-8 pr-4 py-3 text-[12px] font-bold uppercase tracking-wider ${pathname === link.href ? 'text-accent bg-accent/5' : 'text-gray-600'}`}
                                     onClick={() => setIsOpen(false)}
@@ -261,18 +271,34 @@ const Navbar = () => {
                         </div>
                     </div>
 
-                    {/* ABOUT */}
-                    <Link
-                        href="/about"
-                        className={`block px-4 py-4 text-base font-black tracking-widest border-b border-gray-50 ${isActive('/about') ? 'text-accent' : 'text-primary'}`}
-                        onClick={() => setIsOpen(false)}
-                    >
-                        ABOUT
-                    </Link>
+
+
+                    {/* CAREERS ACCORDION */}
+                    <div className="border-b border-gray-50">
+                        <button
+                            onClick={() => setActiveMobileDropdown(activeMobileDropdown === 'careers' ? null : 'careers')}
+                            className="flex items-center justify-between w-full px-4 py-4 text-base font-black tracking-widest text-primary hover:text-accent transition-colors"
+                        >
+                            <span>CAREERS</span>
+                            <ChevronDownIcon className={`h-4 w-4 transition-transform duration-300 ${activeMobileDropdown === 'careers' ? 'rotate-180 text-accent' : 'text-gray-400'}`} />
+                        </button>
+                        <div className={`overflow-hidden transition-all duration-300 ease-in-out ${activeMobileDropdown === 'careers' ? 'max-h-64 opacity-100 py-2' : 'max-h-0 opacity-0'}`}>
+                            {careersLinks.map((link) => (
+                                <Link
+                                    key={link.href}
+                                    href={link.href}
+                                    className={`block pl-8 pr-4 py-3 text-[12px] font-bold uppercase tracking-wider ${isActive(link.href) ? 'text-accent bg-accent/5' : 'text-gray-600'}`}
+                                    onClick={() => setIsOpen(false)}
+                                >
+                                    {link.name}
+                                </Link>
+                            ))}
+                        </div>
+                    </div>
 
                     {/* MORE ACCORDION */}
                     <div className="border-b border-gray-50">
-                        <button 
+                        <button
                             onClick={() => setActiveMobileDropdown(activeMobileDropdown === 'more' ? null : 'more')}
                             className="flex items-center justify-between w-full px-4 py-4 text-base font-black tracking-widest text-primary hover:text-accent transition-colors"
                         >
@@ -281,8 +307,8 @@ const Navbar = () => {
                         </button>
                         <div className={`overflow-hidden transition-all duration-300 ease-in-out ${activeMobileDropdown === 'more' ? 'max-h-64 opacity-100 py-2' : 'max-h-0 opacity-0'}`}>
                             {moreLinks.map((link) => (
-                                <Link 
-                                    key={link.href} 
+                                <Link
+                                    key={link.href}
                                     href={link.href}
                                     className={`block pl-8 pr-4 py-3 text-[12px] font-bold uppercase tracking-wider ${isActive(link.href) ? 'text-accent bg-accent/5' : 'text-gray-600'}`}
                                     onClick={() => setIsOpen(false)}

@@ -47,7 +47,7 @@ export default function UtilityScalePage() {
                                 <h3 className="font-medium uppercase tracking-[0.2em] text-[10px]">Why Choose Divvy Solar</h3>
                             </div>
                             <h2 className="text-3xl md:text-5xl font-medium text-[#0a1122] mb-8 leading-tight tracking-tight" style={{ fontFamily: 'Georgia, serif' }}>
-                                <span className="block">Utility-Scale Solar EPC</span>
+                                <span className="block whitespace-nowrap">Utility-Scale Solar EPC</span>
                                 <span className="block text-[#0e1b3d]">Partner in India</span>
                             </h2>
 
