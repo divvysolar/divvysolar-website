@@ -40,7 +40,7 @@ const jsonLd = {
     logo: 'https://divvysolar.in/images/divvy solar.png',
     image: 'https://divvysolar.in/images/og-image.jpg',
     description: 'India\'s trusted solar EPC company providing residential, industrial, and utility-scale solar solutions since 2018.',
-    telephone: '+917983890840',
+    telephone: '+919254969114',
     email: 'info@divvysolar.in',
     foundingDate: '2018',
     address: {

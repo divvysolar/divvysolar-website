@@ -162,14 +162,14 @@ const Footer = () => {
                             </a>
 
                             {/* Phone */}
-                            <a href="tel:+919254969113" className="flex items-center gap-3 group">
+                            <a href="tel:+919254969114" className="flex items-center gap-3 group">
                                 <div className="w-7 h-7 rounded-md bg-[#fecb00]/10 border border-[#fecb00]/20 flex items-center justify-center flex-shrink-0 group-hover:bg-[#fecb00]/20 group-hover:border-[#fecb00]/40 transition-all duration-300">
                                     <svg className="w-3.5 h-3.5 text-[#fecb00]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
                                         <path strokeLinecap="round" strokeLinejoin="round" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
                                     </svg>
                                 </div>
                                 <span className="text-gray-400 text-sm group-hover:text-[#fecb00] transition-colors">
-                                    +91-9254969113
+                                    +91-9254969114
                                 </span>
                             </a>
 
