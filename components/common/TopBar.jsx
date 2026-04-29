@@ -6,11 +6,11 @@ const TopBar = () => {
         <div className="bg-primary text-white py-2 px-4 md:px-8 text-xs font-medium flex flex-col sm:flex-row justify-between items-center z-50 relative border-b border-white/5">
             <div className="flex items-center space-x-6 mb-2 sm:mb-0">
                 <a
-                    href="tel:+919254969113"
+                    href="tel:+919254969114"
                     className="flex items-center hover:text-accent transition-colors"
                 >
                     <PhoneIcon className="h-4 w-4 mr-2 text-accent" />
-                    +91-9254969113
+                    +91-9254969114
                 </a>
                 <a
                     href="mailto:info@divvysolar.in"

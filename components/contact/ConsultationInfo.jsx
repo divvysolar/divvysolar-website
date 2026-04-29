@@ -55,7 +55,7 @@ const ConsultationInfo = () => {
                             </div>
                             <div className="min-w-0">
                                 <p className="text-[7px] text-gray-400 font-bold uppercase tracking-[2px] mb-0.5 whitespace-nowrap">Call Expert</p>
-                                <a href="tel:+919254969113" className="text-sm md:text-base font-black text-white hover:text-accent transition-colors block tracking-tight whitespace-nowrap">+91-9254969113</a>
+                                <a href="tel:+919254969114" className="text-sm md:text-base font-black text-white hover:text-accent transition-colors block tracking-tight whitespace-nowrap">+91-9254969114</a>
                             </div>
                         </div>
                         {/* Divider Line (Desktop only) */}
