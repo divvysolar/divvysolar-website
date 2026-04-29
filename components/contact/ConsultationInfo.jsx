@@ -23,8 +23,8 @@ const ConsultationInfo = () => {
         {
             type: 'Support Center',
             city: 'Ludhiana, PB',
-            address: 'Janta Colony, Malerkotla Road, Ludhiana',
-            url: 'https://maps.app.goo.gl/3f82m4nE6zXn1XnS9'
+            address: 'Plot no 14 Phase No -VII (ADJ) Focal Point Near Munish Forging Gobindgarh,Ludhiana (Punjab) 141003',
+            url: 'https://www.google.com/maps/search/?api=1&query=Plot+no+14+Phase+VII+Focal+Point+Ludhiana+Munish+Forging'
         }
     ];
 
