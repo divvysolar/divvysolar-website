@@ -17,19 +17,22 @@ const Footer = () => {
     const offices = [
         {
             title: 'Head Office',
-            lines: ['Lower Ground, SJ Tower,', 'Sector-13, Dabra Road,', 'Hisar-125001 (HR)'],
+            lines: ['Lower Ground, SJ Tower, Sec-13,', 'Dabra Road, Hisar-125001'],
         },
         {
             title: 'CO-Office',
-            lines: ['Unit-859, Tower-B1, Floor-8,', 'Spaze I-Tech Park, Sector 49,', 'Gurgaon 122018'],
+            lines: ['Unit-859, Tower-B1, 8th Floor,', 'Spaze I-Tech Park, Gurgaon'],
         },
         {
             title: 'Sales Office',
-            lines: ['626, First Floor, Opp. Franco Hotel,', 'Sec-55, Phase-I, Mohali,', 'Punjab 140501'],
+            lines: ['626, 1st Floor, Opp Franco Hotel,', 'Sec-55, Phase-I, Mohali, Punjab'],
         },
         {
-            title: 'Regional Office',
-            lines: ['Divvy Solar Power & Solutions,', 'Hisar, Haryana,', 'India'],
+            title: 'Support Center',
+            lines: [
+                'Plot no 14, Phase-VII (ADJ)',
+                'Focal Point, Gobindgarh, Ludhiana'
+            ],
         },
     ];
 
@@ -78,9 +81,8 @@ const Footer = () => {
                             </div>
                         </Link>
 
-                        <p className="text-gray-200 text-sm leading-relaxed max-w-[260px]">
+                        <p className="text-gray-300 text-[15px] leading-relaxed max-w-[280px]">
                             Divvy Solar Power & Solutions Pvt. Ltd. is a trusted solar EPC company delivering end-to-end solar solutions across India, and we manage the complete lifecycle.
-
                         </p>
 
                         {/* Social icons */}
@@ -112,9 +114,9 @@ const Footer = () => {
                                 <li key={link.label}>
                                     <Link
                                         href={link.href}
-                                        className="text-gray-400 text-sm hover:text-[#fecb00] transition-colors duration-200 flex items-center gap-1.5 group"
+                                        className="text-gray-400 text-[15px] hover:text-[#fecb00] transition-colors duration-200 flex items-center gap-2 group"
                                     >
-                                        <span className="w-1 h-1 rounded-full bg-gray-600 group-hover:bg-[#fecb00] transition-colors duration-200 flex-shrink-0" />
+                                        <span className="w-1.5 h-1.5 rounded-full bg-gray-600 group-hover:bg-[#fecb00] transition-colors duration-200 flex-shrink-0" />
                                         {link.label}
                                     </Link>
                                 </li>
@@ -127,13 +129,13 @@ const Footer = () => {
                         <h3 className="text-white text-[10px] font-semibold tracking-[2.5px] uppercase mb-5 pb-2.5 border-b border-white/10">
                             Our Offices
                         </h3>
-                        <div className="grid grid-cols-2 gap-x-6 gap-y-5">
+                        <div className="grid grid-cols-2 gap-x-4 gap-y-4">
                             {offices.map((office) => (
                                 <div key={office.title}>
-                                    <h4 className="text-[#fecb00] text-[10px] font-semibold uppercase tracking-widest mb-2">
+                                    <h4 className="text-[#fecb00] text-[10px] font-bold uppercase tracking-widest mb-2">
                                         {office.title}
                                     </h4>
-                                    <address className="not-italic text-gray-400 text-[13px] leading-[1.8]">
+                                    <address className="not-italic text-gray-300 text-[13px] leading-relaxed space-y-1">
                                         {office.lines.map((line) => (
                                             <span key={line} className="block">{line}</span>
                                         ))}
@@ -156,7 +158,7 @@ const Footer = () => {
                                         <path strokeLinecap="round" strokeLinejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                                     </svg>
                                 </div>
-                                <span className="text-gray-400 text-sm group-hover:text-[#fecb00] transition-colors">
+                                <span className="text-gray-300 text-[15px] group-hover:text-[#fecb00] transition-colors font-medium">
                                     info@divvysolar.in
                                 </span>
                             </a>
@@ -168,7 +170,7 @@ const Footer = () => {
                                         <path strokeLinecap="round" strokeLinejoin="round" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
                                     </svg>
                                 </div>
-                                <span className="text-gray-400 text-sm group-hover:text-[#fecb00] transition-colors">
+                                <span className="text-gray-300 text-[15px] group-hover:text-[#fecb00] transition-colors font-medium">
                                     +91-9254969114
                                 </span>
                             </a>
@@ -180,7 +182,7 @@ const Footer = () => {
                                         <path strokeLinecap="round" strokeLinejoin="round" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9" />
                                     </svg>
                                 </div>
-                                <span className="text-gray-400 text-sm group-hover:text-[#fecb00] transition-colors">
+                                <span className="text-gray-300 text-[15px] group-hover:text-[#fecb00] transition-colors font-medium">
                                     www.divvysolar.in
                                 </span>
                             </a>
