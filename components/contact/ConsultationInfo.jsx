@@ -5,23 +5,23 @@ const ConsultationInfo = () => {
         {
             type: 'Head Office',
             city: 'Hisar, HR',
-            address: 'Lower Ground, SJ Tower, Sector-13, Dabra Road',
+            address: 'Lower Ground, SJ Tower, Sector-13, Dabra Road (Warehouse) 125001',
             url: 'https://maps.app.goo.gl/YdQvZ4XaNH6iUFii6'
         },
         {
             type: 'CO-Office',
             city: 'Gurgaon, HR',
-            address: 'Unit-859, Tower-B1, Spaze I-Tech Park, Sector 49',
+            address: 'Unit-859, Tower-B1, Spaze I-Tech Park, Sector 49 122018',
             url: 'https://maps.app.goo.gl/2K1BLD2jJBGLqhmk7'
         },
         {
             type: 'Sales Office',
             city: 'Mohali, PB',
-            address: '626, 1st Floor, Opp. Franco Hotel, Sec-55',
+            address: '626, 1st Floor, Opp. Franco Hotel, Sec-55 140501',
             url: 'https://maps.app.goo.gl/nhdbCxZFQiqju9n59'
         },
         {
-            type: 'Support Center',
+            type: 'Regional Office',
             city: 'Ludhiana, PB',
             address: 'Plot no 14 Phase No -VII (ADJ) Focal Point Near Munish Forging Gobindgarh,Ludhiana (Punjab) 141003',
             url: 'https://www.google.com/maps/search/?api=1&query=Plot+no+14+Phase+VII+Focal+Point+Ludhiana+Munish+Forging'
