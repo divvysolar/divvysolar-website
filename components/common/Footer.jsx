@@ -17,21 +17,21 @@ const Footer = () => {
     const offices = [
         {
             title: 'Head Office',
-            lines: ['Lower Ground, SJ Tower, Sec-13,', 'Dabra Road, Hisar-125001'],
+            lines: ['Lower Ground, SJ Tower, Sec-13,', 'Dabra Road, Hisar (Warehouse) 125001'],
         },
         {
             title: 'CO-Office',
-            lines: ['Unit-859, Tower-B1, 8th Floor,', 'Spaze I-Tech Park, Gurgaon'],
+            lines: ['Unit-859, Tower-B1, 8th Floor,', 'Spaze I-Tech Park, Gurgaon 122018'],
         },
         {
             title: 'Sales Office',
-            lines: ['626, 1st Floor, Opp Franco Hotel,', 'Sec-55, Phase-I, Mohali, Punjab'],
+            lines: ['626, 1st Floor, Opp Franco Hotel,', 'Sec-55, Phase-I, Mohali 140501'],
         },
         {
-            title: 'Support Center',
+            title: 'Regional Office',
             lines: [
-                'Plot no 14, Phase-VII (ADJ)',
-                'Focal Point, Gobindgarh, Ludhiana'
+                'Plot no 14, Phase-VII (ADJ), Focal Point',
+                'Gobindgarh, Ludhiana 411010'
             ],
         },
     ];
