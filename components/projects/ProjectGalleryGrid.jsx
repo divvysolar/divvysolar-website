@@ -4,6 +4,13 @@ import { useState } from "react";
 import Image from "next/image";
 
 const GALLERY_PROJECTS = [
+    { id: "hisar-chaudhariwas", city: "Chaudhariwas, Hisar", state: "Haryana", capacity: "900 kW", type: "Utility Solar Grid", builder: "Divvy Solar EPC", status: "Live & Operational", image: "/900 kw chaudhariwas hisar haryana.jpeg", },
+    { id: "hisar-ramsons", city: "Sector 27/28, Hisar", state: "Haryana", capacity: "320 kW", type: "Industrial Solar Plant", builder: "Divvy Solar EPC", status: "Live & Operational", image: "/ramsons.jpeg", },
+    { id: "umra-hansi", city: "Umra, Hansi", state: "Haryana", capacity: "2.5 MW", type: "Village Solar Plant", builder: "Divvy Solar EPC", status: "Live & Operational", image: "/2.5 MW village umra hansi harayan.jpeg", },
+    { id: "khudiya-rajasthan", city: "Khudiya, Chirawa", state: "Rajasthan", capacity: "6.0 MW", type: "Utility Scale Solar", builder: "Divvy Solar EPC", status: "Live & Operational", image: "/har1_main.jpeg", },
+    { id: "hisar-sec911", city: "Sector 9-11, Hisar", state: "Haryana", capacity: "400 kW", type: "Commercial Solar Plant", builder: "Divvy Solar EPC", status: "Live & Operational", image: "/sec 9 11 hisar 400kw .jpeg", },
+    { id: "ludhiana-golden-plywood", city: "Hambran, Ludhiana", state: "Punjab", capacity: "500 kW", type: "Industrial Solar Plant", builder: "Divvy Solar EPC", status: "Live & Operational", image: "/500 kw  golden plywood hmbran ludhiana.jpeg", },
+    { id: "bhiwani-barwa", city: "Barwa, Bhiwani", state: "Haryana", capacity: "300 kW", type: "Commercial Solar Plant", builder: "Divvy Solar EPC", status: "Live & Operational", image: "/300 kw barwa bhiwani harayana.jpeg", },
     { id: "panipat-mega", city: "Panipat", state: "Haryana", capacity: "45.0 MW", type: "Utility Scale Solar Park", builder: "Divvy Solar EPC", status: "Live & Operational", image: "/mega1.jpeg", },
     { id: "hisar-industrial", city: "Hisar", state: "Haryana", capacity: "12.5 MW", type: "Industrial Power Grid", builder: "Divvy Solar EPC", status: "Live & Operational", image: "/mega2.jpeg", },
     { id: "mohali-utility", city: "Mohali", state: "Punjab", capacity: "8.2 MW", type: "Commercial Utility Grid", builder: "Divvy Solar EPC", status: "Live & Operational", image: "/mega3.jpeg", },
@@ -11,11 +18,7 @@ const GALLERY_PROJECTS = [
     { id: "amritsar-park", city: "Amritsar", state: "Punjab", capacity: "50.0 MW", type: "Solar Power Station", builder: "Divvy Solar EPC", status: "Live & Operational", image: "/mega5.jpeg", },
     { id: "gurgaon-tech", city: "Gurgaon", state: "Haryana", capacity: "18.5 MW", type: "Corporate Energy Hub", builder: "Divvy Solar EPC", status: "Live & Operational", image: "/mega6.jpeg", },
     { id: "rohtak-grid", city: "Rohtak", state: "Haryana", capacity: "14.2 MW", type: "State Grid Project", builder: "Divvy Solar EPC", status: "Live & Operational", image: "/mega7.jpeg", },
-    { id: "bhiwani-mega", city: "Bhiwani", state: "Haryana", capacity: "32.0 MW", type: "Regional Solar Park", builder: "Divvy Solar EPC", status: "Live & Operational", image: "/mega8.jpeg", },
-    { id: "karnal-util", city: "Karnal", state: "Haryana", capacity: "15.5 MW", type: "Utility Solar Grid", builder: "Divvy Solar EPC", status: "Live & Operational", image: "/utility_hero_4k.png", },
-    { id: "jalandhar-ind", city: "Jalandhar", state: "Punjab", capacity: "9.8 MW", type: "Industrial Rooftop Cluster", builder: "Divvy Solar EPC", status: "Live & Operational", image: "/utility_intro_4k.png", },
-    { id: "haryana-border", city: "Sirsa", state: "Haryana", capacity: "22.5 MW", type: "Border-Grid Integration", builder: "Divvy Solar EPC", status: "Live & Operational", image: "/projects_main_v1.jpeg", },
-    { id: "punjab-east", city: "Patiala", state: "Punjab", capacity: "11.0 MW", type: "Agri-Solar Utility", builder: "Divvy Solar EPC", status: "Live & Operational", image: "/about_us_main_4k.png", }
+    { id: "bhiwani-mega", city: "Bhiwani", state: "Haryana", capacity: "32.0 MW", type: "Regional Solar Park", builder: "Divvy Solar EPC", status: "Live & Operational", image: "/mega8.jpeg", }
 ];
 
 export default function ProjectGalleryGrid() {

@@ -73,10 +73,10 @@ export default function AboutPage() {
                                 <div className="absolute top-0 right-0 w-full h-1 bg-gradient-to-r from-transparent via-accent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
                                 <div className="flex items-center gap-3 mb-3">
                                     <div className="relative w-14 h-14 rounded-full overflow-hidden shadow-lg border-4 border-white flex-shrink-0">
-                                        <Image src="/dinesh_sir_img.jpeg" alt="Dinesh Ahuja - Director of Divvy Solar" fill className="object-cover" sizes="56px" />
+                                        <Image src="/dinesh_sir_img.jpeg" alt="Dinesh Aneja - Director of Divvy Solar" fill className="object-cover" sizes="56px" />
                                     </div>
                                     <div>
-                                        <h4 className="text-lg md:text-xl font-black text-primary leading-tight">DINESH AHUJA</h4>
+                                        <h4 className="text-lg md:text-xl font-black text-primary leading-tight">DINESH ANEJA</h4>
                                         <p className="text-accent font-bold text-xs tracking-widest uppercase mt-0.5">Chief Executive Officer</p>
                                     </div>
                                 </div>

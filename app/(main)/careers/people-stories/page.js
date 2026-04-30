@@ -8,7 +8,7 @@ export const metadata = {
 const STORIES = [
     {
         id: 1,
-        name: "Dinesh Ahuja",
+        name: "Dinesh Aneja",
         role: "Chief Executive Officer",
         quote: "We are not just installing solar panels; we are building a sustainable Divvy Solar was built on a simple belief,that clean energy should not be a choice, but a standard. Every installation we deliver is a step toward a more self-reliant and sustainable future legacy for future generations.",
         story: "CEO of Divvy Solar, envisioned a future where businesses and communities take control of their energy with confidence. What began as a mission to make solar more accessible has evolved into a company delivering reliable, high-quality EPC solutions. Driven by purpose and long-term vision, he has shaped Divvy Solar into a trusted partner for a cleaner, more efficient future and balancing innovation, trust, and execution to drive sustained growth and meaningful impact.",
