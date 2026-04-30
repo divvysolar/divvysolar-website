@@ -4,13 +4,15 @@ import { useState } from "react";
 import Image from "next/image";
 
 const GALLERY_PROJECTS = [
-    { id: "hisar-chaudhariwas", city: "Chaudhariwas, Hisar", state: "Haryana", capacity: "900 kW", type: "Utility Solar Grid", builder: "Divvy Solar EPC", status: "Live & Operational", image: "/900 kw chaudhariwas hisar haryana.jpeg", },
-    { id: "hisar-ramsons", city: "Sector 27/28, Hisar", state: "Haryana", capacity: "320 kW", type: "Industrial Solar Plant", builder: "Divvy Solar EPC", status: "Live & Operational", image: "/ramsons.jpeg", },
-    { id: "umra-hansi", city: "Umra, Hansi", state: "Haryana", capacity: "2.5 MW", type: "Village Solar Plant", builder: "Divvy Solar EPC", status: "Live & Operational", image: "/2.5 MW village umra hansi harayan.jpeg", },
-    { id: "khudiya-rajasthan", city: "Khudiya, Chirawa", state: "Rajasthan", capacity: "6.0 MW", type: "Utility Scale Solar", builder: "Divvy Solar EPC", status: "Live & Operational", image: "/har1_main.jpeg", },
-    { id: "hisar-sec911", city: "Sector 9-11, Hisar", state: "Haryana", capacity: "400 kW", type: "Commercial Solar Plant", builder: "Divvy Solar EPC", status: "Live & Operational", image: "/sec 9 11 hisar 400kw .jpeg", },
-    { id: "ludhiana-golden-plywood", city: "Hambran, Ludhiana", state: "Punjab", capacity: "500 kW", type: "Industrial Solar Plant", builder: "Divvy Solar EPC", status: "Live & Operational", image: "/500 kw  golden plywood hmbran ludhiana.jpeg", },
-    { id: "bhiwani-barwa", city: "Barwa, Bhiwani", state: "Haryana", capacity: "300 kW", type: "Commercial Solar Plant", builder: "Divvy Solar EPC", status: "Live & Operational", image: "/300 kw barwa bhiwani harayana.jpeg", }
+    { id: "hisar-chaudhariwas", city: "Chaudhariwas, Hisar", state: "Haryana", capacity: "900 kW", type: "Utility Scale Project", builder: "Divvy Solar EPC", status: "Live & Operational", image: "/900 kw chaudhariwas hisar haryana.jpeg", },
+    { id: "hisar-ramsons", city: "Sector 27/28, Hisar", state: "Haryana", capacity: "320 kW", type: "Industrial Scale Project", builder: "Divvy Solar EPC", status: "Live & Operational", image: "/WhatsApp Image 2026-04-22 at 15.22.45.jpeg", },
+    { id: "hansi-fortune-poultry", city: "Ramayan, Hansi", state: "Haryana", capacity: "250 kW", type: "Industrial Scale Project", builder: "Divvy Solar EPC", status: "Live & Operational", image: "/ramsons.jpeg", },
+    { id: "umra-hansi", city: "Umra, Hansi", state: "Haryana", capacity: "2.5 MW", type: "Utility Scale Project", builder: "Divvy Solar EPC", status: "Live & Operational", image: "/2.5 MW village umra hansi harayan.jpeg", },
+    { id: "khudiya-rajasthan", city: "Khudiya, Chirawa", state: "Rajasthan", capacity: "6.0 MW", type: "Utility Scale Project", builder: "Divvy Solar EPC", status: "Live & Operational", image: "/har1_main.jpeg", },
+    { id: "hisar-sec911", city: "Sector 9-11, Hisar", state: "Haryana", capacity: "400 kW", type: "Industrial Scale Project", builder: "Divvy Solar EPC", status: "Live & Operational", image: "/sec 9 11 hisar 400kw .jpeg", },
+    { id: "ludhiana-golden-plywood", city: "Hambran, Ludhiana", state: "Punjab", capacity: "500 kW", type: "Industrial Scale Project", builder: "Divvy Solar EPC", status: "Live & Operational", image: "/500 kw  golden plywood hmbran ludhiana.jpeg", },
+    { id: "hansi-surya-polyflex", city: "Hansi, Hisar", state: "Haryana", capacity: "500 kW", type: "Industrial Scale Project", builder: "Divvy Solar EPC", status: "Live & Operational", image: "/surya polyflex 500 kw hansi  .jpeg", },
+    { id: "bhiwani-barwa", city: "Barwa, Bhiwani", state: "Haryana", capacity: "300 kW", type: "Industrial Scale Project", builder: "Divvy Solar EPC", status: "Live & Operational", image: "/300 kw barwa bhiwani harayana.jpeg", }
 ];
 
 export default function ProjectGalleryGrid() {
