@@ -10,15 +10,7 @@ const GALLERY_PROJECTS = [
     { id: "khudiya-rajasthan", city: "Khudiya, Chirawa", state: "Rajasthan", capacity: "6.0 MW", type: "Utility Scale Solar", builder: "Divvy Solar EPC", status: "Live & Operational", image: "/har1_main.jpeg", },
     { id: "hisar-sec911", city: "Sector 9-11, Hisar", state: "Haryana", capacity: "400 kW", type: "Commercial Solar Plant", builder: "Divvy Solar EPC", status: "Live & Operational", image: "/sec 9 11 hisar 400kw .jpeg", },
     { id: "ludhiana-golden-plywood", city: "Hambran, Ludhiana", state: "Punjab", capacity: "500 kW", type: "Industrial Solar Plant", builder: "Divvy Solar EPC", status: "Live & Operational", image: "/500 kw  golden plywood hmbran ludhiana.jpeg", },
-    { id: "bhiwani-barwa", city: "Barwa, Bhiwani", state: "Haryana", capacity: "300 kW", type: "Commercial Solar Plant", builder: "Divvy Solar EPC", status: "Live & Operational", image: "/300 kw barwa bhiwani harayana.jpeg", },
-    { id: "panipat-mega", city: "Panipat", state: "Haryana", capacity: "45.0 MW", type: "Utility Scale Solar Park", builder: "Divvy Solar EPC", status: "Live & Operational", image: "/mega1.jpeg", },
-    { id: "hisar-industrial", city: "Hisar", state: "Haryana", capacity: "12.5 MW", type: "Industrial Power Grid", builder: "Divvy Solar EPC", status: "Live & Operational", image: "/mega2.jpeg", },
-    { id: "mohali-utility", city: "Mohali", state: "Punjab", capacity: "8.2 MW", type: "Commercial Utility Grid", builder: "Divvy Solar EPC", status: "Live & Operational", image: "/mega3.jpeg", },
-    { id: "ludhiana-mega", city: "Ludhiana", state: "Punjab", capacity: "25.0 MW", type: "Mega Industrial Cluster", builder: "Divvy Solar EPC", status: "Live & Operational", image: "/mega4.jpeg", },
-    { id: "amritsar-park", city: "Amritsar", state: "Punjab", capacity: "50.0 MW", type: "Solar Power Station", builder: "Divvy Solar EPC", status: "Live & Operational", image: "/mega5.jpeg", },
-    { id: "gurgaon-tech", city: "Gurgaon", state: "Haryana", capacity: "18.5 MW", type: "Corporate Energy Hub", builder: "Divvy Solar EPC", status: "Live & Operational", image: "/mega6.jpeg", },
-    { id: "rohtak-grid", city: "Rohtak", state: "Haryana", capacity: "14.2 MW", type: "State Grid Project", builder: "Divvy Solar EPC", status: "Live & Operational", image: "/mega7.jpeg", },
-    { id: "bhiwani-mega", city: "Bhiwani", state: "Haryana", capacity: "32.0 MW", type: "Regional Solar Park", builder: "Divvy Solar EPC", status: "Live & Operational", image: "/mega8.jpeg", }
+    { id: "bhiwani-barwa", city: "Barwa, Bhiwani", state: "Haryana", capacity: "300 kW", type: "Commercial Solar Plant", builder: "Divvy Solar EPC", status: "Live & Operational", image: "/300 kw barwa bhiwani harayana.jpeg", }
 ];
 
 export default function ProjectGalleryGrid() {
