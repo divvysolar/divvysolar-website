@@ -1,4 +1,5 @@
 import Image from "next/image";
+import PeopleStories from "@/components/careers/PeopleStories";
 
 export const metadata = {
     title: 'Life at Divvy Solar | Divvy Solar',
@@ -97,6 +98,8 @@ export default function LifeAtDivvyPage() {
                     ))}
                 </div>
             </div>
+            
+            <PeopleStories />
         </main>
     );
 }
