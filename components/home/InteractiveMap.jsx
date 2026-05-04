@@ -2,6 +2,7 @@
 
 import { useState, useMemo } from "react";
 import Image from "next/image";
+import { SunIcon, BoltIcon } from "@heroicons/react/24/outline";
 
 const PROJECTS = [
     // --- PUNJAB REGION ---
@@ -11,9 +12,7 @@ const PROJECTS = [
         x: "28.5%", y: "21.5%",
         capacity: "50.0 MW", type: "Mega Solar Power Station",
         builder: "Divvy Solar EPC Team", builderRole: "Lead EPC Partner",
-        completedYear: "2024", panelsInstalled: "95,000+", status: "Live & Operational",
-        image: "/mega5.jpeg", pinColor: "#FECB00", region: "Punjab",
-        googleMapLink: "/projects/punjab"
+        completedYear: "2024", panelsInstalled: "95,000+", status: "Live & Operational", pinColor: "#FECB00", region: "Punjab",
     },
     {
         id: "pun-ludhiana",
@@ -21,9 +20,7 @@ const PROJECTS = [
         x: "30.0%", y: "23.5%",
         capacity: "25.0 MW", type: "Mega Industrial Cluster",
         builder: "Divvy Solar EPC Team", builderRole: "Lead EPC Partner",
-        completedYear: "2024", panelsInstalled: "48,000+", status: "Live & Operational",
-        image: "/mega4.jpeg", pinColor: "#FECB00", region: "Punjab",
-        googleMapLink: "/projects/punjab"
+        completedYear: "2024", panelsInstalled: "48,000+", status: "Live & Operational", pinColor: "#FECB00", region: "Punjab",
     },
     {
         id: "pun-mohali",
@@ -31,9 +28,7 @@ const PROJECTS = [
         x: "31.8%", y: "24.2%",
         capacity: "8.2 MW", type: "Commercial Utility Grid",
         builder: "Divvy Solar EPC Team", builderRole: "Lead EPC Partner",
-        completedYear: "2024", panelsInstalled: "16,000+", status: "Live & Operational",
-        image: "/mega3.jpeg", pinColor: "#FECB00", region: "Punjab",
-        googleMapLink: "/projects/punjab"
+        completedYear: "2024", panelsInstalled: "16,000+", status: "Live & Operational", pinColor: "#FECB00", region: "Punjab",
     },
     {
         id: "pun-jalandhar",
@@ -41,9 +36,7 @@ const PROJECTS = [
         x: "29.2%", y: "22.3%",
         capacity: "9.8 MW", type: "Industrial Rooftop Cluster",
         builder: "Divvy Solar EPC Team", builderRole: "Lead EPC Partner",
-        completedYear: "2024", panelsInstalled: "18,500+", status: "Live & Operational",
-        image: "/utility_intro_4k.png", pinColor: "#FECB00", region: "Punjab",
-        googleMapLink: "/projects/punjab"
+        completedYear: "2024", panelsInstalled: "18,500+", status: "Live & Operational", pinColor: "#FECB00", region: "Punjab",
     },
     {
         id: "pun-patiala",
@@ -51,9 +44,7 @@ const PROJECTS = [
         x: "31.0%", y: "25.5%",
         capacity: "11.0 MW", type: "Agri-Solar Utility",
         builder: "Divvy Solar EPC Team", builderRole: "Lead EPC Partner",
-        completedYear: "2024", panelsInstalled: "21,000+", status: "Live & Operational",
-        image: "/about_us_main_4k.png", pinColor: "#FECB00", region: "Punjab",
-        googleMapLink: "/projects/punjab"
+        completedYear: "2024", panelsInstalled: "21,000+", status: "Live & Operational", pinColor: "#FECB00", region: "Punjab",
     },
     {
         id: "pun-bathinda",
@@ -61,9 +52,7 @@ const PROJECTS = [
         x: "28.2%", y: "25.8%",
         capacity: "14.5 MW", type: "Industrial Solar Plant",
         builder: "Divvy Solar EPC Team", builderRole: "Lead EPC Partner",
-        completedYear: "2024", panelsInstalled: "28,000+", status: "Live & Operational",
-        image: "/uti1_main.jpeg", pinColor: "#FECB00", region: "Punjab",
-        googleMapLink: "/projects/punjab"
+        completedYear: "2024", panelsInstalled: "28,000+", status: "Live & Operational", pinColor: "#FECB00", region: "Punjab",
     },
     {
         id: "pun-ferozepur",
@@ -71,9 +60,7 @@ const PROJECTS = [
         x: "27.5%", y: "23.5%",
         capacity: "5.5 MW", type: "Border-Grid Utility",
         builder: "Divvy Solar EPC Team", builderRole: "Lead EPC Partner",
-        completedYear: "2024", panelsInstalled: "10,500+", status: "Live & Operational",
-        image: "/mega2.jpeg", pinColor: "#FECB00", region: "Punjab",
-        googleMapLink: "/projects/punjab"
+        completedYear: "2024", panelsInstalled: "10,500+", status: "Live & Operational", pinColor: "#FECB00", region: "Punjab",
     },
     {
         id: "pun-moga",
@@ -81,9 +68,7 @@ const PROJECTS = [
         x: "28.8%", y: "24.0%",
         capacity: "4.2 MW", type: "Warehouse Solar Grid",
         builder: "Divvy Solar EPC Team", builderRole: "Lead EPC Partner",
-        completedYear: "2024", panelsInstalled: "8,000+", status: "Live & Operational",
-        image: "/mega7.jpeg", pinColor: "#FECB00", region: "Punjab",
-        googleMapLink: "/projects/punjab"
+        completedYear: "2024", panelsInstalled: "8,000+", status: "Live & Operational", pinColor: "#FECB00", region: "Punjab",
     },
 
     // --- HARYANA REGION ---
@@ -93,9 +78,7 @@ const PROJECTS = [
         x: "33.0%", y: "28.8%",
         capacity: "45.0 MW", type: "Utility Scale Solar Park",
         builder: "Divvy Solar EPC Team", builderRole: "Lead EPC Partner",
-        completedYear: "2024", panelsInstalled: "82,000+", status: "Live & Operational",
-        image: "/mega1.jpeg", pinColor: "#00e5ff", region: "Haryana",
-        googleMapLink: "/projects/haryana"
+        completedYear: "2024", panelsInstalled: "82,000+", status: "Live & Operational", pinColor: "#00e5ff", region: "Haryana",
     },
     {
         id: "har-hisar",
@@ -103,9 +86,7 @@ const PROJECTS = [
         x: "29.3%", y: "29.6%",
         capacity: "12.5 MW", type: "Industrial Power Grid",
         builder: "Divvy Solar EPC Team", builderRole: "Lead EPC Partner",
-        completedYear: "2024", panelsInstalled: "24,000+", status: "Live & Operational",
-        image: "/mega2.jpeg", pinColor: "#00e5ff", region: "Haryana",
-        googleMapLink: "/projects/haryana"
+        completedYear: "2024", panelsInstalled: "24,000+", status: "Live & Operational", pinColor: "#00e5ff", region: "Haryana",
     },
     {
         id: "har-gurgaon",
@@ -113,9 +94,7 @@ const PROJECTS = [
         x: "33.2%", y: "31.7%",
         capacity: "18.5 MW", type: "Corporate Energy Hub",
         builder: "Divvy Solar EPC Team", builderRole: "Lead EPC Partner",
-        completedYear: "2024", panelsInstalled: "35,000+", status: "Live & Operational",
-        image: "/mega6.jpeg", pinColor: "#00e5ff", region: "Haryana",
-        googleMapLink: "/projects/haryana"
+        completedYear: "2024", panelsInstalled: "35,000+", status: "Live & Operational", pinColor: "#00e5ff", region: "Haryana",
     },
     {
         id: "har-bhiwani",
@@ -123,9 +102,7 @@ const PROJECTS = [
         x: "30.5%", y: "30.5%",
         capacity: "32.0 MW", type: "Regional Solar Park",
         builder: "Divvy Solar EPC Team", builderRole: "Lead EPC Partner",
-        completedYear: "2024", panelsInstalled: "61,000+", status: "Live & Operational",
-        image: "/mega8.jpeg", pinColor: "#00e5ff", region: "Haryana",
-        googleMapLink: "/projects/haryana"
+        completedYear: "2024", panelsInstalled: "61,000+", status: "Live & Operational", pinColor: "#00e5ff", region: "Haryana",
     },
     {
         id: "har-sirsa",
@@ -133,9 +110,7 @@ const PROJECTS = [
         x: "26.8%", y: "28.8%",
         capacity: "22.5 MW", type: "Border-Grid Integration",
         builder: "Divvy Solar EPC Team", builderRole: "Lead EPC Partner",
-        completedYear: "2024", panelsInstalled: "43,000+", status: "Live & Operational",
-        image: "/projects_main_v1.jpeg", pinColor: "#00e5ff", region: "Haryana",
-        googleMapLink: "/projects/haryana"
+        completedYear: "2024", panelsInstalled: "43,000+", status: "Live & Operational", pinColor: "#00e5ff", region: "Haryana",
     },
     {
         id: "har-rohtak",
@@ -143,9 +118,7 @@ const PROJECTS = [
         x: "32.0%", y: "30.4%",
         capacity: "14.2 MW", type: "State Grid Project",
         builder: "Divvy Solar EPC Team", builderRole: "Lead EPC Partner",
-        completedYear: "2024", panelsInstalled: "27,000+", status: "Live & Operational",
-        image: "/mega7.jpeg", pinColor: "#00e5ff", region: "Haryana",
-        googleMapLink: "/projects/haryana"
+        completedYear: "2024", panelsInstalled: "27,000+", status: "Live & Operational", pinColor: "#00e5ff", region: "Haryana",
     },
     {
         id: "har-karnal",
@@ -153,9 +126,7 @@ const PROJECTS = [
         x: "33.1%", y: "27.5%",
         capacity: "15.5 MW", type: "Utility Solar Grid",
         builder: "Divvy Solar EPC Team", builderRole: "Lead EPC Partner",
-        completedYear: "2024", panelsInstalled: "29,000+", status: "Live & Operational",
-        image: "/utility_hero_4k.png", pinColor: "#00e5ff", region: "Haryana",
-        googleMapLink: "/projects/haryana"
+        completedYear: "2024", panelsInstalled: "29,000+", status: "Live & Operational", pinColor: "#00e5ff", region: "Haryana",
     },
     {
         id: "har-sonipat",
@@ -163,9 +134,7 @@ const PROJECTS = [
         x: "33.5%", y: "30.0%",
         capacity: "7.5 MW", type: "Commercial Solar Cluster",
         builder: "Divvy Solar EPC Team", builderRole: "Lead EPC Partner",
-        completedYear: "2024", panelsInstalled: "14,000+", status: "Live & Operational",
-        image: "/uti2_main.jpeg", pinColor: "#00e5ff", region: "Haryana",
-        googleMapLink: "/projects/haryana"
+        completedYear: "2024", panelsInstalled: "14,000+", status: "Live & Operational", pinColor: "#00e5ff", region: "Haryana",
     },
     {
         id: "har-faridabad",
@@ -173,9 +142,7 @@ const PROJECTS = [
         x: "34.2%", y: "32.5%",
         capacity: "12.0 MW", type: "Industrial Rooftop Grid",
         builder: "Divvy Solar EPC Team", builderRole: "Lead EPC Partner",
-        completedYear: "2024", panelsInstalled: "23,000+", status: "Live & Operational",
-        image: "/hero-main-page.jpeg", pinColor: "#00e5ff", region: "Haryana",
-        googleMapLink: "/projects/haryana"
+        completedYear: "2024", panelsInstalled: "23,000+", status: "Live & Operational", pinColor: "#00e5ff", region: "Haryana",
     },
     {
         id: "har-ambala",
@@ -183,9 +150,7 @@ const PROJECTS = [
         x: "33.5%", y: "24.5%",
         capacity: "14.0 MW", type: "Industrial Grid Hub",
         builder: "Divvy Solar EPC Team", builderRole: "Lead EPC Partner",
-        completedYear: "2023", panelsInstalled: "26,000+", status: "Live & Operational",
-        image: "/utility_hero_4k.png", pinColor: "#00e5ff", region: "Haryana",
-        googleMapLink: "/projects/haryana"
+        completedYear: "2023", panelsInstalled: "26,000+", status: "Live & Operational", pinColor: "#00e5ff", region: "Haryana",
     },
     {
         id: "har-rewari",
@@ -193,9 +158,7 @@ const PROJECTS = [
         x: "31.5%", y: "32.5%",
         capacity: "3.5 MW", type: "MSME Solar Solution",
         builder: "Divvy Solar EPC Team", builderRole: "Lead EPC Partner",
-        completedYear: "2024", panelsInstalled: "6,500+", status: "Live & Operational",
-        image: "/mega4.jpeg", pinColor: "#00e5ff", region: "Haryana",
-        googleMapLink: "/projects/haryana"
+        completedYear: "2024", panelsInstalled: "6,500+", status: "Live & Operational", pinColor: "#00e5ff", region: "Haryana",
     },
     {
         id: "har-jind",
@@ -203,9 +166,7 @@ const PROJECTS = [
         x: "31.5%", y: "29.0%",
         capacity: "6.2 MW", type: "Agri-Utility Solar",
         builder: "Divvy Solar EPC Team", builderRole: "Lead EPC Partner",
-        completedYear: "2024", panelsInstalled: "11,800+", status: "Live & Operational",
-        image: "/mega2.jpeg", pinColor: "#00e5ff", region: "Haryana",
-        googleMapLink: "/projects/haryana"
+        completedYear: "2024", panelsInstalled: "11,800+", status: "Live & Operational", pinColor: "#00e5ff", region: "Haryana",
     },
 
     // --- DELHI REGION ---
@@ -215,9 +176,7 @@ const PROJECTS = [
         x: "33.8%", y: "31.2%",
         capacity: "2.5 MW", type: "Government Complex Solar",
         builder: "Divvy Solar EPC Team", builderRole: "Lead EPC Partner",
-        completedYear: "2024", panelsInstalled: "4,800+", status: "Live & Operational",
-        image: "/mega6.jpeg", pinColor: "#ef4444", region: "Delhi",
-        googleMapLink: "https://www.google.com/maps/@28.6139,77.2090,200m/data=!3m1!1e3"
+        completedYear: "2024", panelsInstalled: "4,800+", status: "Live & Operational", pinColor: "#ef4444", region: "Delhi",
     },
     {
         id: "del-dwarka",
@@ -225,9 +184,7 @@ const PROJECTS = [
         x: "33.2%", y: "31.2%",
         capacity: "1.8 MW", type: "Residential Society Microgrid",
         builder: "Divvy Solar EPC Team", builderRole: "Lead EPC Partner",
-        completedYear: "2024", panelsInstalled: "3,500+", status: "Live & Operational",
-        image: "/mega1.jpeg", pinColor: "#ef4444", region: "Delhi",
-        googleMapLink: "https://www.google.com/maps/@28.5823,77.0500,200m/data=!3m1!1e3"
+        completedYear: "2024", panelsInstalled: "3,500+", status: "Live & Operational", pinColor: "#ef4444", region: "Delhi",
     },
     {
         id: "del-north",
@@ -235,9 +192,7 @@ const PROJECTS = [
         x: "33.8%", y: "30.5%",
         capacity: "4.5 MW", type: "Industrial Institutional Solar",
         builder: "Divvy Solar EPC Team", builderRole: "Lead EPC Partner",
-        completedYear: "2024", panelsInstalled: "8,500+", status: "Live & Operational",
-        image: "/mega5.jpeg", pinColor: "#ef4444", region: "Delhi",
-        googleMapLink: "https://www.google.com/maps/@28.7041,77.1025,200m/data=!3m1!1e3"
+        completedYear: "2024", panelsInstalled: "8,500+", status: "Live & Operational", pinColor: "#ef4444", region: "Delhi",
     },
     {
         id: "del-south",
@@ -245,9 +200,7 @@ const PROJECTS = [
         x: "34.2%", y: "31.8%",
         capacity: "3.2 MW", type: "Commercial Corporate Solar",
         builder: "Divvy Solar EPC Team", builderRole: "Lead EPC Partner",
-        completedYear: "2024", panelsInstalled: "6,000+", status: "Live & Operational",
-        image: "/mega8.jpeg", pinColor: "#ef4444", region: "Delhi",
-        googleMapLink: "https://www.google.com/maps/@28.5355,77.2410,200m/data=!3m1!1e3"
+        completedYear: "2024", panelsInstalled: "6,000+", status: "Live & Operational", pinColor: "#ef4444", region: "Delhi",
     }
 ];
 
@@ -396,7 +349,6 @@ export default function InteractiveMap({
 
     const [selected, setSelected] = useState(data[0]);
     const [hovered, setHovered] = useState(null);
-    const [isZoomed, setIsZoomed] = useState(false);
 
     /* Runs ONCE on mount — zero cost on hover / click */
     const spreadPos = useMemo(() => computeSpreadPositions(data), [data]);
@@ -466,7 +418,6 @@ export default function InteractiveMap({
                                             onClick={(e) => {
                                                 e.preventDefault();
                                                 setSelected(p);
-                                                if (p.googleMapLink) window.open(p.googleMapLink, '_blank');
                                             }}
                                             onMouseEnter={() => setHovered(p.id)}
                                             onMouseLeave={() => setHovered(null)}
@@ -564,49 +515,44 @@ export default function InteractiveMap({
                         <div key={selected.id} className="rounded-3xl overflow-hidden sticky top-24"
                             style={{ border: "1.5px solid #e2e8f0", boxShadow: "0 8px 40px rgba(0,0,0,0.07)" }}>
 
-                            <div className="relative h-40 sm:h-48 lg:h-56 cursor-pointer group overflow-hidden"
-                                onClick={() => setIsZoomed(true)} title="Click to zoom image">
-                                <Image src={selected.image} alt={`${selected.city} project`} fill
-                                    sizes="(max-width: 768px) 100vw, 50vw"
-                                    className={`object-cover transition-transform duration-700 group-hover:scale-110 ${selected.rotate === 90 ? "rotate-90 scale-150" :
-                                        selected.rotate === -90 ? "-rotate-90 scale-150" : ""
-                                        }`} />
-                                <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-10 flex items-center justify-center backdrop-blur-[2px]">
-                                    <div className="bg-white/20 p-3 rounded-full backdrop-blur-md">
-                                        <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7" />
-                                        </svg>
-                                    </div>
+                            <div className="relative p-8 overflow-hidden bg-[#0f172a] text-white">
+                                <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(251,191,36,0.15),transparent_70%)]" />
+                                <div className="absolute top-0 right-0 p-6 opacity-10">
+                                    <SunIcon className="w-24 h-24 rotate-12" />
                                 </div>
-                                <div className="absolute inset-0 z-0" style={{ background: "linear-gradient(to top, rgba(15,23,42,0.8) 0%, transparent 50%)" }} />
+                                
+                                <div className="relative z-10">
+                                    <div className="flex items-center gap-3 mb-6">
+                                        <span className="text-[10px] font-black uppercase tracking-[0.2em] px-3 py-1.5 rounded-lg bg-amber-400 text-[#0f172a]">
+                                            {selected.region}
+                                        </span>
+                                        <span className="text-[10px] font-black uppercase tracking-[0.2em] px-3 py-1.5 rounded-lg bg-white/10 border border-white/10 backdrop-blur-md flex items-center gap-2">
+                                            <span className="relative flex h-2 w-2">
+                                                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+                                                <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
+                                            </span>
+                                            LIVE PROJECT
+                                        </span>
+                                    </div>
 
-                                <span className="absolute top-4 left-4 text-[10px] font-black uppercase tracking-widest px-3 py-1.5 rounded-full text-white flex items-center gap-1.5"
-                                    style={{ background: selected.pinColor + "cc", backdropFilter: "blur(6px)" }}>
-                                    <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
-                                    {selected.region}
-                                </span>
-
-                                <span className="absolute top-14 left-4 text-[10px] font-black uppercase tracking-widest px-3 py-1.5 rounded-full text-red-500 bg-red-500/10 border border-red-500/20 backdrop-blur-md flex items-center gap-2">
-                                    <span className="relative flex h-2 w-2">
-                                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
-                                        <span className="relative inline-flex rounded-full h-2 w-2 bg-red-500"></span>
-                                    </span>
-                                    LIVE PROJECT
-                                </span>
-
-                                <span className="absolute top-4 right-4 text-xs font-black px-3 py-1.5 rounded-full"
-                                    style={{ background: "rgba(255,255,255,0.9)", color: selected.pinColor }}>
-                                    ⚡ {selected.capacity}
-                                </span>
-
-                                <div className="absolute bottom-4 left-5">
-                                    <h3 className="text-3xl font-black text-white leading-tight">{selected.city}</h3>
-                                    <p className="text-white/60 text-sm">{selected.state}, India</p>
+                                    <h3 className="text-4xl font-black mb-2 leading-tight tracking-tight" style={{ fontFamily: 'Georgia, serif' }}>
+                                        {(selected.city.split('–')[1] || selected.city.split('-')[1] || selected.city).trim()}
+                                    </h3>
+                                    <div className="flex items-center gap-2 text-white/50 font-medium">
+                                        <span className="text-amber-400">●</span>
+                                        {(selected.city.split('–')[0] || selected.city.split('-')[0]).trim()} Project Site
+                                    </div>
                                 </div>
                             </div>
 
                             <div className="p-6 bg-white space-y-4">
-                                <p className="text-[11px] font-bold text-gray-400 uppercase tracking-[0.18em]">{selected.type}</p>
+                                <div className="flex items-center justify-between gap-4 mb-2">
+                                    <p className="text-[11px] font-bold text-gray-400 uppercase tracking-[0.18em]">{selected.type}</p>
+                                    <div className="px-3 py-1 bg-amber-100 rounded-full flex items-center gap-1.5">
+                                        <BoltIcon className="w-3 h-3 text-amber-600" />
+                                        <span className="text-[11px] font-black text-amber-700">{selected.capacity}</span>
+                                    </div>
+                                </div>
 
                                 <div className="grid grid-cols-2 gap-3">
                                     {[
@@ -651,28 +597,6 @@ export default function InteractiveMap({
                 </div>
             </div>
 
-            {/* Lightbox */}
-            {isZoomed && (
-                <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/90 p-4 sm:p-8 backdrop-blur-sm"
-                    onClick={() => setIsZoomed(false)}>
-                    <button className="absolute top-6 right-6 text-white bg-white/10 hover:bg-white/25 rounded-full p-2 transition-colors cursor-pointer"
-                        onClick={(e) => { e.stopPropagation(); setIsZoomed(false); }} autoFocus>
-                        <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                        </svg>
-                    </button>
-                    <div className="relative w-full max-w-5xl aspect-video rounded-2xl overflow-hidden shadow-2xl ring-1 ring-white/20"
-                        onClick={(e) => e.stopPropagation()}>
-                        <Image src={selected.image} alt={`${selected.city} Project Zoomed`} fill
-                            sizes="100vw"
-                            className="object-contain bg-black" quality={100} />
-                        <div className="absolute bottom-4 left-6 px-4 py-2 bg-black/60 backdrop-blur-md rounded-xl text-white">
-                            <p className="font-bold text-lg">{selected.city} Installation</p>
-                            <p className="text-sm text-white/70">{selected.status}</p>
-                        </div>
-                    </div>
-                </div>
-            )}
         </section>
     );
 }

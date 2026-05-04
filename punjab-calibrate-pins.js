@@ -77,10 +77,8 @@ Object.entries(groups).forEach(([cc, entries]) => {
         const cp = parseFloat(e.cap);
         const panels = Math.ceil(cp * 3);
         const pinId = `${cc}-${String(idCount).padStart(2, '0')}`;
-        const mapLink = `https://www.google.com/maps/search/${encodeURIComponent(e.name + ' ' + city.name + ' Punjab')}`;
-
         pins.push(
-            `    { id: "${pinId}", city: "${city.name} \u2013 ${e.name.replace(/"/g, '\\"')}", state: "Punjab", x: "${x}%", y: "${y}%", capacity: "${cp} KW", type: "${type}", builder: "Divvy Solar EPC", builderRole: "Lead EPC Partner", completedYear: "${e.yr}", panelsInstalled: "${panels}+", status: "Operational", image: "${city.img}", pinColor: "#2dd4bf", region: "Punjab", googleMapLink: "${mapLink}" },`
+            `    { id: "${pinId}", city: "${city.name} \u2013 ${e.name.replace(/"/g, '\\"')}", state: "Punjab", x: "${x}%", y: "${y}%", capacity: "${cp} KW", type: "${type}", builder: "Divvy Solar EPC", builderRole: "Lead EPC Partner", completedYear: "${e.yr}", panelsInstalled: "${panels}+", status: "Operational", pinColor: "#2dd4bf", region: "Punjab" },`
         );
         idCount++;
     });
