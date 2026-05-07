@@ -60,11 +60,11 @@ const blogs = [
 <p>Traditional power generation often requires large amounts of water for cooling; however, PV systems require minimal water. Solar power diminishes the greenhouse effect responsible for global warming — making it the most environmentally responsible energy solution available today.</p>
 
 <h3>Why Choose Divvy Solar?</h3>
-<p>Over the last few years, Divvy Solar has established itself as one of the best EPC providers in Haryana, Punjab, and Chandigarh, with over 16,000 successful projects. We offer:</p>
+<p>Over the last few years, Divvy Solar has established itself as one of the best EPC providers in Haryana, Punjab, and Chandigarh, with over  We offer:</p>
 <ul>
     <li><strong>End-to-End Project Management:</strong> From site assessment to installation and after-sales support.</li>
-    <li><strong>Proven Track Record:</strong> 16,000+ successful solar installations across North India.</li>
-    <li><strong>PPA Options:</strong> Predictable energy pricing with zero upfront investment.</li>
+    <li><strong>Proven Track Record:</strong> 1,000+ successful solar installations across North India.</li>
+    <li><strong>PPA Options:</strong> Predictable energy pricing with minimal upfront cost.</li>
     <li><strong>Expert Team:</strong> Certified engineers and installation specialists.</li>
 </ul>
 <p><strong>Contact Divvy Solar today and start your journey to energy independence!</strong></p>
@@ -134,11 +134,11 @@ const blogs = [
 <p>We provide ground-mounted solar farms, solar carports, and industrial-scale installations to meet significant energy demands while improving cost efficiency and sustainability. Industrial clients see ROI within 3–4 years on large installations.</p>
 
 <h3>Why Choose Divvy Solar?</h3>
-<p>Over the last few years, Divvy Solar has established itself as one of the best EPC providers in Haryana and Punjab, with over <strong>16,000 successful projects</strong>.</p>
+<p>Over the last few years, Divvy Solar has established itself as one of the best EPC providers in Haryana and Punjab, with over <strong>1,000 successful projects</strong>.</p>
 <ul>
     <li><strong>Complete Project Management:</strong> End-to-end from site assessment to after-sales support.</li>
     <li><strong>Proven Record:</strong> Successful installations across Haryana, Chandigarh, and Punjab, now expanding to Gurgaon and Delhi NCR.</li>
-    <li><strong>PPA Options:</strong> Predictable energy pricing with zero upfront costs.</li>
+    <li><strong>PPA Options:</strong> Predictable energy pricing with minimal upfront cost.</li>
     <li><strong>Certifications:</strong> MNRE-empanelled EPC company with DISCOM tie-ups.</li>
 </ul>
 
@@ -230,7 +230,7 @@ const blogs = [
 
 <h3>Why Choose an Experienced EPC Partner?</h3>
 <p>Whenever you go for a solar system installation, your main concern should be which company is trustworthy. The Indian solar market has become very competitive, and you may notice significant price variations. Cheap installations often result in low-quality systems that reduce efficiency and require frequent repairs, ultimately costing more in the long run.</p>
-<p>A company like Divvy Solar — an experienced EPC partner with over 16,000 installations — ensures efficiency and helps build solar power projects smoothly from start to finish. Our team of certified engineers brings years of hands-on experience across residential, commercial, and utility-scale projects.</p>
+<p>A company like Divvy Solar — an experienced EPC partner with over 1,000 installations — ensures efficiency and helps build solar power projects smoothly from start to finish. Our team of certified engineers brings years of hands-on experience across residential, commercial, and utility-scale projects.</p>
 
 <h3>Conclusion</h3>
 <p>Before installing solar, it's important to understand what EPC solutions are and why they matter. A successful solar system requires precision design, strategic procurement of quality components, and seamless construction. Regulatory compliance, risk management, and a robust O&M framework complete the picture.</p>
@@ -249,7 +249,7 @@ async function main() {
 
     for (const blog of blogs) {
         console.log(`\nUpdating: ${blog.oldSlug} → ${blog.newSlug}`);
-        
+
         const result = await collection.updateOne(
             { slug: blog.oldSlug },
             {

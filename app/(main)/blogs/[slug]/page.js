@@ -68,11 +68,11 @@ const fallbackBlogs = {
             <p>We provide ground-mounted solar farms, solar carports, and industrial-scale installations to meet significant energy demands while improving cost efficiency and sustainability.</p>
 
             <h3>Why Choose Divvy Solar?</h3>
-            <p>Over the last few years, Divvy Solar has established itself as one of the best EPC providers in Haryana and Punjab, with over 16,000 successful projects.</p>
+            <p>Over the last few years, Divvy Solar has established itself as one of the best EPC providers in Haryana and Punjab, with over 1,000 successful projects.</p>
             <ul>
                 <li><strong>Project Management:</strong> End-to-end site assessment to installation.</li>
                 <li><strong>Proven Record:</strong> Successful installations across Haryana, Chandigarh, and Punjab, now expanding to Gurgaon.</li>
-                <li><strong>PPA Options:</strong> Predictable energy pricing with zero upfront costs.</li>
+                <li><strong>PPA Options:</strong> Predictable energy pricing with minimal upfront cost.</li>
             </ul>
 
             <h3>Future Outlook: The Road Ahead</h3>
@@ -202,10 +202,10 @@ async function getBlog(slug) {
         const blogData = await Blog.findOne({ slug, published: true }).lean();
         if (blogData) {
             const blog = JSON.parse(JSON.stringify(blogData));
-            
+
             // We removed the forced fallback override so your Admin Panel edits work!
             // Fallback content is now only used if the blog doesn't exist in DB at all.
-            
+
             return blog;
         }
     } catch (error) {
@@ -285,9 +285,9 @@ export default async function SingleBlogPage({ params }) {
           prose-h3:text-[#0f172a] prose-h3:text-2xl prose-h3:mt-10 prose-h3:mb-4 prose-h3:font-black
           prose-h4:text-[#0f172a] prose-h4:text-xl prose-h4:mt-8 prose-h4:mb-3 prose-h4:font-black"
                     style={{ fontFamily: 'Inter' }}
-                    dangerouslySetInnerHTML={{ 
+                    dangerouslySetInnerHTML={{
                         __html: (blog.content || '').replace(
-                            /<h3>Why Choose (Divvy Solar|an Experienced EPC Partner)\??<\/h3>/g, 
+                            /<h3>Why Choose (Divvy Solar|an Experienced EPC Partner)\??<\/h3>/g,
                             (match) => `<div style="text-align: center; margin: 60px 0 40px 0;"><div style="display: inline-block; background-color: #0f172a; color: white; padding: 12px 32px; border-radius: 9999px; font-family: Georgia, serif; font-size: 1.25rem; letter-spacing: 0.05em; text-transform: uppercase; font-weight: bold; box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1); border: 1px solid rgba(255,255,255,0.1);">${match.replace(/<\/?h3>/g, '')}</div></div>`
                         )
                     }}
