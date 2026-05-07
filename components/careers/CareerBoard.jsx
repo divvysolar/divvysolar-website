@@ -247,12 +247,12 @@ export default function CareerBoard() {
                                         onClick={() => {
                                             const subject = encodeURIComponent(`Application for ${selectedJob.title} - ${selectedJob.location}`);
                                             const body = encodeURIComponent(`Hi Divvy Solar HR Team,\n\nI am interested in the ${selectedJob.title} position at ${selectedJob.location}.\n\nPlease find my resume attached.\n\nRegards`);
-                                            window.open(`https://mail.google.com/mail/?view=cm&to=info@divvysolar.in&su=${subject}&body=${body}`, '_blank');
+                                            window.open(`https://mail.google.com/mail/?view=cm&to=hr@divvysolar.in&su=${subject}&body=${body}`, '_blank');
                                         }}
                                         className="inline-flex items-center gap-2 bg-[#FECB00] hover:bg-[#EBB800] text-[#0a1122] px-8 py-3.5 rounded-xl font-bold transition-all shadow-lg hover:-translate-y-1 cursor-pointer"
                                     >
                                         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>
-                                        Send Email to info@divvysolar.in
+                                        Send Email to hr@divvysolar.in
                                     </button>
                                 </div>
                             </div>
