@@ -100,6 +100,7 @@ const Navbar = () => {
     const moreLinks = [
         { name: 'About Us', href: '/about' },
         { name: 'Solar Calculator', href: '/calculator' },
+        { name: 'Sustainability Calculator', href: '/sustainability-calculator' },
         { name: 'Blog', href: '/blogs' },
     ];
 

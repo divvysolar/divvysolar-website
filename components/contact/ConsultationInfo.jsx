@@ -3,27 +3,27 @@ import { MapPinIcon, PhoneIcon, EnvelopeIcon, ClockIcon } from '@heroicons/react
 const ConsultationInfo = () => {
     const offices = [
         {
-            type: 'Head Office',
+            type: 'HEAD OFFICE',
             city: 'Hisar, HR',
-            address: 'Lower Ground, SJ Tower, Sector-13, Dabra Road (Warehouse) 125001',
+            address: 'Lower Ground, SJ Tower, Sec-13, Dabra Road, Hisar (Warehouse) 125001',
             url: 'https://maps.app.goo.gl/YdQvZ4XaNH6iUFii6'
         },
         {
-            type: 'CO-Office',
+            type: 'CO-OFFICE',
             city: 'Gurgaon, HR',
-            address: 'Unit-859, Tower-B1, Spaze I-Tech Park, Sector 49 122018',
+            address: 'Unit-859, Tower-B1, 8th Floor, Spaze I-Tech Park, Gurgaon 122018',
             url: 'https://maps.app.goo.gl/2K1BLD2jJBGLqhmk7'
         },
         {
-            type: 'Sales Office',
+            type: 'SALES OFFICE',
             city: 'Mohali, PB',
-            address: '626, 1st Floor, Opp. Franco Hotel, Sec-55 140501',
+            address: '626, 1st Floor, Opp Franco Hotel, Sec-55, Phase-I, Mohali 140501',
             url: 'https://maps.app.goo.gl/nhdbCxZFQiqju9n59'
         },
         {
-            type: 'Regional Office',
+            type: 'REGIONAL OFFICE',
             city: 'Ludhiana, PB',
-            address: 'Plot no 14 Phase No -VII (ADJ) Focal Point Near Munish Forging Gobindgarh,Ludhiana (Punjab) 141003',
+            address: 'Plot no 14, Phase-VII (ADJ), Focal Point, Gobindgarh, Ludhiana 411010',
             url: 'https://www.google.com/maps/search/?api=1&query=Plot+no+14+Phase+VII+Focal+Point+Ludhiana+Munish+Forging'
         }
     ];
@@ -88,19 +88,26 @@ const ConsultationInfo = () => {
                 </div>
             </div>
 
-            {/* Office Locations - Compact & Structured */}
+            {/* Office Locations - Updated Styling with Yellow and Black */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-center sm:text-left">
                 {offices.map((office, i) => (
-                    <div key={i} className="bg-white border border-gray-100 p-4 rounded-xl hover:shadow-lg hover:border-accent transition-all duration-300 group">
-                        <div className="flex items-center justify-center sm:justify-start gap-2 mb-1">
+                    <div key={i} className="bg-white border border-gray-100 p-5 rounded-2xl hover:shadow-2xl hover:border-accent transition-all duration-300 group shadow-lg shadow-gray-100/50">
+                        <div className="flex items-center justify-center sm:justify-start gap-2 mb-3">
                             <MapPinIcon className="w-4 h-4 text-accent" />
-                            <h4 className="font-extrabold text-xs md:text-sm text-accent uppercase tracking-wider">{office.type}</h4>
+                            <h4 className="font-black text-xs md:text-sm text-accent uppercase tracking-widest">{office.type}</h4>
                         </div>
-                        <p className="text-gray-900 text-[10px] mb-2 leading-tight font-black">{office.address}</p>
+                        <p className="text-[#0a1122] text-[11px] mb-4 leading-relaxed font-black uppercase tracking-tight h-12 overflow-hidden">
+                            {office.address}
+                        </p>
                         {office.url !== '#' && (
-                            <a href={office.url} target="_blank" rel="noopener noreferrer" className="text-accent text-[10px] font-bold inline-flex items-center gap-1 group-hover:underline">
-                                Map View
-                                <svg className="w-3 h-3 transition-transform group-hover:translate-x-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M14 5l7 7m0 0l-7 7m7-7H3" /></svg>
+                            <a 
+                                href={office.url} 
+                                target="_blank" 
+                                rel="noopener noreferrer" 
+                                className="bg-accent text-white px-4 py-2 rounded-lg text-[10px] font-black inline-flex items-center gap-2 hover:bg-[#EBB800] transition-all active:scale-95 shadow-md shadow-accent/20"
+                            >
+                                MAP VIEW
+                                <svg className="w-3.5 h-3.5 transition-transform group-hover:translate-x-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M14 5l7 7m0 0l-7 7m7-7H3" /></svg>
                             </a>
                         )}
                     </div>

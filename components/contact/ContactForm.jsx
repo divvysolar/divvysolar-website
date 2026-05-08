@@ -193,7 +193,7 @@ const ContactForm = ({ defaultService = 'RESIDENTIAL/HOME' }) => {
                         )}
                     </button>
 
-                    <p className="text-[9px] text-center text-gray-400 font-bold tracking-tight uppercase">Trusted by 20,000+ customers across India</p>
+                    <p className="text-[9px] text-center text-gray-400 font-bold tracking-tight uppercase">Trusted by 1,000+ customers across India</p>
                 </form>
             )}
         </div>
