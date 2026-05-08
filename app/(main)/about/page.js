@@ -5,7 +5,7 @@ import { LightBulbIcon, ShieldCheckIcon, ChartBarIcon, RocketLaunchIcon } from '
 
 export const metadata = {
     title: 'About Us | Divvy Solar',
-    description: 'Divvy Solar Power & Solutions Pvt.Ltd. has been the leading provider of EPC services since 2018. Over 16,000+ completed projects.',
+    description: 'Divvy Solar Power & Solutions Pvt.Ltd. has been the leading provider of EPC services since 2018. Over 1,000+ completed projects.',
     openGraph: {
         title: 'About Divvy Solar | Premium EPC Solutions',
         description: 'Learn about Divvy Solar, a trusted EPC provider since 2018, delivering end-to-end solar solutions across India.'
