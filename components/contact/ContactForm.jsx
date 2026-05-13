@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { CheckCircleIcon, XCircleIcon } from '@heroicons/react/24/outline';
+import * as fp from '@/lib/fpixel';
 
 const ContactForm = ({ defaultService = 'RESIDENTIAL/HOME' }) => {
     const [activeTab, setActiveTab] = useState(defaultService);
@@ -36,6 +37,12 @@ const ContactForm = ({ defaultService = 'RESIDENTIAL/HOME' }) => {
             });
 
             if (res.ok) {
+                // Track successful lead in Meta Pixel
+                fp.event('Lead', {
+                    content_name: 'Consultation Form',
+                    content_category: activeTab
+                });
+
                 setSubmitStatus('success');
                 setFormData({ name: '', email: '', whatsapp: '', location: '', monthlyBill: '' });
             } else {
@@ -113,15 +120,15 @@ const ContactForm = ({ defaultService = 'RESIDENTIAL/HOME' }) => {
                             />
                         </div>
                         <div className="space-y-1.5 relative z-50">
-                             <label className="text-[10px] uppercase tracking-widest font-black text-gray-400 ml-1">Email Address</label>
-                             <input
-                                 type="email"
-                                 name="email"
-                                 required
-                                 value={formData.email}
-                                 onChange={handleChange}
-                                 className="w-full bg-gray-50/50 border border-gray-200 rounded-2xl px-5 py-3.5 text-sm focus:outline-none focus:ring-4 focus:ring-primary/5 focus:border-primary focus:bg-white transition-all text-primary font-medium relative z-50 pointer-events-auto"
-                             />
+                            <label className="text-[10px] uppercase tracking-widest font-black text-gray-400 ml-1">Email Address</label>
+                            <input
+                                type="email"
+                                name="email"
+                                required
+                                value={formData.email}
+                                onChange={handleChange}
+                                className="w-full bg-gray-50/50 border border-gray-200 rounded-2xl px-5 py-3.5 text-sm focus:outline-none focus:ring-4 focus:ring-primary/5 focus:border-primary focus:bg-white transition-all text-primary font-medium relative z-50 pointer-events-auto"
+                            />
                         </div>
                     </div>
 

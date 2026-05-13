@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from 'react';
+import * as fp from '@/lib/fpixel';
 
 const WhatsAppButton = () => {
     const [isVisible, setIsVisible] = useState(false);
@@ -29,6 +30,7 @@ const WhatsAppButton = () => {
                 href="https://wa.me/919254969114"
                 target="_blank"
                 rel="noopener noreferrer"
+                onClick={() => fp.event('Contact', { content_name: 'WhatsApp Button' })}
                 className="relative flex items-center justify-center w-[44px] h-[44px] md:w-[54px] md:h-[54px] bg-[#25D366] text-white rounded-full shadow-[0_4px_20px_rgba(37,211,102,0.35)] hover:shadow-[0_8px_25px_rgba(37,211,102,0.45)] transition-all duration-300 transform hover:-translate-y-1"
                 aria-label="Chat on WhatsApp"
             >

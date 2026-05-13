@@ -4,6 +4,8 @@ import AuthProvider from '@/components/common/AuthProvider';
 import SolarLadderWidget from '@/components/common/SolarLadderWidget';
 
 import StructuredData from '@/components/common/StructuredData';
+import FacebookPixel from '@/components/common/FacebookPixel';
+import { Suspense } from 'react';
 
 const inter = Inter({ 
     subsets: ['latin'],
@@ -34,6 +36,10 @@ export default function RootLayout({ children }) {
             <body className={`${inter.className} min-h-screen flex flex-col overflow-x-hidden`}>
                 <StructuredData />
                 <AuthProvider>
+                    {/* Meta Pixel — fires PageView on every route, globally across all pages */}
+                    <Suspense fallback={null}>
+                        <FacebookPixel />
+                    </Suspense>
                     {children}
                 </AuthProvider>
                 <SolarLadderWidget />
