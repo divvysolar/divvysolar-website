@@ -14,7 +14,7 @@ const PageHero = ({ title, breadcrumb, backgroundImage, theme = 'dark' }) => {
                         alt={title}
                         fill
                         priority
-                        className="object-cover object-center"
+                        className="object-cover object-center w-full h-full"
                         quality={100}
                         sizes="100vw"
                     />
