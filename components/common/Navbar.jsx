@@ -6,6 +6,7 @@ import { usePathname } from 'next/navigation';
 import { Bars3Icon, XMarkIcon, ChevronDownIcon } from '@heroicons/react/24/outline';
 import Image from 'next/image';
 import PropTypes from 'prop-types';
+import * as fp from '@/lib/fpixel';
 
 const NavDropdown = ({ title, links, dropdownKey, openDropdown, handleMouseEnter, handleMouseLeave, alignRight = false }) => {
     const pathname = usePathname();
@@ -193,6 +194,7 @@ const Navbar = () => {
                         <div className="flex-shrink-0 flex items-center">
                             <Link
                                 href="/contact"
+                                onClick={() => fp.event('Contact', { content_name: 'Navbar Quote Button' })}
                                 className="bg-yellow-400 text-[#0a0f1e] text-[11px] lg:text-[12px] xl:text-[13px] font-black tracking-wider lg:tracking-widest px-5 lg:px-6 py-2.5 rounded-full hover:bg-yellow-500 transition-all duration-300 hover:scale-105 active:scale-95 shadow-lg whitespace-nowrap"
                             >
                                 GET FREE QUOTE
@@ -324,7 +326,10 @@ const Navbar = () => {
                         <Link
                             href="/contact"
                             className="block w-full text-center bg-yellow-400 text-slate-900 text-sm font-black tracking-widest py-5 rounded-2xl shadow-xl active:scale-95 transition-all duration-200"
-                            onClick={() => setIsOpen(false)}
+                            onClick={() => {
+                                fp.event('Contact', { content_name: 'Mobile Navbar Quote Button' });
+                                setIsOpen(false);
+                            }}
                         >
                             GET FREE QUOTE
                         </Link>

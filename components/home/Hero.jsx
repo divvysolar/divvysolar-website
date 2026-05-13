@@ -1,9 +1,11 @@
 "use client";
 
 import Image from 'next/image';
+import * as fp from '@/lib/fpixel';
 
 const Hero = () => {
     const handleConsultationClick = () => {
+        fp.event('Contact', { content_name: 'Hero Consultation Button' });
         window.dispatchEvent(new CustomEvent('solarChat:open'));
     };
 
