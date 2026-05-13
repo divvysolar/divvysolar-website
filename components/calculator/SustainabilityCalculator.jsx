@@ -189,7 +189,7 @@ export default function SustainabilityCalculator() {
                     </div>
 
                     {/* SPECIFIC YIELD BAR */}
-                    <div className="mt-8 bg-[#1a3a1a] rounded-lg h-14 flex items-center justify-between px-6 shadow-xl">
+                    <div className="mt-8 bg-[#0a1122] rounded-lg h-14 flex items-center justify-between px-6 shadow-xl">
                         <span className="text-[11px] font-bold text-white uppercase tracking-[0.2em]">Specific yield</span>
                         <div className="flex items-center gap-4">
                             <span className="text-[10px] text-gray-400 uppercase font-bold tracking-widest">Total kWh ÷ System kWp</span>
@@ -198,13 +198,6 @@ export default function SustainabilityCalculator() {
                             </span>
                         </div>
                     </div>
-                </div>
-
-                {/* FOOTER TEXT */}
-                <div className="text-center mt-6">
-                    <p className="text-[11px] text-gray-300 font-medium tracking-wide">
-                        Formula: Per kW Value = Total Annual Value ÷ System Size (kWp) • India CEA factor 0.716 kg CO₂/kWh
-                    </p>
                 </div>
 
             </div>
