@@ -12,7 +12,7 @@ export default function SustainabilityCalculatorPage() {
             <PageHero
                 title="Sustainability Calculator"
                 subtitle="Measure the real environmental impact of your solar investment using verified Divvy Solar metrics."
-                backgroundImage="/uti2_main.jpeg"
+                backgroundImage="/Sustainable%20Development.jpg"
             />
             <SustainabilityCalculator />
         </main>
