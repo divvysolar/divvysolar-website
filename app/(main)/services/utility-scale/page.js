@@ -3,6 +3,7 @@ import PageHero from '@/components/common/PageHero';
 import ServiceTabs from '@/components/services/ServiceTabs';
 import Testimonials from '@/components/home/Testimonials';
 import ContactForm from '@/components/contact/ContactForm';
+import UtilityPopup from '@/components/services/UtilityPopup';
 import { BoltIcon, ShieldCheckIcon, ChartBarIcon, MapPinIcon, Cog6ToothIcon, ClockIcon } from '@heroicons/react/24/outline';
 
 export const metadata = {
@@ -31,10 +32,11 @@ export default function UtilityScalePage() {
 
     return (
         <>
+            <UtilityPopup />
             <PageHero
                 title="Utility Scale Solar Projects"
                 breadcrumb="Utility-Scale"
-                backgroundImage="/utility_hero_4k.png"
+                backgroundImage="/utility_hero_4k.webp"
             />
             <ServiceTabs />
 
@@ -84,12 +86,12 @@ export default function UtilityScalePage() {
 
                         <div className="relative h-[480px] lg:h-[520px] rounded-[3rem] overflow-hidden shadow-sm animate-fade-in group border border-gray-100">
                             <Image
-                                src="/utility_intro_4k.png"
+                                src="/utility_intro_4k.webp"
                                 alt="Utility Scale Solar"
                                 fill
                                 className="object-cover transition-transform duration-700 group-hover:scale-105"
                                 priority
-                                quality={100}
+                                quality={75}
                                 sizes="(max-width: 768px) 100vw, 50vw"
                             />
                         </div>
