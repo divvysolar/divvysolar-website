@@ -601,12 +601,12 @@ export default function HaryanaProjectsPage() {
                     <div className="order-2 relative h-full min-h-[400px]">
                         <div className="relative h-full w-full rounded-2xl overflow-hidden shadow-xl group">
                             <Image
-                                src="/about_us_main_4k.png"
+                                src="/about_us_main_4k.webp"
                                 alt="Haryana Solar Potential HD"
                                 fill
                                 sizes="(max-width: 768px) 100vw, 50vw"
                                 className="object-cover transition-transform duration-1000 group-hover:scale-105"
-                                quality={100}
+                                quality={75}
                             />
                         </div>
                     </div>

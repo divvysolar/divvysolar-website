@@ -25,7 +25,7 @@ export default function AboutPage() {
             <PageHero
                 title="About Us"
                 breadcrumb="Our Story"
-                backgroundImage="/about_us_main.jpeg"
+                backgroundImage="/about_us_main.webp"
             />
 
             {/* ─── Company Overview ─── */}
@@ -47,11 +47,11 @@ export default function AboutPage() {
                     <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
                         <div className="lg:col-span-6 relative rounded-2xl overflow-hidden min-h-[280px] md:min-h-[380px] shadow-xl group transition-transform duration-500 hover:shadow-2xl hover:-translate-y-1">
                             <Image
-                                src="/utility_hero_4k.png"
+                                src="/utility_hero_4k.webp"
                                 alt="Divvy Solar Setup"
                                 fill
                                 priority
-                                quality={100}
+                                quality={75}
                                 className="object-cover transition-transform duration-700 group-hover:scale-105"
                                 sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 800px"
                             />

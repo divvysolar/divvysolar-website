@@ -170,7 +170,7 @@ export default function PunjabProjectsPage() {
 
             {/* HERO SECTION */}
             <section className="relative min-h-[calc(100vh-56px)] flex items-center overflow-hidden bg-[#050a14]">
-                <Image src="/utility_hero_4k.png" alt="Punjab Solar Vision" fill priority sizes="100vw" className="object-cover object-center scale-105" quality={100} />
+                <Image src="/pun1_main.webp" alt="Punjab Solar Vision" fill priority sizes="100vw" className="object-cover object-center scale-105" quality={75} />
                 <div className="absolute inset-0 z-10" style={{ background: `linear-gradient(105deg, rgba(5,10,20,0.95) 0%, rgba(5,10,20,0.85) 40%, rgba(5,10,20,0.40) 70%, rgba(5,10,20,0.1) 100%)` }} />
                 <div className="absolute top-0 left-0 z-10 pointer-events-none" style={{ width: '500px', height: '500px', background: 'radial-gradient(ellipse at top left, rgba(254,203,0,0.07) 0%, transparent 65%)' }} />
                 <div className="absolute top-0 left-0 z-20 h-[3px]" style={{ width: '45%', background: 'linear-gradient(to right, #FECB00, transparent)' }} />
@@ -260,7 +260,7 @@ export default function PunjabProjectsPage() {
                     </div>
                     <div className="order-2 relative h-full min-h-[400px]">
                         <div className="relative h-full w-full rounded-2xl overflow-hidden shadow-xl group">
-                            <Image src="/utility_intro_4k.png" alt="Punjab Solar Focus" fill sizes="(max-width: 768px) 100vw, 50vw" className="object-cover transition-transform duration-1000 group-hover:scale-105" quality={100} />
+                            <Image src="/utility_intro_4k.webp" alt="Punjab Solar Focus" fill sizes="(max-width: 768px) 100vw, 50vw" className="object-cover transition-transform duration-1000 group-hover:scale-105" quality={75} />
                         </div>
                     </div>
                 </div>

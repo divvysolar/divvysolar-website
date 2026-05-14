@@ -15,7 +15,7 @@ const PageHero = ({ title, breadcrumb, backgroundImage, theme = 'dark' }) => {
                         fill
                         priority
                         className="object-cover object-center w-full h-full"
-                        quality={100}
+                        quality={75}
                         sizes="100vw"
                     />
                     {/* Professional Deep Overlay - Top to Bottom */}

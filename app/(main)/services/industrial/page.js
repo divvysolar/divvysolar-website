@@ -84,13 +84,13 @@ export default function IndustrialPage() {
 
                         <div className="relative h-[480px] lg:h-[520px] rounded-[3rem] overflow-hidden shadow-sm animate-fade-in group border border-gray-100">
                             <Image
-                                src="/industrial_4k.png"
+                                src="/industrial_4k.webp"
                                 alt="Industrial Solar Installation"
                                 fill
                                 sizes="(max-width: 768px) 100vw, 50vw"
                                 className="object-cover object-center transition-transform duration-1000 group-hover:scale-105"
                                 priority
-                                quality={100}
+                                quality={75}
                             />
                         </div>
                     </div>

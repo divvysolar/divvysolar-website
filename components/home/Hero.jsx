@@ -16,14 +16,14 @@ const Hero = () => {
         >
             {/* ── Background Image ── */}
             <Image
-                src="/hero-main-page.jpeg"
+                src="/hero-main-page.webp"
                 alt="Solar panel installation by Divvy Solar - India's trusted solar energy company"
                 fill
                 priority
                 fetchPriority="high"
                 sizes="100vw"
                 className="object-cover object-center"
-                quality={100}
+                quality={75}
             />
 
             {/* ── Gradient overlay: heavy left, fades right so image is visible ── */}

@@ -34,7 +34,7 @@ export default function ResidentialPage() {
             <PageHero
                 title="Residential Solar Solutions"
                 breadcrumb="Residential"
-                backgroundImage="/resi2main.jpeg"
+                backgroundImage="/resi2main.webp"
             />
             <ServiceTabs />
 
@@ -84,13 +84,13 @@ export default function ResidentialPage() {
 
                         <div className="relative h-[480px] lg:h-[520px] rounded-[3rem] overflow-hidden shadow-sm animate-fade-in group border border-gray-100">
                             <Image
-                                src="/resi1m.jpeg"
+                                src="/resi1m.webp"
                                 alt="Residential Solar"
                                 fill
                                 sizes="(max-width: 768px) 100vw, 50vw"
                                 className="object-cover transition-transform duration-1000 group-hover:scale-105"
                                 priority
-                                quality={100}
+                                quality={75}
                             />
                         </div>
                     </div>
