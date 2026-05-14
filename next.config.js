@@ -7,6 +7,7 @@ const nextConfig = {
         hostname: '**',
       },
     ],
+    formats: ['image/avif', 'image/webp'],
   },
   async headers() {
     return [
@@ -17,6 +18,7 @@ const nextConfig = {
           { key: 'X-Frame-Options', value: 'DENY' },
           { key: 'X-XSS-Protection', value: '1; mode=block' },
           { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
+          { key: 'Cache-Control', value: 'public, max-age=31536000, immutable' },
         ],
       },
     ]
@@ -28,7 +30,6 @@ const nextConfig = {
         destination: '/blogs',
         permanent: true,
       },
-      // Old 2026 slug → New 2025 slug redirects
       {
         source: '/blogs/solar-power-is-the-future-2026',
         destination: '/blogs/solar-power-is-the-future-2025',

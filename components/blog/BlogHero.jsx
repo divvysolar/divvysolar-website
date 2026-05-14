@@ -1,5 +1,6 @@
 import { UserIcon, CalendarIcon } from '@heroicons/react/24/outline';
 import Link from 'next/link';
+import Image from 'next/image';
 
 const BlogHero = ({ title, date, author, image }) => {
     const formatDate = (dateString) => {
@@ -13,11 +14,12 @@ const BlogHero = ({ title, date, author, image }) => {
             <div className="absolute inset-0 z-0">
                 {image ? (
                     <div className="absolute inset-0">
-                        {/* eslint-disable-next-line @next/next/no-img-element */}
-                        <img 
+                        <Image 
                             src={image} 
                             className="w-full h-full object-cover" 
-                            alt={title} 
+                            alt={title}
+                            fill
+                            quality={75}
                         />
                         {/* Advanced Gradient Overlays for Readability */}
                         <div className="absolute inset-0 bg-gradient-to-b from-white/40 via-white/10 to-[#dde6f0]" />
