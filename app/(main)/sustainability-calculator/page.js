@@ -4,6 +4,7 @@ import SustainabilityCalculator from "@/components/calculator/SustainabilityCalc
 export const metadata = {
     title: 'Sustainability Calculator | Divvy Solar',
     description: 'Calculate the genuine environmental impact of your solar installation — CO2 offset, coal avoided, trees equivalent, and more. Powered by Divvy Solar official data.',
+    alternates: { canonical: 'https://divvysolar.in/sustainability-calculator' },
 };
 
 export default function SustainabilityCalculatorPage() {

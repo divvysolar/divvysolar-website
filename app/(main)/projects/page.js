@@ -4,6 +4,7 @@ import ProjectGalleryGrid from '@/components/projects/ProjectGalleryGrid';
 export const metadata = {
     title: 'Milestone Projects | Divvy Solar',
     description: 'Explore Divvy Solar project milestones. Verified live installations with technical specifications and performance data.',
+    alternates: { canonical: 'https://divvysolar.in/projects' },
 };
 
 export default function ProjectsPage() {
