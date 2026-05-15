@@ -29,7 +29,7 @@ export const metadata = {
         title: 'Divvy Solar | Solar EPC Solutions India',
         description: 'Premium Solar EPC Solutions for homes and industries across India.',
     },
-    alternates: { canonical: 'https://divvysolar.in' },
+
 };
 
 const jsonLd = {
@@ -40,7 +40,7 @@ const jsonLd = {
     logo: 'https://divvysolar.in/images/divvy solar.png',
     image: 'https://divvysolar.in/images/og-image.jpg',
     description: 'India\'s trusted solar EPC company providing residential, industrial, and utility-scale solar solutions since 2018.',
-    telephone: '+919254969114',
+    telephone: '+919254986321',
     email: 'info@divvysolar.in',
     foundingDate: '2018',
     address: {

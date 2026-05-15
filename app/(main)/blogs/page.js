@@ -8,6 +8,7 @@ import Blog from '@/models/Blog';
 export const metadata = {
     title: 'Solar News & Updates',
     description: 'Read the latest news, updates, and insights about solar energy from Divvy Solar experts.',
+    alternates: { canonical: 'https://divvysolar.in/blogs' },
 };
 
 async function getBlogs() {

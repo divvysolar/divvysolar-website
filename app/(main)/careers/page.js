@@ -4,6 +4,7 @@ import CareerBoard from "@/components/careers/CareerBoard";
 export const metadata = {
     title: 'Careers | Divvy Solar',
     description: 'Join the green energy revolution. View our open positions in Operations, Sales, and Design across Punjab and Haryana.',
+    alternates: { canonical: 'https://divvysolar.in/careers' },
 };
 
 export default function CareersPage() {

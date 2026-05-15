@@ -25,6 +25,7 @@ export const metadata = {
     title: 'Haryana Projects | Divvy Solar',
     description:
         'Harnessing the power of the sun with utility-scale and industrial solar in Haryana.',
+    alternates: { canonical: 'https://divvysolar.in/projects/haryana' },
 };
 
 const BASE_HARYANA_PROJECTS = [
