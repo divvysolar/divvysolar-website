@@ -55,7 +55,7 @@ const ConsultationInfo = () => {
                             </div>
                             <div className="min-w-0">
                                 <p className="text-[7px] text-gray-400 font-bold uppercase tracking-[2px] mb-0.5 whitespace-nowrap">Call Expert</p>
-                                <a href="tel:+919254969114" className="text-sm md:text-base font-black text-white hover:text-accent transition-colors block tracking-tight whitespace-nowrap">+91-9254969114</a>
+                                <a href="tel:+919254986321" className="text-sm md:text-base font-black text-white hover:text-accent transition-colors block tracking-tight whitespace-nowrap">+91-9254986321</a>
                             </div>
                         </div>
                         {/* Divider Line (Desktop only) */}
@@ -91,24 +91,28 @@ const ConsultationInfo = () => {
             {/* Office Locations - Updated Styling with Yellow and Black */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-center sm:text-left">
                 {offices.map((office, i) => (
-                    <div key={i} className="bg-white border border-gray-100 p-5 rounded-2xl hover:shadow-2xl hover:border-accent transition-all duration-300 group shadow-lg shadow-gray-100/50">
-                        <div className="flex items-center justify-center sm:justify-start gap-2 mb-3">
-                            <MapPinIcon className="w-4 h-4 text-accent" />
-                            <h4 className="font-black text-xs md:text-sm text-accent uppercase tracking-widest">{office.type}</h4>
+                    <div key={i} className="bg-white border border-gray-100 p-5 rounded-2xl hover:shadow-2xl hover:border-accent transition-all duration-300 group shadow-lg shadow-gray-100/50 flex flex-col h-full">
+                        <div className="flex-grow">
+                            <div className="flex items-center justify-center sm:justify-start gap-2 mb-3">
+                                <MapPinIcon className="w-4 h-4 text-accent" />
+                                <h4 className="font-black text-xs md:text-sm text-accent uppercase tracking-widest">{office.type}</h4>
+                            </div>
+                            <p className="text-[#0a1122] text-[11px] mb-6 leading-relaxed font-black uppercase tracking-tight">
+                                {office.address}
+                            </p>
                         </div>
-                        <p className="text-[#0a1122] text-[11px] mb-4 leading-relaxed font-black uppercase tracking-tight h-12 overflow-hidden">
-                            {office.address}
-                        </p>
                         {office.url !== '#' && (
-                            <a 
-                                href={office.url} 
-                                target="_blank" 
-                                rel="noopener noreferrer" 
-                                className="bg-accent text-white px-4 py-2 rounded-lg text-[10px] font-black inline-flex items-center gap-2 hover:bg-[#EBB800] transition-all active:scale-95 shadow-md shadow-accent/20"
-                            >
-                                MAP VIEW
-                                <svg className="w-3.5 h-3.5 transition-transform group-hover:translate-x-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M14 5l7 7m0 0l-7 7m7-7H3" /></svg>
-                            </a>
+                            <div>
+                                <a 
+                                    href={office.url} 
+                                    target="_blank" 
+                                    rel="noopener noreferrer" 
+                                    className="bg-accent text-white px-4 py-2 rounded-lg text-[10px] font-black inline-flex items-center gap-2 hover:bg-[#EBB800] transition-all active:scale-95 shadow-md shadow-accent/20"
+                                >
+                                    MAP VIEW
+                                    <svg className="w-3.5 h-3.5 transition-transform group-hover:translate-x-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M14 5l7 7m0 0l-7 7m7-7H3" /></svg>
+                                </a>
+                            </div>
                         )}
                     </div>
                 ))}

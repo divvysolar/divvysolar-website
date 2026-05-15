@@ -5,6 +5,7 @@ import { HomeIcon, BuildingLibraryIcon, BuildingOffice2Icon } from '@heroicons/r
 export const metadata = {
     title: 'Core Solutions',
     description: 'Explore Divvy Solar\'s comprehensive EPC solutions for Residential, Industrial, and Utility-Scale projects.',
+    alternates: { canonical: 'https://divvysolar.in/services' },
 };
 
 export default function ServicesPage() {

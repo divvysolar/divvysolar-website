@@ -27,7 +27,7 @@ const WhatsAppButton = () => {
     return (
         <div className="fixed bottom-4 left-4 md:bottom-6 md:left-6 z-[9998] flex flex-row items-center gap-4 group">
             <a
-                href="https://wa.me/919254969114"
+                href="https://wa.me/919254986321"
                 target="_blank"
                 rel="noopener noreferrer"
                 onClick={() => fp.event('Contact', { content_name: 'WhatsApp Button' })}
