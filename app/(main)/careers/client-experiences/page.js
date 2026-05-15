@@ -4,6 +4,7 @@ import { redirect } from 'next/navigation';
 export const metadata = {
     title: 'Client Experiences | Divvy Solar',
     description: 'Read our case studies and what our team members have to say about working at Divvy Solar.',
+    alternates: { canonical: 'https://divvysolar.in/careers/client-experiences' },
 };
 
 const CASE_STUDIES = [

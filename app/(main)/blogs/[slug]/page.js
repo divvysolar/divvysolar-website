@@ -241,6 +241,9 @@ export async function generateMetadata({ params }) {
     return {
         title: blog.title,
         description: blog.excerpt || 'Read this article from Divvy Solar',
+        alternates: {
+            canonical: `https://divvysolar.in/blogs/${params.slug}`,
+        },
         openGraph: {
             title: blog.title,
             description: blog.excerpt || 'Read this article from Divvy Solar',

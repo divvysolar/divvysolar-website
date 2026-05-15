@@ -1,5 +1,11 @@
 export const revalidate = 0; // Fresh content on every load
 
+export const metadata = {
+    alternates: {
+        canonical: 'https://divvysolar.in',
+    },
+};
+
 import Hero from '@/components/home/Hero';
 import connectToDatabase from '@/lib/mongodb';
 import Blog from '@/models/Blog';
