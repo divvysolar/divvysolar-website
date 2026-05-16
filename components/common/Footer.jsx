@@ -21,7 +21,7 @@ const Footer = () => {
         },
         {
             title: 'CO-Office',
-            lines: ['Unit-859, Tower-B1, 8th Floor,', 'Spaze I-Tech Park, Gurgaon 122018'],
+            lines: ['Unit-859, Tower-B1, 8th Floor,', 'Spaze I-Tech Park, Sec-49,', 'Gurgaon 122018'],
         },
         {
             title: 'Sales Office',

@@ -3,7 +3,6 @@ import PageHero from '@/components/common/PageHero';
 import ServiceTabs from '@/components/services/ServiceTabs';
 import Testimonials from '@/components/home/Testimonials';
 import ContactForm from '@/components/contact/ContactForm';
-import UtilityPopup from '@/components/services/UtilityPopup';
 import { BoltIcon, ShieldCheckIcon, ChartBarIcon, MapPinIcon, Cog6ToothIcon, ClockIcon } from '@heroicons/react/24/outline';
 
 export const metadata = {
@@ -32,7 +31,6 @@ export default function UtilityScalePage() {
 
     return (
         <>
-            <UtilityPopup />
             <PageHero
                 title="Utility Scale Solar Projects"
                 breadcrumb="Utility-Scale"

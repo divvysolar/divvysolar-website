@@ -11,7 +11,7 @@ const ConsultationInfo = () => {
         {
             type: 'CO-OFFICE',
             city: 'Gurgaon, HR',
-            address: 'Unit-859, Tower-B1, 8th Floor, Spaze I-Tech Park, Gurgaon 122018',
+            address: 'Unit-859, Tower-B1, 8th Floor, Spaze I-Tech Park, Sec-49, Gurgaon 122018',
             url: 'https://maps.app.goo.gl/2K1BLD2jJBGLqhmk7'
         },
         {
