@@ -4,7 +4,7 @@ import { notFound } from 'next/navigation';
 import connectToDatabase from '@/lib/mongodb';
 import Blog from '@/models/Blog';
 
-export const revalidate = 0; // Disable cache to reflect admin edits immediately
+export const revalidate = 3600; // Cache for 1 hour to improve performance
 
 const fallbackBlogs = {
     'solar-potential-in-india-2025-key-trends-insights': {

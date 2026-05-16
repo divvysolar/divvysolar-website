@@ -1,4 +1,4 @@
-export const revalidate = 0; // Fresh content on every load
+export const revalidate = 3600; // Cache for 1 hour to improve FCP/TTFB
 
 export const metadata = {
     alternates: {
