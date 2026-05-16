@@ -6,6 +6,7 @@ import { ChatBubbleLeftRightIcon, XMarkIcon } from '@heroicons/react/24/outline'
 
 const SolarLadderWidget = () => {
     const [isOpen, setIsOpen] = useState(false);
+    const [hasOpened, setHasOpened] = useState(false); // Only load src after first open
     const isOpenRef = useRef(isOpen);
     const pathname = usePathname();
     const isAdminPage = pathname?.startsWith('/admin');
@@ -15,12 +16,18 @@ const SolarLadderWidget = () => {
         setIsOpen((prev) => {
             const nextState = typeof forceState === 'boolean' ? forceState : !prev;
             isOpenRef.current = nextState;
+            
+            // Trigger iframe load on first open
+            if (nextState) setHasOpened(true);
+
             // Lock/unlock body scroll when chat opens/closes
             if (typeof document !== 'undefined') {
                 document.body.style.overflow = nextState ? 'hidden' : '';
             }
             if (typeof window !== 'undefined') {
+                // Dispatching BOTH for compatibility
                 window.dispatchEvent(new CustomEvent('solarChat:status', { detail: nextState }));
+                window.dispatchEvent(new CustomEvent('solarChatToggle', { detail: nextState }));
             }
             return nextState;
         });
@@ -143,7 +150,7 @@ const SolarLadderWidget = () => {
                         </div>
                     )}
                     <iframe
-                        src={config.landingPageURL}
+                        src={hasOpened ? config.landingPageURL : 'about:blank'}
                         title="Solar Assistant Chat"
                         className="absolute inset-0 w-full h-full border-none"
                         style={{
