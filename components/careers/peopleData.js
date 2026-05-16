@@ -2,7 +2,7 @@ export const PEOPLE = [
     {
         name: "Paramveer Singh",
         slug: "paramveer-singh",
-        role: "Punjab Region Sales Head",
+        role: "Punjab Region Sales Manager",
         image: "/Paramveer Singh.jpeg",
         description: "As the driving force behind our Punjab operations, Paramveer has revolutionized our regional sales strategy through strategic foresight and a hands-on leadership approach.",
         quote: "True leadership is about empowering others to achieve more than they thought possible.",
@@ -39,7 +39,7 @@ export const PEOPLE = [
     {
         name: "Gurdev Singh",
         slug: "gurdev-singh",
-        role: "Punjab Region Sales Head",
+        role: "Punjab Region Sales Manager",
         image: "/Gurdev 2.jpeg",
         description: "Gurdev leverages profound market insights and exceptional relationship-building skills to forge strategic alliances that drive both sales and sustainable impact.",
         imageClass: "object-top group-hover:scale-105",
