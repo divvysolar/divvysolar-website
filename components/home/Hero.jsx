@@ -2,11 +2,13 @@
 
 import Image from 'next/image';
 import * as fp from '@/lib/fpixel';
+import { useRouter } from 'next/navigation';
 
 const Hero = () => {
+    const router = useRouter();
     const handleConsultationClick = () => {
         fp.event('Contact', { content_name: 'Hero Consultation Button' });
-        window.dispatchEvent(new CustomEvent('solarChat:open'));
+        router.push('/contact');
     };
 
     return (
