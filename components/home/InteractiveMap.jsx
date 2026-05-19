@@ -486,28 +486,9 @@ export default function InteractiveMap({
                             </div>
                         </div>
 
-                        {/* Legend */}
-                        <div className="flex items-center gap-5 mt-5">
-                            <span className="flex items-center gap-2 text-xs font-bold text-gray-500">
-                                <span className="w-3 h-3 rounded-full bg-black shadow-[0_0_8px_rgba(0,0,0,0.2)]" />
-                                Verified Project Location
-                            </span>
-                        </div>
 
-                        {/* City pills */}
-                        <div className="flex flex-wrap gap-2 mt-4">
-                            {data.map((p) => (
-                                <button key={p.id} type="button" onClick={() => setSelected(p)}
-                                    className="px-4 py-1.5 rounded-full text-xs font-bold border transition-all duration-150"
-                                    style={{
-                                        background: selected?.id === p.id ? p.pinColor : "#fff",
-                                        color: selected?.id === p.id ? "#fff" : "#64748b",
-                                        borderColor: selected?.id === p.id ? p.pinColor : "#e2e8f0",
-                                    }}>
-                                    {p.city}
-                                </button>
-                            ))}
-                        </div>
+
+
                     </div>
 
                     {/* ── RIGHT: INFO CARD ──────────────────────────────────────── */}
