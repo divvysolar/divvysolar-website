@@ -2,17 +2,15 @@ import { Inter } from 'next/font/google';
 import './globals.css';
 import AuthProvider from '@/components/common/AuthProvider';
 import SolarLadderWidget from '@/components/common/SolarLadderWidget';
-
 import StructuredData from '@/components/common/StructuredData';
 import FacebookPixel from '@/components/common/FacebookPixel';
 import { Suspense } from 'react';
+import PropTypes from 'prop-types';
 
-const inter = Inter({ 
+const inter = Inter({
     subsets: ['latin'],
     display: 'swap',
 });
-
-import PropTypes from 'prop-types';
 
 export const metadata = {
     metadataBase: new URL('https://divvysolar.in'),
@@ -26,17 +24,22 @@ export const metadata = {
 export const viewport = {
     width: 'device-width',
     initialScale: 1,
-    maximumScale: 1,
-    userScalable: false,
 };
 
 export default function RootLayout({ children }) {
     return (
         <html lang="en" className="scroll-smooth" suppressHydrationWarning>
+            <head>
+                <link
+                    rel="preload"
+                    href="/hero-main-page.webp"
+                    as="image"
+                    type="image/webp"
+                />
+            </head>
             <body className={`${inter.className} min-h-screen flex flex-col overflow-x-hidden`}>
                 <StructuredData />
                 <AuthProvider>
-                    {/* Meta Pixel — fires PageView on every route, globally across all pages */}
                     <Suspense fallback={null}>
                         <FacebookPixel />
                     </Suspense>
