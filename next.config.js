@@ -1,5 +1,6 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  trailingSlash: false, // ✅ ADD KARO - /about/ → /about
   compress: true,
   poweredByHeader: false,
   images: {
@@ -15,7 +16,6 @@ const nextConfig = {
   async headers() {
     return [
       {
-        // Security headers for ALL routes
         source: '/(.*)',
         headers: [
           { key: 'X-Content-Type-Options', value: 'nosniff' },
@@ -25,19 +25,16 @@ const nextConfig = {
         ],
       },
       {
-        // Static assets: long cache (JS, CSS, fonts, images in /_next/static)
         source: '/_next/static/(.*)',
         headers: [
           { key: 'Cache-Control', value: 'public, max-age=31536000, immutable' },
         ],
       },
       {
-        // Favicon and common static images
         source: '/favicon.ico',
         headers: [{ key: 'Cache-Control', value: 'public, max-age=2592000, immutable' }],
       },
       {
-        // All images in the /images folder
         source: '/images/:path*',
         headers: [{ key: 'Cache-Control', value: 'public, max-age=2592000, stale-while-revalidate=86400' }],
       },
@@ -45,6 +42,17 @@ const nextConfig = {
   },
   async redirects() {
     return [
+      // ✅ ADD KARO - Trailing slash redirects
+      { source: '/about/', destination: '/about', permanent: true },
+      { source: '/contact/', destination: '/contact', permanent: true },
+      { source: '/services/', destination: '/services', permanent: true },
+      { source: '/services/residential/', destination: '/services/residential', permanent: true },
+      { source: '/services/industrial/', destination: '/services/industrial', permanent: true },
+      { source: '/services/utility-scale/', destination: '/services/utility-scale', permanent: true },
+      { source: '/projects/', destination: '/projects', permanent: true },
+      { source: '/blogs/', destination: '/blogs', permanent: true },
+
+      // Tera existing redirects
       {
         source: '/blog',
         destination: '/blogs',
@@ -69,4 +77,4 @@ const nextConfig = {
   },
 }
 
-module.exports = nextConfig
+module.exports = nextConfig
