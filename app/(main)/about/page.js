@@ -4,7 +4,7 @@ import Image from 'next/image';
 import { LightBulbIcon, ShieldCheckIcon, ChartBarIcon, RocketLaunchIcon } from '@heroicons/react/24/outline';
 
 export const metadata = {
-    title: 'About Us | Divvy Solar',
+    title: 'About Us',
     description: 'Divvy Solar Power & Solutions Pvt.Ltd. has been the leading provider of EPC services since 2018. Over 1,000+ completed projects.',
     alternates: {
         canonical: 'https://divvysolar.in/about',
