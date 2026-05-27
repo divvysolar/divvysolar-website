@@ -258,7 +258,7 @@ export default function SolarCalculator() {
                                 </div>
 
                                 {locationName && !isValidatingPin && (
-                                    <p className="text-sm font-semibold text-emerald-600 mt-2 flex items-center gap-1.5">
+                                    <p className="text-sm font-semibold text-amber-600 mt-2 flex items-center gap-1.5">
                                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                                         </svg>
