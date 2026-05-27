@@ -91,12 +91,12 @@ const ContactForm = ({ defaultService = 'RESIDENTIAL/HOME' }) => {
             </div>
 
             {submitStatus === 'success' ? (
-                <div className="bg-green-50 border border-green-100 rounded-2xl p-8 text-center animate-in fade-in zoom-in duration-500">
-                    <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                        <CheckCircleIcon className="w-10 h-10 text-green-600" />
+                <div className="bg-amber-50 border border-amber-100 rounded-2xl p-8 text-center animate-in fade-in zoom-in duration-500">
+                    <div className="w-16 h-16 bg-amber-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <CheckCircleIcon className="w-10 h-10 text-amber-600" />
                     </div>
-                    <h4 className="text-xl font-bold text-green-900 mb-2">Message Sent!</h4>
-                    <p className="text-green-700 text-sm">Our team will contact you shortly.</p>
+                    <h4 className="text-xl font-bold text-amber-900 mb-2">Message Sent!</h4>
+                    <p className="text-amber-700 text-sm">Our team will contact you shortly.</p>
                 </div>
             ) : (
                 <form onSubmit={handleSubmit} className="space-y-5">

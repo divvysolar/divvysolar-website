@@ -135,7 +135,7 @@ export default function CareerBoard() {
                                 <span className="px-3 py-1 bg-slate-100 text-slate-500 text-[10px] font-black uppercase tracking-widest rounded-full">
                                     {job.department}
                                 </span>
-                                <span className="px-3 py-1 bg-emerald-50 text-emerald-600 text-[10px] font-black uppercase tracking-widest rounded-full">
+                                <span className="px-3 py-1 bg-amber-50 text-amber-600 text-[10px] font-black uppercase tracking-widest rounded-full">
                                     {job.type}
                                 </span>
                             </div>
@@ -186,7 +186,7 @@ export default function CareerBoard() {
                                         {selectedJob.location}
                                     </span>
                                     <span className="flex items-center gap-1.5">
-                                        <svg className="w-4 h-4 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>
+                                        <svg className="w-4 h-4 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>
                                         {selectedJob.type}
                                     </span>
                                 </div>
@@ -225,7 +225,7 @@ export default function CareerBoard() {
                             <ul className="space-y-3 mb-10">
                                 {selectedJob.requirements.map((req, idx) => (
                                     <li key={idx} className="flex items-start gap-3 text-gray-600">
-                                        <svg className="w-5 h-5 text-emerald-500 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" /></svg>
+                                        <svg className="w-5 h-5 text-amber-500 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" /></svg>
                                         <span className="leading-relaxed">{req}</span>
                                     </li>
                                 ))}
@@ -235,7 +235,7 @@ export default function CareerBoard() {
                             <div className="bg-[#0f172a] rounded-2xl p-6 sm:p-8 relative overflow-hidden text-center">
                                 {/* Abstract graphics */}
                                 <div className="absolute -top-10 -left-10 w-32 h-32 bg-[#FECB00] rounded-full mix-blend-multiply filter blur-2xl opacity-20"></div>
-                                <div className="absolute -bottom-10 -right-10 w-32 h-32 bg-emerald-500 rounded-full mix-blend-multiply filter blur-2xl opacity-40"></div>
+                                <div className="absolute -bottom-10 -right-10 w-32 h-32 bg-amber-500 rounded-full mix-blend-multiply filter blur-2xl opacity-40"></div>
 
                                 <div className="relative z-10">
                                     <h4 className="text-2xl font-black text-white mb-2">Ready to apply?</h4>

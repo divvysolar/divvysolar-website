@@ -110,13 +110,13 @@ export default function SustainabilityCalculator() {
                             type="number"
                             value={systemSize}
                             onChange={(e) => setSystemSize(e.target.value)}
-                            className="w-28 h-12 border-2 border-green-800/20 rounded-lg px-3 font-bold text-lg outline-none focus:border-green-800/50 transition-all"
+                            className="w-28 h-12 border-2 border-amber-800/20 rounded-lg px-3 font-bold text-lg outline-none focus:border-amber-800/50 transition-all"
                         />
                     </div>
                     <div className="text-gray-300 text-xl mt-4">÷</div>
                     <div className="flex flex-col">
                         <label className="text-[9px] font-bold text-gray-400 uppercase tracking-widest mb-1">ANNUAL PRODUCTION (KWH)</label>
-                        <div className="w-40 h-12 border-2 border-green-800/10 bg-slate-50/50 rounded-lg flex items-center px-4 font-bold text-lg text-gray-700">
+                        <div className="w-40 h-12 border-2 border-amber-800/10 bg-slate-50/50 rounded-lg flex items-center px-4 font-bold text-lg text-gray-700">
                             {kw > 0 ? fmtInt(annualKwh) : ""}
                         </div>
                     </div>
@@ -166,7 +166,7 @@ export default function SustainabilityCalculator() {
                                     <span className="text-xs font-bold text-gray-500 uppercase tracking-tight">{r.label}</span>
 
                                     {/* Formula Box */}
-                                    <div className="bg-[#fcfdfc] border border-gray-100 rounded-xl h-14 flex items-center justify-center gap-3 shadow-sm group-hover:border-green-100 transition-colors">
+                                    <div className="bg-[#fcfdfc] border border-gray-100 rounded-xl h-14 flex items-center justify-center gap-3 shadow-sm group-hover:border-amber-100 transition-colors">
                                         <span className="text-xl font-bold text-gray-800" style={{ fontFamily: "Georgia, serif" }}>
                                             {totalStr} {r.totalUnit}
                                         </span>

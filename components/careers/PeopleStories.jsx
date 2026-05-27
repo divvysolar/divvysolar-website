@@ -114,7 +114,7 @@ export default function PeopleStories() {
                                     />
                                 </div>
                                 <div className="px-2 pb-4 flex-1 flex flex-col">
-                                    <span className="text-[10px] font-black uppercase tracking-widest text-emerald-600 bg-emerald-50 self-start px-3 py-1 rounded-full mb-4">
+                                    <span className="text-[10px] font-black uppercase tracking-widest text-amber-600 bg-amber-50 self-start px-3 py-1 rounded-full mb-4">
                                         {person.role}
                                     </span>
                                     <h3
