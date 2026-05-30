@@ -130,6 +130,163 @@ const fallbackBlogs = {
             <p>Traditional power generation often requires large amounts of water for cooling; however, PV systems require minimal water. Solar power diminishes the greenhouse effect responsible for global warming, and every 1,000 kWh of energy harvested from solar radiation reduces carbon dioxide emissions by about 812 kilograms per year. The lifecycle emissions per kWh of electricity produced by rooftop solar are around 12 times less than those of natural gas and 20 times less than coal.</p>
         `
     },
+    'is-solar-worth-it-for-factory-business-2026': {
+        title: 'Is Solar Worth It for Your Factory or Business in 2026? Here Is the Honest Answer',
+        metaTitle: 'Is Solar Worth It for Your Factory or Business in 2026? | Divvy Solar',
+        metaDescription: 'Factory electricity bills eating into your margins? Discover why industrial and commercial rooftop solar is one of the smartest investments a North Indian business can make right now.',
+        author: 'Divvy Solar Expert',
+        createdAt: '2025-06-01',
+        image: '/uti1_main.jpeg',
+        excerpt: 'Every factory owner in Punjab and Haryana knows the feeling. You open your monthly electricity bill, see a number that has gone up again, and quietly absorb it as a cost of doing business. Here is the honest ROI breakdown for industrial solar in 2026.',
+        content: `
+<p>Every factory owner in Punjab and Haryana knows the feeling. You open your monthly electricity bill, see a number that has gone up again, and quietly absorb it as a cost of doing business. Textile units, manufacturing plants, metal processing facilities, agro industries — the electricity bill is often the second or third largest operating expense after raw material and labour.</p>
+
+<p>What most business owners have not fully calculated is just how dramatically solar can change that number.</p>
+
+<p>Let us be direct about it.</p>
+
+<h3>The Electricity Cost Problem Is Only Getting Worse</h3>
+
+<p>Industrial electricity tariffs in Haryana and Punjab have seen consistent increases over the past decade. State DISCOMs are under financial pressure, and commercial and industrial consumers tend to bear the larger rate hikes because residential subsidies get protected politically.</p>
+
+<p>A manufacturing unit consuming 50,000 units per month at ₹8–9 per unit is paying ₹4–4.5 lakh every month just on electricity. That is ₹50+ lakh a year — before any further tariff revision.</p>
+
+<p>Now consider this: the solar energy your rooftop generates costs you roughly ₹2–3 per unit over the life of the system. That gap — between what you pay the grid and what solar costs you — is your return on investment.</p>
+
+<h3>What Does the ROI Actually Look Like?</h3>
+
+<p>Here is a straightforward example for a manufacturing unit in Haryana:</p>
+
+<ul>
+<li>Monthly electricity consumption: 60,000 units</li>
+<li>Current tariff: ₹8.50 per unit</li>
+<li>Monthly electricity bill: ₹5.1 lakh</li>
+<li>Solar system installed: 400 kW rooftop system</li>
+<li>Monthly solar generation (approx.): 48,000–52,000 units</li>
+<li>Estimated monthly savings: ₹4–4.4 lakh</li>
+<li>System cost: ₹1.6–1.8 crore</li>
+<li>Simple payback period: 3.5 to 4 years</li>
+</ul>
+
+<p>After the payback period, you are generating power at near-zero cost for the next 20+ years. The panels come with a 25-year performance warranty. The inverters typically carry a 5–10 year warranty with extension options.</p>
+
+<p>For businesses that operate primarily during daytime hours — which includes most industrial and commercial operations — the alignment between solar generation and power consumption is near perfect. You are not generating electricity while you sleep; you are generating it exactly when your machines are running.</p>
+
+<h3>The Tax Benefit Most Businesses Are Not Using</h3>
+
+<p>This one is genuinely underutilised.</p>
+
+<p>Under the Indian Income Tax Act, commercial and industrial solar installations qualify for accelerated depreciation of up to 40% in the first year. This means a ₹1.5 crore solar installation can give you a depreciation benefit of up to ₹60 lakh in year one alone — directly reducing your taxable income.</p>
+
+<p>For profitable businesses in higher tax brackets, this benefit alone can reduce the effective cost of the solar system by 20–25%, dramatically improving the actual payback period.</p>
+
+<p>Speak to your CA about this before you make the decision — the numbers often look even better once accelerated depreciation is factored in.</p>
+
+<h3>What About Cloudy Days and Power Cuts?</h3>
+
+<p>Fair question. Two clarifications:</p>
+
+<p><strong>On cloudy days:</strong> Solar panels do not stop working when it is overcast. They generate at reduced capacity — typically 20–40% of peak output. North India averages 250–300 sunny days a year, and even the monsoon months contribute meaningful generation.</p>
+
+<p><strong>On power cuts:</strong> A standard on-grid solar system shuts down automatically during a grid outage. This is a safety requirement to protect linemen working on the grid. If uninterrupted power is critical to your operations, a hybrid system with battery backup is the right configuration — it costs more upfront but ensures your critical loads never go down.</p>
+
+<p>For most industrial users, an on-grid system is sufficient because power cuts tend to be short and manageable, and the cost savings of going on-grid versus hybrid are significant.</p>
+
+<h3>The Financing Question</h3>
+
+<p>You do not need to invest the full capital upfront. Several NBFC financing options are available specifically for commercial and industrial solar installations, with loan tenures of 5–7 years. In many cases, the monthly EMI is lower than the monthly electricity savings from day one — meaning the system pays for itself from the first month of operation.</p>
+
+<p>This is not a hypothetical. It is the structure Divvy Solar routinely helps clients set up through its NBFC financing partnerships.</p>
+
+<h3>One Thing That Makes or Breaks the Investment</h3>
+
+<p>The quality of execution.</p>
+
+<p>A 400 kW system that is poorly designed — wrong panel layout, suboptimal inverter sizing, inadequate earthing, no monitoring — will not deliver the returns modelled above. It will deliver something significantly lower, and you will spend years trying to figure out why.</p>
+
+<p>The difference between a 90% efficient system and a 75% efficient system on a 400 kW installation is roughly ₹30–40 lakh in lost revenue over ten years.</p>
+
+<p>This is why the choice of EPC partner matters at least as much as the choice of panel brand.</p>
+
+<h3>Why Choose Divvy Solar?</h3>
+
+<p>Since 2018, Divvy Solar has executed solar projects across textile units, manufacturing facilities, metal processing plants, agro industries, and commercial buildings across Punjab, Haryana, and Delhi NCR. With over 1,000 completed projects and dedicated service teams in Hisar, Gurgaon, Mohali, and Ludhiana, we handle the full project lifecycle — from detailed site assessment and custom system design to commissioning, government approvals, and 24/7 remote monitoring.</p>
+        `
+    },
+    'why-most-rooftop-solar-systems-in-india-underperform': {
+        title: 'Why Most Rooftop Solar Systems in India Underperform — And How to Avoid It',
+        metaTitle: 'Why Your Rooftop Solar System Is Underperforming | Divvy Solar',
+        metaDescription: 'Installed rooftop solar but not seeing the savings you expected? Here are the real reasons solar systems underperform in India — and what you can do about it.',
+        author: 'Divvy Solar Expert',
+        createdAt: '2025-05-29',
+        image: '/utility_hero_4k.png',
+        excerpt: 'You got solar installed. You were told to expect 80% savings on your electricity bill. Three months in, the bill has barely moved. This is one of the most common frustrations we hear from homeowners and business owners across Punjab, Haryana, and Delhi NCR.',
+        content: `
+<p>You got solar installed. You were told to expect 80% savings on your electricity bill. Three months in, the bill has barely moved.</p>
+
+<p>Sound familiar?</p>
+
+<p>This is one of the most common frustrations we hear from homeowners and business owners across Punjab, Haryana, and Delhi NCR. The solar industry in India has grown at a breakneck pace — and unfortunately, so has the number of poorly installed systems. If your rooftop solar system is not delivering the savings you were promised, the problem is almost never the technology. It is almost always the process behind it.</p>
+
+<p>Here is what actually goes wrong — and how to make sure it does not happen to you.</p>
+
+<h3>1. The Site Survey Was Either Skipped or Done Poorly</h3>
+
+<p>A proper site survey is not just someone walking up to your roof and counting available space. It means a trained engineer analysing your roof orientation, measuring shading from trees, water tanks, and neighbouring buildings across different times of day, assessing your roof structure, and studying your actual electricity consumption patterns.</p>
+
+<p>When this step is rushed — which it often is when a company is focused on closing the deal quickly — the system gets designed on assumptions instead of facts. A panel installed in the wrong orientation or under partial shade can lose 20–40% of its potential output before it even starts generating.</p>
+
+<p>Ask any installer: when did you last see a poorly designed system blamed on the design? It always gets blamed on "bad weather" or "cloudy season."</p>
+
+<h3>2. The System Was Sized for Commission, Not for Your Consumption</h3>
+
+<p>Bigger system, bigger sale. That is the incentive for many solar vendors.</p>
+
+<p>An oversized system sounds appealing — more panels means more generation, right? But if your actual consumption does not match the system output, and your state's net metering policy limits export credits, you end up with expensive panels generating electricity that is essentially wasted.</p>
+
+<p>The right system size is calculated from your average monthly units consumed, your load profile across the day, and your available roof area. Nothing else. A 5 kW system that perfectly matches your load will always outperform a 10 kW system that was sold to you on a commission.</p>
+
+<h3>3. Components Were Cheap but the Quote Looked Good</h3>
+
+<p>The solar market in India has a serious problem with component quality. There are dozens of low-cost panel manufacturers and off-brand inverters flooding the market, and many installers use them to offer the lowest price and win the deal.</p>
+
+<p>The issue is you will not see the quality gap on day one. You will see it in year three, when panel degradation is running at 2-3% annually instead of 0.5%, or when the inverter needs replacement after four years instead of lasting ten.</p>
+
+<p>Tier-1 solar panels from manufacturers like Vikram Solar and inverters from brands like Sungrow are not more expensive for no reason. They come with verified performance data, international certifications, and after-sales support. When you are making an investment that needs to generate returns over 20+ years, the component quality is not a place to save money.</p>
+
+<h3>4. Nobody Is Monitoring the System</h3>
+
+<p>This one surprises a lot of people. Most solar systems, once installed, are essentially left to run on their own. There is no active monitoring, no alerts, no periodic checks.</p>
+
+<p>Here is the reality: inverters trip. String connections loosen over time. A panel can get partially shaded by a new structure nearby. Bird droppings accumulate. Each of these issues individually can reduce output by 10–15%, and together they can quietly drag your system performance down to 50% of its rated capacity — while your electricity bills slowly start climbing back up.</p>
+
+<p>24/7 remote monitoring with real-time alerts for performance drops is not a luxury feature. It is what separates a system that delivers returns for 25 years from one that disappoints you after the first year.</p>
+
+<h3>5. You Picked the Cheapest Quote Without Checking What Was Behind It</h3>
+
+<p>We understand — rooftop solar is a significant investment. Getting the best price makes sense. But there is a difference between a competitive price and a price that is only possible because corners are being cut somewhere.</p>
+
+<p>The questions to ask any installer before signing:</p>
+
+<ul>
+<li>Which panel brand and model? What is the performance warranty?</li>
+<li>Which inverter? What is the inverter warranty?</li>
+<li>Will you handle DISCOM approvals and net metering paperwork?</li>
+<li>Do you provide remote monitoring after installation?</li>
+<li>How many projects have you completed, and can I speak to any of your clients?</li>
+</ul>
+
+<p>A company that cannot answer these questions clearly is a company that is betting you will not ask them.</p>
+
+<h3>Why Choose Divvy Solar?</h3>
+
+<p>Since 2018, Divvy Solar has completed over 1,000 solar installations across residential, commercial, and industrial projects in North India. Every project starts with a thorough site survey, a system designed around your actual load, components sourced from trusted brands, and a commissioning process that includes setting up 24/7 remote monitoring before we leave the site.</p>
+
+<p>We also handle all government approvals, net metering applications, and NBFC financing support — so the process is genuinely turnkey for our clients.</p>
+
+<p>If your existing system is underperforming, or if you are considering solar for the first time and want to do it right, we are happy to start with a free site assessment.</p>
+        `
+    },
     'epc-solutions-in-solar-energy-2025': {
         title: 'Mastering EPC Solutions in Solar Energy: A 2025 Guide',
         author: 'Divvy Expert',
@@ -238,15 +395,17 @@ export async function generateMetadata({ params }) {
     if (!blog) {
         return { title: 'Not Found' };
     }
+    const metaTitle = blog.metaTitle || blog.title;
+    const metaDescription = blog.metaDescription || blog.excerpt || 'Read this article from Divvy Solar';
     return {
-        title: blog.title,
-        description: blog.excerpt || 'Read this article from Divvy Solar',
+        title: metaTitle,
+        description: metaDescription,
         alternates: {
             canonical: `https://divvysolar.in/blogs/${params.slug}`,
         },
         openGraph: {
-            title: blog.title,
-            description: blog.excerpt || 'Read this article from Divvy Solar',
+            title: metaTitle,
+            description: metaDescription,
             images: [{ url: blog.image || 'https://images.unsplash.com/photo-1509391366360-2e959784a276' }],
         },
     };
