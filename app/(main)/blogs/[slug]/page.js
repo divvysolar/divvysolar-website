@@ -132,7 +132,7 @@ const fallbackBlogs = {
     },
     'is-solar-worth-it-for-factory-business-2026': {
         title: 'Is Solar Worth It for Your Factory or Business in 2026? Here Is the Honest Answer',
-        metaTitle: 'Is Solar Worth It for Your Factory or Business in 2026? | Divvy Solar',
+        metaTitle: 'Is Solar Worth It for Your Factory or Business in 2026?',
         metaDescription: 'Factory electricity bills eating into your margins? Discover why industrial and commercial rooftop solar is one of the smartest investments a North Indian business can make right now.',
         author: 'Divvy Solar Expert',
         createdAt: '2025-06-01',
@@ -215,7 +215,7 @@ const fallbackBlogs = {
     },
     'why-most-rooftop-solar-systems-in-india-underperform': {
         title: 'Why Most Rooftop Solar Systems in India Underperform — And How to Avoid It',
-        metaTitle: 'Why Your Rooftop Solar System Is Underperforming | Divvy Solar',
+        metaTitle: 'Why Your Rooftop Solar System Is Underperforming',
         metaDescription: 'Installed rooftop solar but not seeing the savings you expected? Here are the real reasons solar systems underperform in India — and what you can do about it.',
         author: 'Divvy Solar Expert',
         createdAt: '2025-05-29',

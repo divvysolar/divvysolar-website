@@ -2,7 +2,7 @@ import PageHero from "@/components/common/PageHero";
 import SolarCalculator from "@/components/calculator/SolarCalculator";
 
 export const metadata = {
-    title: 'Solar Calculator | Divvy Solar',
+    title: 'Solar Calculator',
     description: 'Calculate your exact rooftop solar system size, monthly savings, and return on investment with the Divvy Solar AI Estimator.',
     alternates: { canonical: 'https://divvysolar.in/calculator' },
 };

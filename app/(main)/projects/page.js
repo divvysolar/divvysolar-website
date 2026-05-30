@@ -2,7 +2,7 @@ import PageHero from '@/components/common/PageHero';
 import ProjectGalleryGrid from '@/components/projects/ProjectGalleryGrid';
 
 export const metadata = {
-    title: 'Milestone Projects | Divvy Solar',
+    title: 'Milestone Projects',
     description: 'Explore Divvy Solar project milestones. Verified live installations with technical specifications and performance data.',
     alternates: { canonical: 'https://divvysolar.in/projects' },
 };

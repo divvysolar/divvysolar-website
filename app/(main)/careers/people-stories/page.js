@@ -2,7 +2,7 @@ import Image from "next/image";
 import PeopleStories from "@/components/careers/PeopleStories";
 
 export const metadata = {
-    title: 'Life at Divvy Solar | Divvy Solar',
+    title: 'Life at Divvy Solar',
     description: 'Meet the visionary leaders driving the green energy revolution at Divvy Solar.',
     alternates: { canonical: 'https://divvysolar.in/careers/people-stories' },
 };
