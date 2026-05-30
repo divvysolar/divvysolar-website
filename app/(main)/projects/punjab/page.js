@@ -14,7 +14,7 @@ const InteractiveMap = dynamic(() => import('@/components/home/InteractiveMap'),
 });
 
 export const metadata = {
-    title: 'Punjab Projects | Divvy Solar',
+    title: 'Punjab Projects',
     description: 'Empowering Punjab with clean, efficient solar energy solutions. Join the sustainable revolution.',
     alternates: { canonical: 'https://divvysolar.in/projects/punjab' },
 };

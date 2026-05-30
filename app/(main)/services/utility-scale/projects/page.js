@@ -3,7 +3,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 
 export const metadata = {
-    title: 'Utility Scale Project Showcase | Divvy Solar',
+    title: 'Utility Scale Project Showcase',
     description: 'Explore our multi-megawatt utility scale solar projects across India. Bankable assets, MW-scale EPC expertise, and high-yield performance.',
 };
 
