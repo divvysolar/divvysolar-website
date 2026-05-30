@@ -3,12 +3,12 @@ import ServiceCard from '@/components/services/ServiceCard';
 import { HomeIcon, BuildingLibraryIcon, BuildingOffice2Icon, ShieldCheckIcon, DocumentCheckIcon, CurrencyRupeeIcon, WrenchScrewdriverIcon } from '@heroicons/react/24/outline';
 
 export const metadata = {
-    title: 'Solar EPC Services in India | Divvy Solar',
+    title: 'Solar EPC Services in India',
     description: 'Divvy Solar is India\'s premier turnkey solar EPC company. Explore our high-efficiency residential, industrial, and utility-scale solar solutions built since 2018.',
     keywords: ['solar epc services india', 'industrial solar rooftop', 'residential solar installation', 'commercial solar system', 'utility scale solar projects', 'Divvy Solar services'],
     alternates: { canonical: 'https://divvysolar.in/services' },
     openGraph: {
-        title: 'Solar EPC Services in India | Divvy Solar',
+        title: 'Solar EPC Services in India',
         description: 'Complete turnkey solar EPC solutions for homes, factories, and utility projects. Sourcing Tier-1 components for maximum performance since 2018.',
         url: 'https://divvysolar.in/services',
     }
