@@ -15,7 +15,7 @@ const inter = Inter({
 export const metadata = {
     metadataBase: new URL('https://divvysolar.in'),
     title: {
-        template: '%s | Divvy Solar',
+        template: '%s',
         default: 'Divvy Solar | Trusted Solar Panel Installation Company',
     },
     description: 'Divvy Solar provides reliable solar panel installation for homes, industries, and large-scale projects across India. Premium EPC solutions since 2018.',

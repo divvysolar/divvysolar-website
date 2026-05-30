@@ -22,7 +22,7 @@ const InteractiveMap = dynamic(() => import('@/components/home/InteractiveMap'),
 });
 
 export const metadata = {
-    title: 'Haryana Projects | Divvy Solar',
+    title: 'Haryana Projects',
     description:
         'Harnessing the power of the sun with utility-scale and industrial solar in Haryana.',
     alternates: { canonical: 'https://divvysolar.in/projects/haryana' },

@@ -59,7 +59,7 @@ const jsonLd = {
     '@type': 'LocalBusiness',
     name: 'Divvy Solar Power & Solutions Pvt. Ltd.',
     url: 'https://divvysolar.in',
-    logo: 'https://divvysolar.in/images/divvy solar.png',
+    logo: 'https://divvysolar.in/divvy_photo.png',
     image: 'https://divvysolar.in/images/og-image.jpg',
     description: "India's trusted solar EPC company providing residential, industrial, and utility-scale solar solutions since 2018.",
     telephone: '+919254986321',
