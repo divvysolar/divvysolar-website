@@ -6,7 +6,7 @@ module.exports = {
     priority: 0.7,
     sitemapSize: 7000,
     generateIndexSitemap: false,
-    exclude: ['/admin', '/admin/*', '/api/*'],
+    exclude: ['/admin', '/admin/*', '/api/*', '/icon.png'],
     robotsTxtOptions: {
         policies: [
             { userAgent: '*', allow: '/' },
