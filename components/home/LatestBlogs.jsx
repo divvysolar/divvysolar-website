@@ -5,28 +5,37 @@ const LatestBlogs = ({ blogs = [] }) => {
     // Exact content from screenshots
     const displayBlogs = blogs.length > 0 ? blogs : [
         {
+            _id: '5',
+            title: 'Is Solar Worth It for Your Factory or Business in 2026? Here Is the Honest Answer',
+            slug: 'is-solar-worth-it-for-factory-business-2026',
+            excerpt: 'Every factory owner in Punjab and Haryana knows the feeling. You open your monthly electricity bill, see a number that has gone up again. Here is the honest ROI breakdown — savings, tax benefits, financing, and what actually makes or breaks the investment.',
+            image: '/uti1_main.jpeg',
+            author: 'Divvy Solar Expert',
+            createdAt: '2025-06-01'
+        },
+        {
+            _id: '4',
+            title: 'Why Most Rooftop Solar Systems in India Underperform — And How to Avoid It',
+            slug: 'why-most-rooftop-solar-systems-in-india-underperform',
+            excerpt: 'You got solar installed. You were told to expect 80% savings on your electricity bill. Three months in, the bill has barely moved. Here are the real reasons solar systems underperform in India — and what you can do about it.',
+            image: '/utility_hero_4k.png',
+            author: 'Divvy Solar Expert',
+            createdAt: '2025-05-29'
+        },
+        {
             _id: '1',
             title: 'Unlocking Solar Potential in India: Key Trends & Insights for Homes, Businesses & Enterprises in 2025!',
-            slug: 'solar-potential-in-india-2026-key-trends-insights',
-            excerpt: 'Are you ready to embrace the sunshine and transform your homes and businesses? As we know, India is taking steps towards solar power with great confidence. It presents a valuable opportunity for large industries, enterprises, and homeowners. Divvy Solar has emerged as an influential partner in Haryana, Punjab, Chandigarh, and is now expanding into Gurgaon. [...]',
-            image: '/utility_hero_4k.png',
+            slug: 'solar-potential-in-india-2025-key-trends-insights',
+            excerpt: 'Are you ready to embrace the sunshine and transform your homes and businesses in 2025? India is taking steps towards solar power with breakthrough advancements and government policies making it easier than ever.',
+            image: '/utility_intro_4k.png',
             author: 'Divvy Expert',
             createdAt: '2025-04-14'
         },
         {
             _id: '2',
             title: 'Solar Power Is The Future: Why Now Is the Ideal Time to Transition (2025 Edition)',
-            slug: 'solar-power-is-the-future-2026',
-            excerpt: 'As the world rapidly moves toward a more sustainable future, technological advancements are transforming the energy landscape. Solar power is no longer just an alternative but a central component of how we produce and consume energy. Divvy Solar helps cut costs and emphasise environmental responsibility — transitioning to solar is now a strategic decision. [...]',
-            image: '/utility_intro_4k.png',
-            author: 'Divvy Expert',
-            createdAt: '2025-04-14'
-        },
-        {
-            _id: '3',
-            title: 'Mastering EPC Solutions in Solar Energy: A 2025 Guide',
-            slug: 'epc-solutions-in-solar-energy-2026',
-            excerpt: 'Everyone is talking about a global shift toward renewable energy. An experienced EPC company helps you with a successful solar system installation — the backbone of whether you want a rooftop system or a large solar farm. In this blog, we break down everything you need to know about professional EPC services for 2025. [...]',
+            slug: 'solar-power-is-the-future-2025',
+            excerpt: 'As the world rapidly moves toward a more sustainable future, technological advancements are transforming the energy landscape. Solar power is no longer just an alternative but a central component of how we produce and consume energy. Divvy Solar helps cut costs and emphasise environmental responsibility — transitioning to solar is now a strategic decision.',
             image: '/uti1_main.jpeg',
             author: 'Divvy Expert',
             createdAt: '2025-04-14'
