@@ -6,16 +6,29 @@ import ContactForm from '@/components/contact/ContactForm';
 import { BoltIcon, ShieldCheckIcon, CurrencyRupeeIcon, Cog6ToothIcon, ClockIcon, PhoneIcon } from '@heroicons/react/24/outline';
 
 export const metadata = {
-    title: 'Residential Solar Solutions | Divvy Solar',
-    description: 'Affordable Residential Solar Solutions by Divvy Solar. Custom-tailored design, tier-1 panels, and fast installation across India.',
-    keywords: ['residential solar', 'home solar panels', 'solar installation India', 'rooftop solar', 'Divvy Solar residential'],
+    title: 'Residential Rooftop Solar & Subsidy',
+    description: 'Get residential rooftop solar panels with PM Surya Ghar Muft Bijli Yojana subsidy. Divvy Solar designs custom, DCR-compliant home solar systems with full net-metering support across Haryana, Punjab & Delhi NCR.',
+    keywords: [
+        'home solar rooftop subsidy',
+        'PM Surya Ghar Muft Bijli Yojana',
+        'rooftop solar subsidy Haryana',
+        'residential solar installation Punjab',
+        'DCR compliant solar panels home',
+        'solar panel cost for home Delhi NCR',
+        'rooftop net metering residential',
+        'Divvy Solar home rooftop'
+    ],
     openGraph: {
-        title: 'Residential Solar Solutions | Divvy Solar',
-        description: 'Custom solar systems for homes. Zero disruption installation, tier-1 panels, and long-term savings.',
+        title: 'Residential Rooftop Solar & Subsidies',
+        description: 'Reduce household electricity bills to zero. Fully supported PM Surya Ghar Yojana installations, high-yield DCR solar panels, and seamless net metering.',
         url: 'https://divvysolar.in/services/residential',
-        images: [{ url: '/images/og-image.jpg', width: 1200, height: 630, alt: 'Residential Solar by Divvy Solar' }],
+        images: [{ url: '/resi2main.webp', width: 1200, height: 630, alt: 'Residential Rooftop Solar by Divvy Solar' }],
     },
-    twitter: { card: 'summary_large_image', title: 'Residential Solar | Divvy Solar', description: 'Custom solar for homes across India.' },
+    twitter: {
+        card: 'summary_large_image',
+        title: 'Home Rooftop Solar & Subsidies',
+        description: 'Zero electricity bills with PM Surya Ghar rooftop solar subsidies in Haryana, Punjab & Delhi NCR.'
+    },
     alternates: { canonical: 'https://divvysolar.in/services/residential' },
 };
 
@@ -43,12 +56,12 @@ export default function ResidentialPage() {
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
                         <div className="animate-slide-up lg:pr-10">
-                            <div className="inline-flex items-center bg-[#0a0f1c] text-white px-4 py-1.5 rounded-full mb-6 shadow-lg transform hover:scale-105 transition-transform duration-300">
-                                <h3 className="font-medium uppercase tracking-[0.2em] text-[10px]">Why Choose Divvy Solar</h3>
+                             <div className="inline-flex items-center bg-[#0a0f1c] text-white px-4 py-1.5 rounded-full mb-6 shadow-lg transform hover:scale-105 transition-transform duration-300">
+                                <h3 className="font-medium uppercase tracking-[0.2em] text-[10px] text-amber-400">PM Surya Ghar Rooftop Solar</h3>
                             </div>
                             <h2 className="text-3xl md:text-5xl font-medium text-[#0a1122] mb-8 leading-tight tracking-tight" style={{ fontFamily: 'Georgia, serif' }}>
-                                <span className="block whitespace-nowrap">Residential Solar Solutions</span>
-                                <span className="block text-[#0e1b3d]">for Maximum Savings</span>
+                                <span className="block md:whitespace-nowrap">Residential Solar Solutions</span>
+                                <span className="block text-amber-500 md:whitespace-nowrap">for Maximum Savings</span>
                             </h2>
 
                             <div className="space-y-10 text-[#0a1122] text-lg leading-relaxed">
@@ -58,21 +71,21 @@ export default function ResidentialPage() {
 
                                 <div className="grid grid-cols-1 gap-8 py-4">
                                     <div className="flex items-start group/item">
-                                        <div className="flex-shrink-0 w-1.5 h-16 bg-[#0a1122] rounded-full mr-6 group-hover/item:scale-y-110 transition-transform"></div>
+                                        <div className="self-stretch w-1.5 bg-[#0a1122] rounded-full mr-6 group-hover/item:scale-y-105 transition-transform duration-300 shrink-0"></div>
                                         <div>
                                             <h4 className="font-medium text-[#0a1122] text-xl mb-1" style={{ fontFamily: 'Georgia, serif' }}>Complete EPC Solutions</h4>
                                             <p className="text-gray-600 text-base leading-relaxed font-normal">End-to-end residential execution, from design and procurement to final testing and net-metering, managed by one expert team.</p>
                                         </div>
                                     </div>
                                     <div className="flex items-start group/item">
-                                        <div className="flex-shrink-0 w-1.5 h-16 bg-[#0a1122] rounded-full mr-6 group-hover/item:scale-y-110 transition-transform"></div>
+                                        <div className="self-stretch w-1.5 bg-[#0a1122] rounded-full mr-6 group-hover/item:scale-y-105 transition-transform duration-300 shrink-0"></div>
                                         <div>
                                             <h4 className="font-medium text-[#0a1122] text-xl mb-1" style={{ fontFamily: 'Georgia, serif' }}>High-Efficiency Systems</h4>
                                             <p className="text-gray-600 text-base leading-relaxed font-normal">Optimized residential sizing with Tier-1 components to maximize generation and ensure the fastest return on your investment.</p>
                                         </div>
                                     </div>
                                     <div className="flex items-start group/item">
-                                        <div className="flex-shrink-0 w-1.5 h-16 bg-[#0a1122] rounded-full mr-6 group-hover/item:scale-y-110 transition-transform"></div>
+                                        <div className="self-stretch w-1.5 bg-[#0a1122] rounded-full mr-6 group-hover/item:scale-y-105 transition-transform duration-300 shrink-0"></div>
                                         <div>
                                             <h4 className="font-medium text-[#0a1122] text-xl mb-1" style={{ fontFamily: 'Georgia, serif' }}>Precision Engineering</h4>
                                             <p className="text-gray-600 text-base leading-relaxed font-normal">Weatherproof structural design, safe electrical wiring, and compliance-focused installation for reliable, lifelong home energy.</p>
@@ -133,43 +146,154 @@ export default function ResidentialPage() {
                 </div>
             </section>
 
-            {/* How it works & Contact - Optimized Gaps */}
-            <section className="pt-12 pb-20 bg-white scroll-mt-32">
+            {/* PM Surya Ghar Subsidy Breakdown Section */}
+            <section className="py-20 bg-slate-50 relative overflow-hidden scroll-mt-32">
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+                    <div className="text-center mb-16">
+                        <div className="inline-flex items-center bg-amber-400/10 border border-amber-400/20 text-[#0a1122] px-4 py-1.5 rounded-full mb-6">
+                            <span className="font-semibold uppercase tracking-[0.2em] text-[10px] text-[#0a1122]">National Subsidy Calculator</span>
+                        </div>
+                        <h2 className="text-4xl md:text-6xl font-normal text-[#0a1122] mb-6 tracking-tighter" style={{ fontFamily: 'Georgia, serif' }}>
+                            PM Surya Ghar Subsidy Structure
+                        </h2>
+                        <p className="text-gray-600 text-xl max-w-3xl mx-auto font-light leading-relaxed">
+                            Under the direct benefit scheme of the Government of India, residential homeowners receive substantial cash subsidies directly to their bank accounts within 30 days of net-metering commissioning.
+                        </p>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                        {/* Option 1 */}
+                        <div className="bg-white border border-slate-100 rounded-[2.5rem] p-8 md:p-10 shadow-sm hover:shadow-xl hover:border-amber-400/30 transition-all duration-300 flex flex-col justify-between group">
+                            <div>
+                                <div className="flex justify-between items-center mb-6">
+                                    <span className="text-xs uppercase font-bold tracking-widest text-gray-400">System Capacity</span>
+                                    <span className="bg-amber-400/10 text-[#0a1122] font-semibold text-xs px-3 py-1 rounded-full">1 kW - 2 kW</span>
+                                </div>
+                                <h3 className="text-2xl font-bold text-[#0a1122] mb-4" style={{ fontFamily: 'Georgia, serif' }}>Small Home Solar</h3>
+                                <p className="text-gray-500 text-sm mb-6 leading-relaxed">Perfect for small households, independent floors, and families with average consumption (fans, lights, refrigerator).</p>
+                                
+                                <div className="border-t border-slate-100 pt-6 space-y-4 mb-8">
+                                    <div className="flex items-center justify-between">
+                                        <span className="text-sm text-gray-500">Government Subsidy</span>
+                                        <span className="font-bold text-[#0a1122] text-lg">₹30,000 - ₹60,000</span>
+                                    </div>
+                                    <div className="flex items-center justify-between">
+                                        <span className="text-sm text-gray-500">Average Savings / Month</span>
+                                        <span className="font-bold text-amber-500">₹1,000 - ₹2,000</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div className="space-y-3">
+                                <div className="flex items-center gap-2.5 text-xs text-gray-600">
+                                    <svg className="w-4 h-4 text-amber-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" /></svg>
+                                    <span>PM Surya Ghar Approved Subsidy</span>
+                                </div>
+                                <div className="flex items-center gap-2.5 text-xs text-gray-600">
+                                    <svg className="w-4 h-4 text-amber-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" /></svg>
+                                    <span>DCR-Compliant Panels Mandatory</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Option 2 */}
+                        <div className="bg-[#0a1122] text-white border border-[#0a1122] rounded-[2.5rem] p-8 md:p-10 shadow-lg hover:shadow-2xl hover:border-amber-400 transition-all duration-300 flex flex-col justify-between relative overflow-hidden group">
+                            <div className="absolute top-0 right-0 bg-amber-400 text-[#0a1122] font-black text-[9px] uppercase tracking-widest px-6 py-2 rounded-bl-3xl shadow-sm z-10">Most Popular</div>
+                            <div>
+                                <div className="flex justify-between items-center mb-6">
+                                    <span className="text-xs uppercase font-bold tracking-widest text-slate-400">System Capacity</span>
+                                    <span className="bg-amber-400 text-[#0a1122] font-bold text-xs px-3 py-1 rounded-full">3 kW System</span>
+                                </div>
+                                <h3 className="text-2xl font-bold text-white mb-4" style={{ fontFamily: 'Georgia, serif' }}>Standard Home Rooftop</h3>
+                                <p className="text-slate-300 text-sm mb-6 leading-relaxed">Our most requested solar capacity, built to offset heavy daily appliance loads including up to two 1.5-ton split ACs.</p>
+                                
+                                <div className="border-t border-slate-800 pt-6 space-y-4 mb-8">
+                                    <div className="flex items-center justify-between">
+                                        <span className="text-sm text-slate-400">Government Subsidy</span>
+                                        <span className="font-bold text-amber-400 text-xl">₹78,000 (Flat Capped)</span>
+                                    </div>
+                                    <div className="flex items-center justify-between">
+                                        <span className="text-sm text-slate-400">Average Savings / Month</span>
+                                        <span className="font-bold text-amber-400 text-lg">₹3,000 - ₹4,000</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div className="space-y-3">
+                                <div className="flex items-center gap-2.5 text-xs text-slate-200">
+                                    <svg className="w-4 h-4 text-amber-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" /></svg>
+                                    <span>Maximum direct subsidy benefit</span>
+                                </div>
+                                <div className="flex items-center gap-2.5 text-xs text-slate-200">
+                                    <svg className="w-4 h-4 text-amber-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" /></svg>
+                                    <span>Bi-directional net-meter integration</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Option 3 */}
+                        <div className="bg-white border border-slate-100 rounded-[2.5rem] p-8 md:p-10 shadow-sm hover:shadow-xl hover:border-amber-400/30 transition-all duration-300 flex flex-col justify-between group">
+                            <div>
+                                <div className="flex justify-between items-center mb-6">
+                                    <span className="text-xs uppercase font-bold tracking-widest text-gray-400">System Capacity</span>
+                                    <span className="bg-amber-400/10 text-[#0a1122] font-semibold text-xs px-3 py-1 rounded-full">4 kW - 10 kW+</span>
+                                </div>
+                                <h3 className="text-2xl font-bold text-[#0a1122] mb-4" style={{ fontFamily: 'Georgia, serif' }}>Premium Villa / Estate</h3>
+                                <p className="text-gray-500 text-sm mb-6 leading-relaxed">Designed for large independent bungalows, luxury villas, and homes running central HVAC, multiple ACs, and EV chargers.</p>
+                                
+                                <div className="border-t border-slate-100 pt-6 space-y-4 mb-8">
+                                    <div className="flex items-center justify-between">
+                                        <span className="text-sm text-gray-500">Government Subsidy</span>
+                                        <span className="font-bold text-[#0a1122] text-lg">₹78,000 (Maximum Cap)</span>
+                                    </div>
+                                    <div className="flex items-center justify-between">
+                                        <span className="text-sm text-gray-500">Average Savings / Month</span>
+                                        <span className="font-bold text-amber-500 text-lg">₹4,000 - ₹12,000</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div className="space-y-3">
+                                <div className="flex items-center gap-2.5 text-xs text-gray-600">
+                                    <svg className="w-4 h-4 text-amber-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" /></svg>
+                                    <span>Ideal for EV fast-charging at home</span>
+                                </div>
+                                <div className="flex items-center gap-2.5 text-xs text-gray-600">
+                                    <svg className="w-4 h-4 text-amber-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" /></svg>
+                                    <span>Discom panel registration by Divvy Solar</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            {/* EPC 3 Steps & Contact - Optimized Gaps */}
+            <section className="pt-16 pb-24 bg-[#f8f9fa] scroll-mt-32">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="grid grid-cols-1 lg:grid-cols-12 gap-16">
                         <div className="lg:col-span-12 xl:col-span-5 flex flex-col justify-center">
-                            <h3 className="font-medium uppercase tracking-widest text-[#0a1122] text-[10px] mb-2 opacity-60">ENGINEERING, PROCUREMENT & CONSTRUCTION</h3>
+                            <div className="inline-flex items-center bg-[#0a1122]/5 border border-[#0a1122]/10 text-[#0a1122] px-4 py-1.5 rounded-full mb-6 w-fit">
+                                <span className="font-black uppercase tracking-[0.2em] text-[10px]">EPC Process</span>
+                            </div>
                             <h2 className="text-3xl md:text-4xl font-medium text-[#0a1122] mb-4 leading-tight" style={{ fontFamily: 'Georgia, serif' }}>Start Saving with EPC in 3 Steps</h2>
-                            <p className="text-gray-700 mb-8 text-sm md:text-base leading-relaxed border-b border-gray-100 pb-6 max-w-md font-normal">
-                                We deliver <span className="text-[#0a1122]">turnkey solar EPC solutions</span>, built for performance, safety, and long-term savings.
+                            <p className="text-gray-600 mb-10 text-base leading-relaxed max-w-md font-normal">
+                                We deliver <span className="text-[#0a1122] font-medium">turnkey solar EPC solutions</span> — from initial structural load tests to net-metering approval — with absolute efficiency.
                             </p>
-
-                            <div className="space-y-6 relative before:absolute before:inset-0 before:ml-5 before:-translate-x-px md:before:mx-auto md:before:translate-x-0 before:h-full before:w-0.5 before:bg-gradient-to-b before:from-transparent before:via-gray-200 before:to-transparent">
-
-                                <div className="relative flex items-center justify-between md:justify-normal md:odd:flex-row-reverse group is-active">
-                                    <div className="flex items-center justify-center w-10 h-10 rounded-full border border-white bg-[#0a1122] text-white shadow shrink-0 md:order-1 md:group-odd:-translate-x-1/2 md:group-even:translate-x-1/2 font-medium text-base z-10 mx-5">1</div>
-                                    <div className="w-[calc(100%-3.5rem)] md:w-[calc(50%-2rem)] bg-white p-4 rounded-xl border border-gray-100 shadow-sm hover:shadow-md transition-shadow">
-                                        <h4 className="font-medium text-[#0a1122] text-lg mb-1">Engineering</h4>
-                                        <p className="text-gray-600 text-xs leading-relaxed font-normal">Site survey + customized <span className="text-[#0a1122]">solar PV design</span> to maximize generation.</p>
+                            <div className="space-y-0">
+                                {[
+                                    { num: "01", title: "Engineering", desc: "Site survey, detailed shadow profiling, and customized solar PV design to maximize generational yield." },
+                                    { num: "02", title: "Procurement", desc: "Sourcing Tier-1 DCR solar components from highly trusted global brands for guaranteed, durable output." },
+                                    { num: "03", title: "Construction", desc: "Expert rooftop installation, testing, followed by net-metering commissioning and 24/7 smart monitoring." }
+                                ].map((step, i) => (
+                                    <div key={i} className="flex gap-6 group">
+                                        <div className="flex flex-col items-center">
+                                            <div className="w-10 h-10 rounded-full bg-[#0a1122] text-amber-400 flex items-center justify-center font-bold text-xs shrink-0 shadow-md group-hover:scale-110 transition-transform duration-300">{step.num}</div>
+                                            {i < 2 && <div className="w-px h-full bg-[#0a1122]/10 my-1"></div>}
+                                        </div>
+                                        <div className="pb-8">
+                                            <h4 className="font-semibold text-[#0a1122] text-lg mb-1.5">{step.title}</h4>
+                                            <p className="text-gray-600 text-sm leading-relaxed font-normal">{step.desc}</p>
+                                        </div>
                                     </div>
-                                </div>
-
-                                <div className="relative flex items-center justify-between md:justify-normal md:odd:flex-row-reverse group is-active">
-                                    <div className="flex items-center justify-center w-10 h-10 rounded-full border border-white bg-[#0a1122] text-white shadow shrink-0 md:order-1 md:group-odd:-translate-x-1/2 md:group-even:translate-x-1/2 font-medium text-base z-10 mx-5">2</div>
-                                    <div className="w-[calc(100%-3.5rem)] md:w-[calc(50%-2rem)] bg-white p-4 rounded-xl border border-gray-100 shadow-sm hover:shadow-md transition-shadow">
-                                        <h4 className="font-medium text-[#0a1122] text-lg mb-1">Procurement</h4>
-                                        <p className="text-gray-600 text-xs leading-relaxed font-normal">Quality <span className="text-[#0a1122]">solar components</span> sourced from trusted brands for reliable output.</p>
-                                    </div>
-                                </div>
-
-                                <div className="relative flex items-center justify-between md:justify-normal md:odd:flex-row-reverse group is-active">
-                                    <div className="flex items-center justify-center w-10 h-10 rounded-full border border-white bg-[#0a1122] text-white shadow shrink-0 md:order-1 md:group-odd:-translate-x-1/2 md:group-even:translate-x-1/2 font-medium text-base z-10 mx-5">3</div>
-                                    <div className="w-[calc(100%-3.5rem)] md:w-[calc(50%-2rem)] bg-white p-4 rounded-xl border border-gray-100 shadow-sm hover:shadow-md transition-shadow">
-                                        <h4 className="font-medium text-[#0a1122] text-lg mb-1">Construction</h4>
-                                        <p className="text-gray-600 text-xs leading-relaxed font-normal">Expert <span className="text-[#0a1122]">installation, testing</span>, followed by <span className="text-[#0a1122]">24/7 monitoring</span>.</p>
-                                    </div>
-                                </div>
-
+                                ))}
                             </div>
                         </div>
 
