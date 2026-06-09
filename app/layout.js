@@ -16,9 +16,9 @@ export const metadata = {
     metadataBase: new URL('https://divvysolar.in'),
     title: {
         template: '%s',
-        default: 'Divvy Solar | Trusted Solar Panel Installation Company',
+        default: 'Divvy Solar | Solar Solutions for Haryana, Punjab & Delhi NCR',
     },
-    description: 'Divvy Solar provides reliable solar panel installation for homes, industries, and large-scale projects across India. Premium EPC solutions since 2018.',
+    description: 'Top-rated solar EPC company in Punjab, Haryana & Delhi NCR. Rooftop, industrial & commercial solar installations. 1000+ projects completed. Get a free site survey.',
 };
 
 export const viewport = {
