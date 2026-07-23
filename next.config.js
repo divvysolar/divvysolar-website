@@ -38,6 +38,15 @@ const nextConfig = {
         source: '/images/:path*',
         headers: [{ key: 'Cache-Control', value: 'public, max-age=2592000, stale-while-revalidate=86400' }],
       },
+      {
+        source: '/sales/pricing',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0',
+          },
+        ],
+      },
     ]
   },
   async redirects() {
@@ -53,6 +62,16 @@ const nextConfig = {
       { source: '/blogs/', destination: '/blogs', permanent: true },
 
       // Tera existing redirects
+      {
+        source: '/haryana_industrial',
+        destination: '/haryana-industrial',
+        permanent: true,
+      },
+      {
+        source: '/punjab_industrial',
+        destination: '/punjab-industrial',
+        permanent: true,
+      },
       {
         source: '/blog',
         destination: '/blogs',

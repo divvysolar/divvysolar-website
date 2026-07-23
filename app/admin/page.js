@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { signIn } from "next-auth/react";
+import { signIn, signOut, useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { SunIcon, LockClosedIcon, EnvelopeIcon } from "@heroicons/react/24/outline";
 
@@ -11,6 +11,9 @@ export default function AdminLogin() {
     const [error, setError] = useState("");
     const [loading, setLoading] = useState(false);
     const router = useRouter();
+    const { data: session, status } = useSession();
+
+    // The layout.js handles redirection for authenticated users
 
     // Ensure state is cleared on mount
     useEffect(() => {
@@ -30,6 +33,7 @@ export default function AdminLogin() {
                 redirect: false,
                 email,
                 password,
+                portal: "admin",
             });
             console.log("SignIn response:", res);
 
@@ -64,7 +68,7 @@ export default function AdminLogin() {
                         <div className="absolute inset-0 bg-white/20 rounded-2xl blur-sm mix-blend-overlay"></div>
                         <SunIcon className="w-8 h-8 text-white relative z-10" />
                     </div>
-                    <h2 className="text-3xl font-black text-white tracking-tight">Welcome Back</h2>
+                    <h2 className="text-3xl font-black text-white tracking-tight">Welcome Admin</h2>
                     <p className="text-white/50 mt-1.5 text-sm font-medium">Sign in to manage Divvy Solar</p>
                 </div>
 
@@ -144,7 +148,7 @@ export default function AdminLogin() {
                         </button>
                     </form>
                 </div>
-                
+
                 <p className="text-center text-white/50 text-xs mt-8">
                     &copy; {new Date().getFullYear()} Divvy Solar. All rights reserved.
                 </p>

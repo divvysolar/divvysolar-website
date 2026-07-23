@@ -6,7 +6,7 @@ module.exports = {
     priority: 0.7,
     sitemapSize: 7000,
     generateIndexSitemap: false,
-    exclude: ['/admin', '/admin/*', '/api/*', '/icon.png'],
+    exclude: ['/admin', '/admin/*', '/api/*', '/icon.png', '/sales', '/sales/*'],
     robotsTxtOptions: {
         policies: [
             { userAgent: '*', allow: '/' },
@@ -32,6 +32,8 @@ module.exports = {
             { loc: '/careers/people-stories', changefreq: 'weekly', priority: 0.7 },
             { loc: '/calculator', changefreq: 'weekly', priority: 0.7 },
             { loc: '/sustainability-calculator', changefreq: 'weekly', priority: 0.7 },
+            { loc: '/punjab-industrial', changefreq: 'weekly', priority: 0.9 },
+            { loc: '/haryana-industrial', changefreq: 'weekly', priority: 0.9 },
         ]
     },
 }

@@ -14,12 +14,14 @@ import {
     Bars3Icon,
     XMarkIcon,
     SunIcon,
-    MoonIcon
+    MoonIcon,
+    CurrencyRupeeIcon
 } from "@heroicons/react/24/outline";
 import {
     HomeIcon as HomeSolid,
     UsersIcon as UsersSolid,
     DocumentTextIcon as DocSolid,
+    CurrencyRupeeIcon as CurrencySolid,
 } from "@heroicons/react/24/solid";
 import { signOut } from "next-auth/react";
 
@@ -34,13 +36,34 @@ export default function AdminLayout({ children }) {
         if (status === "unauthenticated" && pathname !== "/admin") {
             console.log("Redirecting unauthenticated user to login");
             router.push("/admin");
-        } else if (status === "authenticated" && pathname === "/admin") {
-            console.log("Redirecting authenticated user to dashboard");
-            router.push("/admin/dashboard");
+        } else if (status === "authenticated") {
+            const role = session?.user?.role;
+            if (role === "admin") {
+                if (pathname === "/admin") {
+                    console.log("Redirecting authenticated user to dashboard");
+                    router.push("/admin/dashboard");
+                }
+            } else if (role === "salesperson") {
+                if (pathname === "/admin") {
+                    console.log("Salesperson on admin login page: logging out");
+                    signOut({ callbackUrl: "/admin" });
+                } else {
+                    console.log("Access denied: Redirecting non-admin to sales portal");
+                    router.push("/sales/pricing");
+                }
+            } else if (role) {
+                // If they have a role but it's neither admin nor salesperson, sign them out
+                signOut({ callbackUrl: "/admin" });
+            }
+            // If role is undefined, we just wait (NextAuth might be hydrating)
         }
-    }, [status, pathname, router]);
+    }, [status, pathname, router, session]);
 
     if (status === "unauthenticated" && pathname !== "/admin") {
+        return null;
+    }
+
+    if (status === "authenticated" && session?.user?.role !== "admin") {
         return null;
     }
 
@@ -70,6 +93,7 @@ export default function AdminLayout({ children }) {
         { name: 'Dashboard', href: '/admin/dashboard', icon: HomeIcon, solidIcon: HomeSolid },
         { name: 'Leads', href: '/admin/leads', icon: UsersIcon, solidIcon: UsersSolid },
         { name: 'Blogs', href: '/admin/blogs', icon: DocumentTextIcon, solidIcon: DocSolid },
+        { name: 'Pricing Settings', href: '/admin/dashboard/pricing-settings', icon: CurrencyRupeeIcon, solidIcon: CurrencySolid },
     ];
 
     const isActive = (href) => pathname === href || pathname.startsWith(`${href}/`);
@@ -126,10 +150,7 @@ export default function AdminLayout({ children }) {
                         </div>
                     </div>
                     <button
-                        onClick={async () => {
-                            await signOut({ redirect: false });
-                            window.location.href = "/admin";
-                        }}
+                        onClick={() => signOut({ callbackUrl: "/admin" })}
                         className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-150 text-white/50 hover:bg-red-500/10 hover:text-red-500"
                     >
                         <ArrowLeftOnRectangleIcon className="w-5 h-5" />
@@ -189,10 +210,9 @@ export default function AdminLayout({ children }) {
                                 </div>
                             </div>
                             <button
-                                onClick={async () => {
+                                onClick={() => {
                                     setMobileOpen(false);
-                                    await signOut({ redirect: false });
-                                    window.location.href = "/admin";
+                                    signOut({ callbackUrl: "/admin" });
                                 }}
                                 className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-150 text-white/50 hover:bg-red-500/10 hover:text-red-500"
                             >
