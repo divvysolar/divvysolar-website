@@ -10,11 +10,17 @@ export const authOptions = {
             name: 'Credentials',
             credentials: {
                 email: { label: "Email", type: "email" },
-                password: { label: "Password", type: "password" }
+                password: { label: "Password", type: "password" },
+                portal: { label: "Portal", type: "text" }
             },
             async authorize(credentials) {
+                console.log("Authorize called with credentials:", credentials);
                 if (!credentials?.email || !credentials?.password) {
                     throw new Error('Please enter an email and password');
+                }
+                
+                if (!credentials?.portal) {
+                    throw new Error('Invalid login request: Portal information is missing');
                 }
 
                 await connectToDatabase();
@@ -22,7 +28,7 @@ export const authOptions = {
                 const admin = await Admin.findOne({ email: credentials.email }).select('+password');
 
                 if (!admin) {
-                    throw new Error('No admin found with this email');
+                    throw new Error('No user found with this email');
                 }
                 
                 const isMatch = await admin.matchPassword(credentials.password);
@@ -31,10 +37,21 @@ export const authOptions = {
                     throw new Error('Invalid password');
                 }
 
+                const role = admin.role || admin._doc?.role || 'admin';
+
+                // Enforce portal-specific role checks
+                if (credentials.portal === "sales" && role !== "salesperson") {
+                    throw new Error('Access denied: Sales Portal is restricted to salesperson accounts');
+                }
+                if (credentials.portal === "admin" && role !== "admin") {
+                    throw new Error('Access denied: Admin Panel is restricted to admin accounts');
+                }
+
                 return { 
                     id: admin._id.toString(), 
                     name: admin.name, 
-                    email: admin.email 
+                    email: admin.email,
+                    role: role,
                 };
             }
         })
@@ -47,7 +64,7 @@ export const authOptions = {
         async jwt({ token, user }) {
             if (user) {
                 token.id = user.id;
-                token.role = "admin";
+                token.role = user.role;
             }
             return token;
         },

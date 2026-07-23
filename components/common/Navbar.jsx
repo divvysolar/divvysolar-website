@@ -56,7 +56,7 @@ const NavDropdown = ({ title, links, dropdownKey, openDropdown, handleMouseEnter
     );
 };
 
-const Navbar = () => {
+const Navbar = ({ isLandingPage = false }) => {
     const [isOpen, setIsOpen] = useState(false);
     const pathname = usePathname();
     const [isScrolled, setIsScrolled] = useState(false);
@@ -103,6 +103,7 @@ const Navbar = () => {
         { name: 'Solar Calculator', href: '/calculator' },
         { name: 'Sustainability Calculator', href: '/sustainability-calculator' },
         { name: 'Blog', href: '/blogs' },
+        { name: 'Sales Portal', href: '/sales' },
     ];
 
     const handleMouseEnter = (name) => {
@@ -142,7 +143,8 @@ const Navbar = () => {
 
                     <div className="hidden lg:flex flex-1 items-center justify-end">
                         {/* Right-Aligned Nav Links */}
-                        <div className="flex space-x-8 items-center h-full mr-8 xl:mr-12">
+                        {!isLandingPage && (
+                            <div className="flex space-x-8 items-center h-full mr-8 xl:mr-12">
                             <Link
                                 href="/"
                                 className={`text-sm font-bold tracking-wide transition-colors h-full flex items-center ${isActive('/') ? 'text-accent' : 'text-primary hover:text-accent'}`}
@@ -189,12 +191,19 @@ const Navbar = () => {
                                 alignRight={true}
                             />
                         </div>
+                        )}
 
                         {/* Extreme Right Button */}
                         <div className="flex-shrink-0 flex items-center">
                             <Link
-                                href="/contact"
-                                onClick={() => fp.event('Contact', { content_name: 'Navbar Quote Button' })}
+                                href={isLandingPage ? "#lead-form" : "/contact"}
+                                onClick={(e) => {
+                                    fp.event('Contact', { content_name: 'Navbar Quote Button' });
+                                    if (isLandingPage) {
+                                        e.preventDefault();
+                                        document.getElementById('lead-form')?.scrollIntoView({ behavior: 'smooth' });
+                                    }
+                                }}
                                 className="bg-yellow-400 text-[#0a0f1e] text-[11px] lg:text-[12px] xl:text-[13px] font-black tracking-wider lg:tracking-widest px-5 lg:px-6 py-2.5 rounded-full hover:bg-yellow-500 transition-all duration-300 hover:scale-105 active:scale-95 shadow-lg whitespace-nowrap"
                             >
                                 GET FREE QUOTE
@@ -202,18 +211,35 @@ const Navbar = () => {
                         </div>
                     </div>
 
-                    <div className="lg:hidden flex items-center">
-                        <button
-                            onClick={() => setIsOpen(!isOpen)}
-                            className="text-primary hover:text-accent focus:outline-none"
-                        >
-                            {isOpen ? (
-                                <XMarkIcon className="block h-8 w-8" aria-hidden="true" />
-                            ) : (
-                                <Bars3Icon className="block h-8 w-8" aria-hidden="true" />
-                            )}
-                        </button>
-                    </div>
+                    {!isLandingPage && (
+                        <div className="lg:hidden flex items-center">
+                            <button
+                                onClick={() => setIsOpen(!isOpen)}
+                                className="text-primary hover:text-accent focus:outline-none"
+                            >
+                                {isOpen ? (
+                                    <XMarkIcon className="block h-8 w-8" aria-hidden="true" />
+                                ) : (
+                                    <Bars3Icon className="block h-8 w-8" aria-hidden="true" />
+                                )}
+                            </button>
+                        </div>
+                    )}
+                    {isLandingPage && (
+                        <div className="lg:hidden flex items-center">
+                            <Link
+                                href="#lead-form"
+                                onClick={(e) => {
+                                    fp.event('Contact', { content_name: 'Navbar Quote Button Mobile' });
+                                    e.preventDefault();
+                                    document.getElementById('lead-form')?.scrollIntoView({ behavior: 'smooth' });
+                                }}
+                                className="bg-yellow-400 text-[#0a0f1e] text-[10px] font-black tracking-wider px-4 py-2 rounded-full shadow-lg"
+                            >
+                                GET QUOTE
+                            </Link>
+                        </div>
+                    )}
                 </div>
             </div>
 
