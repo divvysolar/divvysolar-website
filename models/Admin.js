@@ -22,6 +22,11 @@ const AdminSchema = new mongoose.Schema(
             minlength: 6,
             select: false, // Don't return password by default
         },
+        role: {
+            type: String,
+            enum: ['admin', 'salesperson'],
+            default: 'admin',
+        },
     },
     { timestamps: true }
 );
