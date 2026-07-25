@@ -446,8 +446,8 @@ export default function PricingCalculatorPage() {
       return `<!DOCTYPE html><html><head><meta charset="UTF-8"/><style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #334155; background: #e2e8f0; }
-        .page-container { width: 1024px; height: 1448px; padding: 40px; position: relative; background: #ffffff; margin-bottom: 20px; box-sizing: border-box; }
-        .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2.5px solid #eab308; padding-bottom: 16px; margin-bottom: 24px; }
+        .page-container { width: 1024px; height: 1448px; padding: 30px 40px; position: relative; background: #ffffff; margin-bottom: 20px; box-sizing: border-box; }
+        .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2.5px solid #eab308; padding-bottom: 10px; margin-bottom: 18px; }
         .logo-area { flex: 0 0 200px; }
         .company-details { flex: 1; text-align: center; padding: 0 10px; }
         .company-details h2 { font-size: 15px; font-weight: 800; color: #1e3a8a; text-transform: uppercase; margin: 0; letter-spacing: 0.5px; }
@@ -456,18 +456,18 @@ export default function PricingCalculatorPage() {
         .quote-meta { flex: 0 0 180px; text-align: right; }
         .quote-meta .proposal-title { font-size: 11px; font-weight: 900; color: #eab308; text-transform: uppercase; display: block; margin-bottom: 4px; }
         .quote-meta p { font-size: 9px; color: #475569; margin: 2px 0 0 0; }
-        .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 24px; }
-        .box { border: 1px solid #cbd5e1; background: #f8fafc; border-radius: 6px; padding: 12px; }
+        .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 18px; }
+        .box { border: 1px solid #cbd5e1; background: #f8fafc; border-radius: 6px; padding: 10px; }
         .box h3 { font-size: 10px; font-weight: 800; text-transform: uppercase; color: #1e3a8a; border-bottom: 1.5px solid #eab308; padding-bottom: 6px; margin-bottom: 8px; letter-spacing: 0.5px; }
-        .box p { font-size: 10px; color: #334155; margin: 4px 0; }
-        table { width: 100%; border-collapse: collapse; margin-bottom: 24px; }
-        th { background: #1e3a8a; color: #ffffff; font-weight: 700; font-size: 10px; text-transform: uppercase; padding: 8px 10px; border: 1px solid #1e3a8a; }
-        td { padding: 8px 10px; border: 1px solid #cbd5e1; font-size: 10.5px; vertical-align: top; color: #334155; }
+        .box p { font-size: 9.5px; color: #334155; margin: 3px 0; }
+        table { width: 100%; border-collapse: collapse; margin-bottom: 18px; }
+        th { background: #1e3a8a; color: #ffffff; font-weight: 700; font-size: 9.5px; text-transform: uppercase; padding: 6px 8px; border: 1px solid #1e3a8a; }
+        td { padding: 6px 8px; border: 1px solid #cbd5e1; font-size: 9.5px; vertical-align: top; color: #334155; }
         tr:nth-child(even) { background: #f8fafc; }
         .clearfix::after { content: ""; display: table; clear: both; }
-        .totals-box { float: right; width: 48%; border: 1.5px solid #eab308; background: #fefcf0; border-radius: 6px; padding: 12px; }
-        .totals-row { display: flex; justify-content: space-between; font-size: 11px; padding: 4px 0; color: #334155; }
-        .grand-total { display: flex; justify-content: space-between; font-size: 13px; font-weight: 900; border-top: 1.5px solid #eab308; padding-top: 8px; margin-top: 8px; color: #1e3a8a; }
+        .totals-box { float: right; width: 48%; border: 1.5px solid #eab308; background: #fefcf0; border-radius: 6px; padding: 10px; }
+        .totals-row { display: flex; justify-content: space-between; font-size: 10px; padding: 3px 0; color: #334155; }
+        .grand-total { display: flex; justify-content: space-between; font-size: 12px; font-weight: 900; border-top: 1.5px solid #eab308; padding-top: 6px; margin-top: 6px; color: #1e3a8a; }
         .payment-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
         .payment-grid h4 { font-size: 11px; text-transform: uppercase; font-weight: 800; color: #1e3a8a; margin-bottom: 10px; letter-spacing: 0.5px; }
         .payment-grid ul { list-style: none; font-size: 11px; }
@@ -489,11 +489,13 @@ export default function PricingCalculatorPage() {
             <div class="box"><h3>Technical Specifications</h3><p><strong>Proposed Capacity:</strong> ${systemKW} kWp</p><p><strong>Solar Modules:</strong> ${calc.selMod?.modelName || "N/A"} (${calc.selMod?.wattage || ""}Wp)</p><p><strong>Inverter Model:</strong> ${calc.selectedInverterDetails?.map(inv => inv.modelName + " (x" + inv.qty + ")").join(", ") || "N/A"}</p><p><strong>Mounting Structure:</strong> ${calc.selectedStructures?.map(st => (ALL_STRUCTURE_TYPES.find(opt => opt.v === st.type)?.l || st.type || "") + " (" + st.kw + "kW)").join(", ") || "N/A"}</p></div>
           </div>
           <table><thead><tr><th style="width:40px">S.No</th><th>Particulars / Components</th><th style="width:80px;text-align:center">Qty</th><th style="width:50px;text-align:center">Unit</th><th style="width:100px;text-align:right">Unit Rate</th><th style="width:120px;text-align:right">Total (INR)</th></tr></thead><tbody>${rows}</tbody></table>
-          <div class="clearfix"><div class="totals-box"><div class="totals-row"><span>Base Project Cost:</span><span><strong>${fmtINR(calc.baseTotal)}</strong></span></div><div class="totals-row"><span>GST (8.90%):</span><span>${fmtINR(calc.gst)}</span></div><div class="grand-total"><span>Grand Total (Net Value):</span><span>${fmtINR(calc.grandTotal)}</span></div><p style="font-size:9px;color:#64748b;text-align:right;margin-top:6px;font-weight:600;">Average cost per watt: &#8377;${calc.perWp.toFixed(2)}/Wp (incl. GST)</p></div></div>
         </div>
         <div id="page-2" class="page-container">
           <div class="header" style="border-bottom: 1.5px solid #cbd5e1; padding-bottom: 10px; margin-bottom: 24px;"><div class="logo-area"><img src="${logoUrl}" alt="Divvy Solar Logo" style="width:120px; height:auto; display:block;" /></div><div class="quote-meta" style="text-align: right;"><span style="font-size: 10px; color: #64748b; font-weight: 600; text-transform: uppercase;">${projectTypeLabel} | Quote Ref: ${quoteRefStr}</span></div></div>
-          <div class="payment-grid" style="margin-top: 32px;"><div><h4>Payment Milestones</h4><ul><li style="display:flex; justify-content:space-between; margin-bottom:6px;"><span>1. Advance Booking (10%):</span><strong>${fmtINR(calc.grandTotal * 0.1)}</strong></li><li style="display:flex; justify-content:space-between; margin-bottom:6px;"><span>2. Material Dispatch (85%):</span><strong>${fmtINR(calc.grandTotal * 0.85)}</strong></li><li style="display:flex; justify-content:space-between; margin-bottom:6px;"><span>3. Post-Commissioning (5%):</span><strong>${fmtINR(calc.grandTotal * 0.05)}</strong></li></ul></div><div><h4>Project Terms</h4><ul class="terms-list"><li>Estimated Delivery: 4 to 6 weeks from advance receipt.</li><li>Net Metering timeline varies by State DISCOM.</li><li>Quotation validity: 15 days from issuance.</li><li>Warranty: 25 years on modules, 5 years on inverters.</li>${customTermRows}</ul></div></div>
+          
+          <div class="clearfix" style="margin-bottom: 20px;"><div class="totals-box"><div class="totals-row"><span>Base Project Cost:</span><span><strong>${fmtINR(calc.baseTotal)}</strong></span></div><div class="totals-row"><span>GST (8.90%):</span><span>${fmtINR(calc.gst)}</span></div><div class="grand-total"><span>Grand Total (Net Value):</span><span>${fmtINR(calc.grandTotal)}</span></div><p style="font-size:9px;color:#64748b;text-align:right;margin-top:6px;font-weight:600;">Average cost per watt: &#8377;${calc.perWp.toFixed(2)}/Wp (incl. GST)</p></div></div>
+
+          <div class="payment-grid" style="margin-top: 20px;"><div><h4>Payment Milestones</h4><ul><li style="display:flex; justify-content:space-between; margin-bottom:6px;"><span>1. Advance Booking (10%):</span><strong>${fmtINR(calc.grandTotal * 0.1)}</strong></li><li style="display:flex; justify-content:space-between; margin-bottom:6px;"><span>2. Material Dispatch (85%):</span><strong>${fmtINR(calc.grandTotal * 0.85)}</strong></li><li style="display:flex; justify-content:space-between; margin-bottom:6px;"><span>3. Post-Commissioning (5%):</span><strong>${fmtINR(calc.grandTotal * 0.05)}</strong></li></ul></div><div><h4>Project Terms</h4><ul class="terms-list"><li>Estimated Delivery: 4 to 6 weeks from advance receipt.</li><li>Net Metering timeline varies by State DISCOM.</li><li>Quotation validity: 15 days from issuance.</li><li>Warranty: 25 years on modules, 5 years on inverters.</li>${customTermRows}</ul></div></div>
           <div class="footer" style="position: absolute; bottom: 40px; left: 40px; right: 40px; border-top: 1px solid #cbd5e1; padding-top: 20px;"><div class="sig">Authorized Signatory<br/><strong>Divvy Solar Representative</strong></div><div class="sig">Accepted and Agreed<br/><strong>Client Representative</strong></div></div>
         </div>
       </body></html>`;
@@ -540,8 +542,7 @@ export default function PricingCalculatorPage() {
   );
 
   return (
-    <div className="space-y-8">
-      <style>{`
+    <div className="space-y-8">      <style>{`
         @media screen {
           .print-only { display: none !important; }
         }
@@ -552,7 +553,6 @@ export default function PricingCalculatorPage() {
           .no-print, aside, header, nav, #slChatButton { display: none !important; }
           .print-only { display: block !important; }
           
-          /* Reset parent styles to prevent layout clipping and show full content starting from top */
           html, body {
             height: auto !important;
             overflow: visible !important;
@@ -565,7 +565,6 @@ export default function PricingCalculatorPage() {
             print-color-adjust: exact !important;
           }
           
-          /* Target only the parent layout containers of the application shell */
           body > div,
           main, 
           main > div {
@@ -575,46 +574,68 @@ export default function PricingCalculatorPage() {
             display: block !important;
             position: static !important;
           }
-
+          
           .print-container {
             max-width: 100% !important;
-            padding: 40px 40px !important;
+            padding: 20px 24px !important;
             margin: 0 !important;
             box-shadow: none !important;
             background: white !important;
+          }
+
+          .print-container > div:first-child {
+            padding-bottom: 8px !important;
+            margin-bottom: 12px !important;
+          }
+
+          .print-container .grid {
+            margin-bottom: 12px !important;
+            gap: 12px !important;
+          }
+
+          .print-container .grid > div {
+            padding: 8px !important;
           }
           
           .avoid-break {
             page-break-inside: avoid !important;
             break-inside: avoid !important;
           }
-
+ 
           table {
             border-collapse: collapse !important;
             width: 100% !important;
-            counter-reset: rowNumber;
+            margin-bottom: 12px !important;
           }
           
           tbody tr {
             page-break-inside: avoid !important;
             break-inside: avoid !important;
-            counter-increment: rowNumber;
-          }
-
-          tbody tr td:first-child::before {
-            content: counter(rowNumber);
           }
           
           th, td {
             border: 1px solid #ddd !important;
-            padding: 8px !important;
+            padding: 5px 6px !important;
             text-align: left !important;
-            font-size: 11px !important;
+            font-size: 9.5px !important;
           }
           
           th {
             background-color: #f5f5f5 !important;
             font-weight: bold !important;
+          }
+
+          .print-container .flex.justify-end {
+            margin-bottom: 8px !important;
+          }
+
+          .print-container .grid-cols-2 {
+            margin-bottom: 12px !important;
+            gap: 16px !important;
+          }
+
+          .print-container .flex.justify-between.items-center.pt-8 {
+            padding-top: 12px !important;
           }
         }
       `}</style>
@@ -1450,6 +1471,7 @@ export default function PricingCalculatorPage() {
             </tbody>
           </table>
 
+          {/* Totals Box (renders naturally below the table, moving to Page 2 if table overflows) */}
           <div className="flex justify-end mb-6 avoid-break">
             <div className="w-1/2 space-y-2 border-2 border-[#eab308] bg-[#fefcf0]/50 rounded-lg p-3">
               <div className="flex justify-between text-xs text-slate-700">
@@ -1468,16 +1490,6 @@ export default function PricingCalculatorPage() {
                 Average cost per watt: ₹{(calc.perWp || 0).toFixed(2)}/Wp (incl. GST)
               </div>
             </div>
-          </div>
-          {/* Page break for printing */}
-          <div className="page-break" style={{ pageBreakBefore: "always" }} />
-
-          {/* Minimal Header on Page 2 for Print */}
-          <div className="print-only flex justify-between items-center border-b border-slate-200 pb-2 mb-6 mt-4">
-            <img src="/divvy_photo.png" alt="Divvy Solar Logo" className="w-[120px] h-auto object-contain block" />
-            <span className="text-[9px] text-slate-500 font-bold uppercase tracking-wider">
-              {projectCategory === "residential" ? "RESIDENTIAL OFFER" : projectCategory === "industrial" ? "INDUSTRIAL PROPOSAL" : "UTILITY-SCALE PROPOSAL"} | Quote Ref: {quoteRef || `DS/QP/${new Date().getFullYear()}/---`}
-            </span>
           </div>
 
           <div className="grid grid-cols-2 gap-6 pt-4 border-t border-slate-200 mb-8 avoid-break">
