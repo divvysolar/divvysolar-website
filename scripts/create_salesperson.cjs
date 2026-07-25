@@ -54,10 +54,12 @@ async function main() {
         // Check if user already exists
         const existing = await Admin.findOne({ email: SALES_USER.email });
         if (existing) {
-            console.log(`User with email ${SALES_USER.email} already exists. Updating role to 'salesperson'.`);
+            console.log(`User with email ${SALES_USER.email} already exists. Updating role to 'salesperson' and resetting password.`);
             existing.role = 'salesperson';
+            const salt = await bcrypt.genSalt(10);
+            existing.password = await bcrypt.hash(SALES_USER.password, salt);
             await existing.save();
-            console.log('Role updated successfully!');
+            console.log('Role and password updated successfully!');
         } else {
             const salt = await bcrypt.genSalt(10);
             const hashedPassword = await bcrypt.hash(SALES_USER.password, salt);

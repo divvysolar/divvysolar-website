@@ -29,7 +29,11 @@ export default function SalesLayout({ children }) {
         if (status === "authenticated") {
             const role = session?.user?.role;
             if (role === "admin") {
-                router.push("/admin/dashboard");
+                if (pathname === "/sales") {
+                    signOut({ callbackUrl: "/sales" });
+                } else {
+                    router.push("/admin/dashboard");
+                }
             } else if (role === "salesperson") {
                 if (pathname === "/sales") {
                     router.push("/sales/pricing");
