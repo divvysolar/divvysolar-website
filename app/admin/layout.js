@@ -15,13 +15,17 @@ import {
     XMarkIcon,
     SunIcon,
     MoonIcon,
-    CurrencyRupeeIcon
+    CurrencyRupeeIcon,
+    UserGroupIcon,
+    ClipboardDocumentListIcon,
 } from "@heroicons/react/24/outline";
 import {
     HomeIcon as HomeSolid,
     UsersIcon as UsersSolid,
     DocumentTextIcon as DocSolid,
     CurrencyRupeeIcon as CurrencySolid,
+    UserGroupIcon as UserGroupSolid,
+    ClipboardDocumentListIcon as ClipboardSolid,
 } from "@heroicons/react/24/solid";
 import { signOut } from "next-auth/react";
 
@@ -94,6 +98,8 @@ export default function AdminLayout({ children }) {
         { name: 'Leads', href: '/admin/leads', icon: UsersIcon, solidIcon: UsersSolid },
         { name: 'Blogs', href: '/admin/blogs', icon: DocumentTextIcon, solidIcon: DocSolid },
         { name: 'Pricing Settings', href: '/admin/dashboard/pricing-settings', icon: CurrencyRupeeIcon, solidIcon: CurrencySolid },
+        { name: 'Salespersons', href: '/admin/salespersons', icon: UserGroupIcon, solidIcon: UserGroupSolid },
+        { name: 'Quotation Logs', href: '/admin/quotation-logs', icon: ClipboardDocumentListIcon, solidIcon: ClipboardSolid },
     ];
 
     const isActive = (href) => pathname === href || pathname.startsWith(`${href}/`);

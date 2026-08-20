@@ -3,6 +3,11 @@ const nextConfig = {
   trailingSlash: false, // ✅ ADD KARO - /about/ → /about
   compress: true,
   poweredByHeader: false,
+  experimental: {
+    serverActions: {
+      bodySizeLimit: '10mb',
+    },
+  },
   images: {
     remotePatterns: [
       {
