@@ -40,7 +40,7 @@ export default function SalesLogin() {
             });
 
             if (res?.error) {
-                setError("Invalid email or password");
+                setError(res.error || "Invalid email or password");
                 setLoading(false);
             } else {
                 window.location.href = "/sales/pricing";
