@@ -1,5 +1,8 @@
 "use client";
 import { useState, useEffect, useCallback, useRef } from "react";
+import { useSession } from "next-auth/react";
+import html2canvas from "html2canvas";
+import { jsPDF } from "jspdf";
 import {
   CubeIcon,
   BoltIcon,
@@ -168,6 +171,7 @@ const DynamicCableSelector = ({ label, cables, selectedId, onChange }) => {
 };
 
 export default function PricingCalculatorPage() {
+  const { data: session } = useSession();
   const [rates, setRates] = useState(null);
   const [loading, setLoading] = useState(true);
   const printRef = useRef(null);
@@ -404,133 +408,314 @@ export default function PricingCalculatorPage() {
       pitsCount, laCount, selMod, selectedInverterDetails, selDcCable, selInvToAcdbCable, selAcdbToMainCable, modRate, selectedStructures, dcRate, invToAcdbCost, acdbToMainCost, acdbCost, dcdbCost, mc4BranchCost, mc4Pairs, mc4BranchQty, earthingRate
     };
   })();
-
   const handleDownloadPDF = async () => {
     if (!calc) return;
+    setPdfLoading(true);
 
-    const buildQuotationHTML = () => {
-      const fmtINR = n => new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR", maximumFractionDigits: 0 }).format(n || 0);
+    const fmtINR = n => new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR", maximumFractionDigits: 0 }).format(n || 0);
+
+    const buildRows = () => {
       let rows = "";
       let sno = 1;
-      rows += `<tr><td style="border:1px solid #cbd5e1;padding:8px 10px;text-align:center">${sno++}</td><td style="border:1px solid #cbd5e1;padding:8px 10px"><strong>Solar Modules:</strong> ${calc.selMod?.modelName || "N/A"}<br/><span style="font-size:10px;color:#64748b">Tier-1 High-efficiency PV modules</span></td><td style="border:1px solid #cbd5e1;padding:8px 10px;text-align:center">${systemKW * 1000}</td><td style="border:1px solid #cbd5e1;padding:8px 10px;text-align:center">Wp</td><td style="border:1px solid #cbd5e1;padding:8px 10px;text-align:right">&#8377;${(calc.modRate || 0).toFixed(2)}</td><td style="border:1px solid #cbd5e1;padding:8px 10px;text-align:right">${fmtINR(calc.moduleCost)}</td></tr>`;
-      if (calc.selectedInverterDetails?.length > 0) {
-        calc.selectedInverterDetails.forEach(inv => {
-          rows += `<tr><td style="border:1px solid #cbd5e1;padding:8px 10px;text-align:center">${sno++}</td><td style="border:1px solid #cbd5e1;padding:8px 10px"><strong>Solar Grid-Tie Inverter:</strong> ${inv.modelName}<br/><span style="font-size:10px;color:#64748b">Multi-MPPT High-efficiency inverter system</span></td><td style="border:1px solid #cbd5e1;padding:8px 10px;text-align:center">${inv.qty}</td><td style="border:1px solid #cbd5e1;padding:8px 10px;text-align:center">Nos</td><td style="border:1px solid #cbd5e1;padding:8px 10px;text-align:right">&#8377;${(inv.cost / (inv.qty || 1)).toFixed(2)}</td><td style="border:1px solid #cbd5e1;padding:8px 10px;text-align:right">${fmtINR(inv.cost)}</td></tr>`;
-        });
-      }
-      if (calc.acdbCost > 0) rows += `<tr><td style="border:1px solid #cbd5e1;padding:8px 10px;text-align:center">${sno++}</td><td style="border:1px solid #cbd5e1;padding:8px 10px"><strong>ACDB Combiner / Panel</strong><br/><span style="font-size:10px;color:#64748b">L&T / Elmex / Schneider / Reputed Make</span></td><td style="border:1px solid #cbd5e1;padding:8px 10px;text-align:center">${systemKW}</td><td style="border:1px solid #cbd5e1;padding:8px 10px;text-align:center">kW</td><td style="border:1px solid #cbd5e1;padding:8px 10px;text-align:right">&#8377;${rates?.acdbRatePerKw || 0}</td><td style="border:1px solid #cbd5e1;padding:8px 10px;text-align:right">${fmtINR(calc.acdbCost)}</td></tr>`;
-      if (calc.dcdbCost > 0) rows += `<tr><td style="border:1px solid #cbd5e1;padding:8px 10px;text-align:center">${sno++}</td><td style="border:1px solid #cbd5e1;padding:8px 10px"><strong>DCDB Combiner / Panel</strong><br/><span style="font-size:10px;color:#64748b">Reputed Make</span></td><td style="border:1px solid #cbd5e1;padding:8px 10px;text-align:center">${systemKW}</td><td style="border:1px solid #cbd5e1;padding:8px 10px;text-align:center">kW</td><td style="border:1px solid #cbd5e1;padding:8px 10px;text-align:right">&#8377;${rates?.dcdbRatePerKw || 0}</td><td style="border:1px solid #cbd5e1;padding:8px 10px;text-align:right">${fmtINR(calc.dcdbCost)}</td></tr>`;
-      calc.selectedStructures?.forEach(st => { const stLabel = ALL_STRUCTURE_TYPES.find(opt => opt.v === st.type)?.l || st.type || "N/A"; rows += `<tr><td style="border:1px solid #cbd5e1;padding:8px 10px;text-align:center">${sno++}</td><td style="border:1px solid #cbd5e1;padding:8px 10px"><strong>Mounting Structure:</strong> ${stLabel}<br/><span style="font-size:10px;color:#64748b">Wind load sustained structural rails & clamps</span></td><td style="border:1px solid #cbd5e1;padding:8px 10px;text-align:center">${st.kw}</td><td style="border:1px solid #cbd5e1;padding:8px 10px;text-align:center">kW</td><td style="border:1px solid #cbd5e1;padding:8px 10px;text-align:right">&#8377;${st.rate}</td><td style="border:1px solid #cbd5e1;padding:8px 10px;text-align:right">${fmtINR(st.cost)}</td></tr>`; });
-      rows += `<tr><td style="border:1px solid #cbd5e1;padding:8px 10px;text-align:center">${sno++}</td><td style="border:1px solid #cbd5e1;padding:8px 10px"><strong>Structure Accessories</strong><br/><span style="font-size:10px;color:#64748b">SS 304 Nut Bolts & Fasteners</span></td><td style="border:1px solid #cbd5e1;padding:8px 10px;text-align:center">${systemKW}</td><td style="border:1px solid #cbd5e1;padding:8px 10px;text-align:center">kW</td><td style="border:1px solid #cbd5e1;padding:8px 10px;text-align:right">Included</td><td style="border:1px solid #cbd5e1;padding:8px 10px;text-align:right">Included</td></tr>`;
-      if (dcCableM > 0) rows += `<tr><td style="border:1px solid #cbd5e1;padding:8px 10px;text-align:center">${sno++}</td><td style="border:1px solid #cbd5e1;padding:8px 10px"><strong>DC Solar Cable:</strong> ${calc.selDcCable?.label || "N/A"}<br/><span style="font-size:10px;color:#64748b">Tinned copper flexible single-core solar wire</span></td><td style="border:1px solid #cbd5e1;padding:8px 10px;text-align:center">${dcCableM}</td><td style="border:1px solid #cbd5e1;padding:8px 10px;text-align:center">m</td><td style="border:1px solid #cbd5e1;padding:8px 10px;text-align:right">&#8377;${calc.dcRate}</td><td style="border:1px solid #cbd5e1;padding:8px 10px;text-align:right">${fmtINR(calc.dcCost)}</td></tr>`;
-      if (invToAcdbCableM > 0) rows += `<tr><td style="border:1px solid #cbd5e1;padding:8px 10px;text-align:center">${sno++}</td><td style="border:1px solid #cbd5e1;padding:8px 10px"><strong>AC Cable (Inv to ACDB):</strong> ${calc.selInvToAcdbCable?.label || "N/A"}<br/><span style="font-size:10px;color:#64748b">Multicore flexible AC copper/aluminium cabling run</span></td><td style="border:1px solid #cbd5e1;padding:8px 10px;text-align:center">${invToAcdbCableM}</td><td style="border:1px solid #cbd5e1;padding:8px 10px;text-align:center">m</td><td style="border:1px solid #cbd5e1;padding:8px 10px;text-align:right">&#8377;${calc.selInvToAcdbCable?.ratePerMeter || 0}</td><td style="border:1px solid #cbd5e1;padding:8px 10px;text-align:right">${fmtINR(calc.invToAcdbCost)}</td></tr>`;
-      if (acdbToMainCableM > 0) rows += `<tr><td style="border:1px solid #cbd5e1;padding:8px 10px;text-align:center">${sno++}</td><td style="border:1px solid #cbd5e1;padding:8px 10px"><strong>AC Cable (ACDB to Main):</strong> ${calc.selAcdbToMainCable?.label || "N/A"}<br/><span style="font-size:10px;color:#64748b">AC distribution armored/unarmored cable</span></td><td style="border:1px solid #cbd5e1;padding:8px 10px;text-align:center">${acdbToMainCableM}</td><td style="border:1px solid #cbd5e1;padding:8px 10px;text-align:center">m</td><td style="border:1px solid #cbd5e1;padding:8px 10px;text-align:right">&#8377;${calc.selAcdbToMainCable?.ratePerMeter || 0}</td><td style="border:1px solid #cbd5e1;padding:8px 10px;text-align:right">${fmtINR(calc.acdbToMainCost)}</td></tr>`;
-      if (calc.pitsCount > 0) rows += `<tr><td style="border:1px solid #cbd5e1;padding:8px 10px;text-align:center">${sno++}</td><td style="border:1px solid #cbd5e1;padding:8px 10px"><strong>Chemical Earthing Pits:</strong> ${EARTHING_OPTS.find(e => e.v === earthingType)?.l || "Chemical Earthing"}<br/><span style="font-size:10px;color:#64748b">Low-resistance maintenance-free earthing connection</span></td><td style="border:1px solid #cbd5e1;padding:8px 10px;text-align:center">${calc.pitsCount}</td><td style="border:1px solid #cbd5e1;padding:8px 10px;text-align:center">pits</td><td style="border:1px solid #cbd5e1;padding:8px 10px;text-align:right">&#8377;${calc.earthingRate}</td><td style="border:1px solid #cbd5e1;padding:8px 10px;text-align:right">${fmtINR(calc.earthingCost)}</td></tr>`;
-      if (calc.laCount > 0) rows += `<tr><td style="border:1px solid #cbd5e1;padding:8px 10px;text-align:center">${sno++}</td><td style="border:1px solid #cbd5e1;padding:8px 10px"><strong>Lightning Protection:</strong> ${laType === "ese" ? "ESE Active" : "Conventional"}<br/><span style="font-size:10px;color:#64748b">Safety shield against high-voltage lightning surges</span></td><td style="border:1px solid #cbd5e1;padding:8px 10px;text-align:center">${calc.laCount}</td><td style="border:1px solid #cbd5e1;padding:8px 10px;text-align:center">units</td><td style="border:1px solid #cbd5e1;padding:8px 10px;text-align:right">&#8377;${laType === "conventional" ? (rates?.laConventionalRate || 0) : (rates?.laEseRate || 0)}</td><td style="border:1px solid #cbd5e1;padding:8px 10px;text-align:right">${fmtINR(calc.laCost)}</td></tr>`;
-      if (walkwayM > 0) rows += `<tr><td style="border:1px solid #cbd5e1;padding:8px 10px;text-align:center">${sno++}</td><td style="border:1px solid #cbd5e1;padding:8px 10px"><strong>Roof Walkway:</strong> ${walkwayType === "gi" ? "GI Walkway" : "FRP Walkway"}<br/><span style="font-size:10px;color:#64748b">Safe pathway on roof for standard O&M visits</span></td><td style="border:1px solid #cbd5e1;padding:8px 10px;text-align:center">${walkwayM}</td><td style="border:1px solid #cbd5e1;padding:8px 10px;text-align:center">m</td><td style="border:1px solid #cbd5e1;padding:8px 10px;text-align:right">&#8377;${walkwayType === "gi" ? (rates?.walkwayGiRate || 0) : (rates?.walkwayFrpRate || 0)}</td><td style="border:1px solid #cbd5e1;padding:8px 10px;text-align:right">${fmtINR(calc.walkCost)}</td></tr>`;
-      if (customSafety > 0) rows += `<tr><td style="border:1px solid #cbd5e1;padding:8px 10px;text-align:center">${sno++}</td><td style="border:1px solid #cbd5e1;padding:8px 10px"><strong>Safety Lifeline</strong><br/><span style="font-size:10px;color:#64748b">Anchor lifeline system for cleaning personnel</span></td><td style="border:1px solid #cbd5e1;padding:8px 10px;text-align:center">${customSafety}</td><td style="border:1px solid #cbd5e1;padding:8px 10px;text-align:center">m</td><td style="border:1px solid #cbd5e1;padding:8px 10px;text-align:right">&#8377;${rates?.safetyLineRate || 0}</td><td style="border:1px solid #cbd5e1;padding:8px 10px;text-align:right">${fmtINR(calc.safetyCost)}</td></tr>`;
-      if (calc.mc4Cost > 0) rows += `<tr><td style="border:1px solid #cbd5e1;padding:8px 10px;text-align:center">${sno++}</td><td style="border:1px solid #cbd5e1;padding:8px 10px"><strong>MC4 Connectors</strong><br/><span style="font-size:10px;color:#64748b">Waterproof module string connector links</span></td><td style="border:1px solid #cbd5e1;padding:8px 10px;text-align:center">${calc.mc4Pairs}</td><td style="border:1px solid #cbd5e1;padding:8px 10px;text-align:center">pairs</td><td style="border:1px solid #cbd5e1;padding:8px 10px;text-align:right">&#8377;${rates?.mc4ConnectorRate || 0}</td><td style="border:1px solid #cbd5e1;padding:8px 10px;text-align:right">${fmtINR(calc.mc4Cost)}</td></tr>`;
-      if (calc.mc4BranchCost > 0) rows += `<tr><td style="border:1px solid #cbd5e1;padding:8px 10px;text-align:center">${sno++}</td><td style="border:1px solid #cbd5e1;padding:8px 10px"><strong>Branch (Y) Connectors</strong><br/><span style="font-size:10px;color:#64748b">Parallel string configuration connectors</span></td><td style="border:1px solid #cbd5e1;padding:8px 10px;text-align:center">${calc.mc4BranchQty}</td><td style="border:1px solid #cbd5e1;padding:8px 10px;text-align:center">nos</td><td style="border:1px solid #cbd5e1;padding:8px 10px;text-align:right">&#8377;${rates?.branchConnectorRate || 0}</td><td style="border:1px solid #cbd5e1;padding:8px 10px;text-align:right">${fmtINR(calc.mc4BranchCost)}</td></tr>`;
-      if (incBos) rows += `<tr><td style="border:1px solid #cbd5e1;padding:8px 10px;text-align:center">${sno++}</td><td style="border:1px solid #cbd5e1;padding:8px 10px"><strong>BOS &amp; Accessories:</strong> Cable Lugs, Tape, Cable tie &amp; Conduit Pipe</td><td style="border:1px solid #cbd5e1;padding:8px 10px;text-align:center">${systemKW}</td><td style="border:1px solid #cbd5e1;padding:8px 10px;text-align:center">kWp</td><td style="border:1px solid #cbd5e1;padding:8px 10px;text-align:right">Included</td><td style="border:1px solid #cbd5e1;padding:8px 10px;text-align:right">Included</td></tr>`;
-      if (incEng) rows += `<tr><td style="border:1px solid #cbd5e1;padding:8px 10px;text-align:center">${sno++}</td><td style="border:1px solid #cbd5e1;padding:8px 10px"><strong>Engineering &amp; Supervision</strong></td><td style="border:1px solid #cbd5e1;padding:8px 10px;text-align:center">${systemKW}</td><td style="border:1px solid #cbd5e1;padding:8px 10px;text-align:center">kWp</td><td style="border:1px solid #cbd5e1;padding:8px 10px;text-align:right">Included</td><td style="border:1px solid #cbd5e1;padding:8px 10px;text-align:right">Included</td></tr>`;
-      if (incMon) rows += `<tr><td style="border:1px solid #cbd5e1;padding:8px 10px;text-align:center">${sno++}</td><td style="border:1px solid #cbd5e1;padding:8px 10px"><strong>Remote Monitoring Access</strong></td><td style="border:1px solid #cbd5e1;padding:8px 10px;text-align:center">1</td><td style="border:1px solid #cbd5e1;padding:8px 10px;text-align:center">Set</td><td style="border:1px solid #cbd5e1;padding:8px 10px;text-align:right">Included</td><td style="border:1px solid #cbd5e1;padding:8px 10px;text-align:right">Included</td></tr>`;
-      if (incTrans) rows += `<tr><td style="border:1px solid #cbd5e1;padding:8px 10px;text-align:center">${sno++}</td><td style="border:1px solid #cbd5e1;padding:8px 10px"><strong>Transportation &amp; Freight</strong></td><td style="border:1px solid #cbd5e1;padding:8px 10px;text-align:center">1</td><td style="border:1px solid #cbd5e1;padding:8px 10px;text-align:center">Job</td><td style="border:1px solid #cbd5e1;padding:8px 10px;text-align:right">Included</td><td style="border:1px solid #cbd5e1;padding:8px 10px;text-align:right">Included</td></tr>`;
-      if (discom) rows += `<tr><td style="border:1px solid #cbd5e1;padding:8px 10px;text-align:center">${sno++}</td><td style="border:1px solid #cbd5e1;padding:8px 10px"><strong>DISCOM Liaising &amp; Net Metering</strong></td><td style="border:1px solid #cbd5e1;padding:8px 10px;text-align:center">1</td><td style="border:1px solid #cbd5e1;padding:8px 10px;text-align:center">job</td><td style="border:1px solid #cbd5e1;padding:8px 10px;text-align:right">&#8377;${discomType === 'single_phase' ? (rates?.discomSinglePhaseCost||0) : discomType === 'three_phase' ? (rates?.discomThreePhaseCost||0) : discomType === 'lt' ? (rates?.discomLtCost||0) : (rates?.discomHtCost||0)}</td><td style="border:1px solid #cbd5e1;padding:8px 10px;text-align:right">${fmtINR(calc.discomCost)}</td></tr>`;
-      rows += `<tr><td style="border:1px solid #cbd5e1;padding:8px 10px;text-align:center">${sno++}</td><td style="border:1px solid #cbd5e1;padding:8px 10px"><strong>Installation &amp; Commissioning</strong></td><td style="border:1px solid #cbd5e1;padding:8px 10px;text-align:center">${systemKW}</td><td style="border:1px solid #cbd5e1;padding:8px 10px;text-align:center">kW</td><td style="border:1px solid #cbd5e1;padding:8px 10px;text-align:right">&#8377;${rates?.installationRate || 0}</td><td style="border:1px solid #cbd5e1;padding:8px 10px;text-align:right">${fmtINR(calc.installCost)}</td></tr>`;
+      const snoCell = () => `<td style="border:1px solid #cbd5e1;padding:8px 12px;font-size:11px;text-align:center;color:#334155;vertical-align:top">${sno++}</td>`;
+      const cell = (content, align = "left") => `<td style="border:1px solid #cbd5e1;padding:8px 12px;font-size:11px;text-align:${align};color:#334155;vertical-align:top">${content}</td>`;
+
+      rows += `<tr>${snoCell()}${cell(`<strong>Solar Modules:</strong> ${calc.selMod?.modelName || "N/A"}<br/><span style="font-size:10px;color:#64748b">Tier-1 High-efficiency PV modules</span>`)}${cell(systemKW * 1000, "center")}${cell("Wp", "center")}${cell("&#8377;" + (calc.modRate || 0).toFixed(2), "right")}${cell(fmtINR(calc.moduleCost), "right")}</tr>`;
+
+      calc.selectedInverterDetails?.forEach(inv => {
+        rows += `<tr>${snoCell()}${cell(`<strong>Solar Grid-Tie Inverter:</strong> ${inv.modelName}<br/><span style="font-size:10px;color:#64748b">Multi-MPPT High-efficiency inverter system</span>`)}${cell(inv.qty, "center")}${cell("Nos", "center")}${cell("&#8377;" + (inv.cost / (inv.qty || 1)).toFixed(2), "right")}${cell(fmtINR(inv.cost), "right")}</tr>`;
+      });
+
+      if (calc.acdbCost > 0) rows += `<tr>${snoCell()}${cell("<strong>ACDB Combiner / Panel</strong><br/><span style='font-size:10px;color:#64748b'>L&amp;T / Elmex / Schneider / Reputed Make</span>")}${cell(systemKW, "center")}${cell("kW", "center")}${cell("&#8377;" + (rates?.acdbRatePerKw || 0), "right")}${cell(fmtINR(calc.acdbCost), "right")}</tr>`;
+      if (calc.dcdbCost > 0) rows += `<tr>${snoCell()}${cell("<strong>DCDB Combiner / Panel</strong><br/><span style='font-size:10px;color:#64748b'>Reputed Make</span>")}${cell(systemKW, "center")}${cell("kW", "center")}${cell("&#8377;" + (rates?.dcdbRatePerKw || 0), "right")}${cell(fmtINR(calc.dcdbCost), "right")}</tr>`;
+
+      calc.selectedStructures?.forEach(st => {
+        const stLabel = ALL_STRUCTURE_TYPES.find(opt => opt.v === st.type)?.l || st.type || "N/A";
+        rows += `<tr>${snoCell()}${cell(`<strong>Mounting Structure:</strong> ${stLabel}<br/><span style="font-size:10px;color:#64748b">Wind load sustained structural rails &amp; clamps</span>`)}${cell(st.kw, "center")}${cell("kW", "center")}${cell("&#8377;" + st.rate, "right")}${cell(fmtINR(st.cost), "right")}</tr>`;
+      });
+
+      rows += `<tr>${snoCell()}${cell("<strong>Structure Accessories:</strong> SS 304 Nut Bolts &amp; Fasteners<br/><span style='font-size:10px;color:#64748b'>Anti-corrosion hardware for mechanical integrity</span>")}${cell(systemKW, "center")}${cell("kW", "center")}${cell("Included", "right")}${cell("Included", "right")}</tr>`;
+
+      if (dcCableM > 0) rows += `<tr>${snoCell()}${cell(`<strong>DC Solar Cable:</strong> ${calc.selDcCable?.label || "N/A"}<br/><span style="font-size:10px;color:#64748b">Tinned copper flexible single-core solar wire</span>`)}${cell(dcCableM, "center")}${cell("m", "center")}${cell("&#8377;" + calc.dcRate, "right")}${cell(fmtINR(calc.dcCost), "right")}</tr>`;
+      if (invToAcdbCableM > 0) rows += `<tr>${snoCell()}${cell(`<strong>AC Cable (Inv to ACDB):</strong> ${calc.selInvToAcdbCable?.label || "N/A"}<br/><span style="font-size:10px;color:#64748b">Multicore flexible AC cabling run</span>`)}${cell(invToAcdbCableM, "center")}${cell("m", "center")}${cell("&#8377;" + (calc.selInvToAcdbCable?.ratePerMeter || 0), "right")}${cell(fmtINR(calc.invToAcdbCost), "right")}</tr>`;
+      if (acdbToMainCableM > 0) rows += `<tr>${snoCell()}${cell(`<strong>AC Cable (ACDB to Main):</strong> ${calc.selAcdbToMainCable?.label || "N/A"}<br/><span style="font-size:10px;color:#64748b">AC distribution armored/unarmored cable</span>`)}${cell(acdbToMainCableM, "center")}${cell("m", "center")}${cell("&#8377;" + (calc.selAcdbToMainCable?.ratePerMeter || 0), "right")}${cell(fmtINR(calc.acdbToMainCost), "right")}</tr>`;
+      if (calc.pitsCount > 0) rows += `<tr>${snoCell()}${cell(`<strong>Chemical Earthing Pits:</strong> ${EARTHING_OPTS.find(e => e.v === earthingType)?.l || "Chemical Earthing"}<br/><span style="font-size:10px;color:#64748b">Low-resistance maintenance-free earthing</span>`)}${cell(calc.pitsCount, "center")}${cell("pits", "center")}${cell("&#8377;" + calc.earthingRate, "right")}${cell(fmtINR(calc.earthingCost), "right")}</tr>`;
+      if (calc.laCount > 0) rows += `<tr>${snoCell()}${cell(`<strong>Lightning Protection:</strong> ${laType === "ese" ? "ESE Active" : "Conventional"}<br/><span style="font-size:10px;color:#64748b">Safety shield against high-voltage lightning surges</span>`)}${cell(calc.laCount, "center")}${cell("units", "center")}${cell("&#8377;" + (laType === "conventional" ? (rates?.laConventionalRate || 0) : (rates?.laEseRate || 0)), "right")}${cell(fmtINR(calc.laCost), "right")}</tr>`;
+      if (walkwayM > 0) rows += `<tr>${snoCell()}${cell(`<strong>Roof Walkway:</strong> ${walkwayType === "gi" ? "GI Walkway" : "FRP Walkway"}<br/><span style="font-size:10px;color:#64748b">Safe pathway on roof for O&amp;M visits</span>`)}${cell(walkwayM, "center")}${cell("m", "center")}${cell("&#8377;" + (walkwayType === "gi" ? (rates?.walkwayGiRate || 0) : (rates?.walkwayFrpRate || 0)), "right")}${cell(fmtINR(calc.walkCost), "right")}</tr>`;
+      if (customSafety > 0) rows += `<tr>${snoCell()}${cell("<strong>Safety Lifeline</strong><br/><span style='font-size:10px;color:#64748b'>Anchor lifeline system for cleaning personnel</span>")}${cell(customSafety, "center")}${cell("m", "center")}${cell("&#8377;" + (rates?.safetyLineRate || 0), "right")}${cell(fmtINR(calc.safetyCost), "right")}</tr>`;
+      if (calc.mc4Cost > 0) rows += `<tr>${snoCell()}${cell("<strong>MC4 Connectors</strong><br/><span style='font-size:10px;color:#64748b'>Waterproof module string connector links</span>")}${cell(calc.mc4Pairs, "center")}${cell("pairs", "center")}${cell("&#8377;" + (rates?.mc4ConnectorRate || 0), "right")}${cell(fmtINR(calc.mc4Cost), "right")}</tr>`;
+      if (calc.mc4BranchCost > 0) rows += `<tr>${snoCell()}${cell("<strong>Branch (Y) Connectors</strong><br/><span style='font-size:10px;color:#64748b'>Parallel string configuration connectors</span>")}${cell(calc.mc4BranchQty, "center")}${cell("nos", "center")}${cell("&#8377;" + (rates?.branchConnectorRate || 0), "right")}${cell(fmtINR(calc.mc4BranchCost), "right")}</tr>`;
+      if (incBos) rows += `<tr>${snoCell()}${cell("<strong>BOS &amp; Accessories:</strong> Cable Lugs, Tape, Cable tie &amp; Conduit Pipe")}${cell(systemKW, "center")}${cell("kWp", "center")}${cell("Included", "right")}${cell("Included", "right")}</tr>`;
+      if (incEng) rows += `<tr>${snoCell()}${cell("<strong>Engineering &amp; Supervision</strong><br/><span style='font-size:10px;color:#64748b'>String designing, Shadow Analysis, electrical design</span>")}${cell(systemKW, "center")}${cell("kWp", "center")}${cell("Included", "right")}${cell("Included", "right")}</tr>`;
+      if (incMon) rows += `<tr>${snoCell()}${cell("<strong>Remote Monitoring Access</strong><br/><span style='font-size:10px;color:#64748b'>Continuous monitoring through data logger device</span>")}${cell(1, "center")}${cell("Set", "center")}${cell("Included", "right")}${cell("Included", "right")}</tr>`;
+      if (incTrans) rows += `<tr>${snoCell()}${cell("<strong>Transportation &amp; Freight</strong><br/><span style='font-size:10px;color:#64748b'>Till site loading and unloading</span>")}${cell(1, "center")}${cell("Job", "center")}${cell("Included", "right")}${cell("Included", "right")}</tr>`;
+      if (discom) rows += `<tr>${snoCell()}${cell("<strong>DISCOM Liaising &amp; Net Metering</strong><br/><span style='font-size:10px;color:#64748b'>Net-metering approval process with local electricity authority</span>")}${cell(1, "center")}${cell("job", "center")}${cell("&#8377;" + (discomType === 'single_phase' ? (rates?.discomSinglePhaseCost||0) : discomType === 'three_phase' ? (rates?.discomThreePhaseCost||0) : discomType === 'lt' ? (rates?.discomLtCost||0) : (rates?.discomHtCost||0)), "right")}${cell(fmtINR(calc.discomCost), "right")}</tr>`;
+      rows += `<tr>${snoCell()}${cell("<strong>Installation &amp; Commissioning:</strong> On-site mechanics, engineering execution, panel staging and commissioning")}${cell(systemKW, "center")}${cell("kW", "center")}${cell("&#8377;" + (rates?.installationRate || 0), "right")}${cell(fmtINR(calc.installCost), "right")}</tr>`;
+      return rows;
+    };
+
+    try {
       const projectTypeLabel = projectCategory === "residential" ? "RESIDENTIAL OFFER" : projectCategory === "industrial" ? "INDUSTRIAL PROPOSAL" : "UTILITY-SCALE PROPOSAL";
       const dateStr = new Date().toLocaleDateString("en-IN", { day: "numeric", month: "long", year: "numeric" });
       const quoteRefStr = quoteRef || `DS/QP/${new Date().getFullYear()}/---`;
-      const customTermRows = customTerms ? customTerms.split('\n').filter(t => t.trim()).map(t => `<li style="font-weight:600;color:#334155;margin-bottom:4px">${t}</li>`).join('') : '';
+      const customTermRows = customTerms ? customTerms.split('\n').filter(t => t.trim()).map(t => `<li style="padding:2px 0">${t}</li>`).join('') : '';
       const logoUrl = window.location.origin + "/divvy_photo.png";
+      const rows = buildRows();
 
-      return `<!DOCTYPE html><html><head><meta charset="UTF-8"/><style>
+      const css = `
         * { box-sizing: border-box; margin: 0; padding: 0; }
-        body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #334155; background: #e2e8f0; }
-        .page-container { width: 1024px; height: 1448px; padding: 30px 40px; position: relative; background: #ffffff; margin-bottom: 20px; box-sizing: border-box; }
-        .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2.5px solid #eab308; padding-bottom: 10px; margin-bottom: 18px; }
-        .logo-area { flex: 0 0 200px; }
-        .company-details { flex: 1; text-align: center; padding: 0 10px; }
-        .company-details h2 { font-size: 15px; font-weight: 800; color: #1e3a8a; text-transform: uppercase; margin: 0; letter-spacing: 0.5px; }
-        .company-details .address { font-size: 9px; font-weight: 700; color: #1e293b; margin: 4px 0 2px 0; }
-        .company-details .contacts { font-size: 8.5px; color: #64748b; margin: 0; }
-        .quote-meta { flex: 0 0 180px; text-align: right; }
-        .quote-meta .proposal-title { font-size: 11px; font-weight: 900; color: #eab308; text-transform: uppercase; display: block; margin-bottom: 4px; }
-        .quote-meta p { font-size: 9px; color: #475569; margin: 2px 0 0 0; }
-        .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 18px; }
-        .box { border: 1px solid #cbd5e1; background: #f8fafc; border-radius: 6px; padding: 10px; }
-        .box h3 { font-size: 10px; font-weight: 800; text-transform: uppercase; color: #1e3a8a; border-bottom: 1.5px solid #eab308; padding-bottom: 6px; margin-bottom: 8px; letter-spacing: 0.5px; }
-        .box p { font-size: 9.5px; color: #334155; margin: 3px 0; }
-        table { width: 100%; border-collapse: collapse; margin-bottom: 18px; }
-        th { background: #1e3a8a; color: #ffffff; font-weight: 700; font-size: 9.5px; text-transform: uppercase; padding: 6px 8px; border: 1px solid #1e3a8a; }
-        td { padding: 6px 8px; border: 1px solid #cbd5e1; font-size: 9.5px; vertical-align: top; color: #334155; }
-        tr:nth-child(even) { background: #f8fafc; }
-        .clearfix::after { content: ""; display: table; clear: both; }
-        .totals-box { float: right; width: 48%; border: 1.5px solid #eab308; background: #fefcf0; border-radius: 6px; padding: 10px; }
-        .totals-row { display: flex; justify-content: space-between; font-size: 10px; padding: 3px 0; color: #334155; }
-        .grand-total { display: flex; justify-content: space-between; font-size: 12px; font-weight: 900; border-top: 1.5px solid #eab308; padding-top: 6px; margin-top: 6px; color: #1e3a8a; }
-        .payment-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
-        .payment-grid h4 { font-size: 11px; text-transform: uppercase; font-weight: 800; color: #1e3a8a; margin-bottom: 10px; letter-spacing: 0.5px; }
-        .payment-grid ul { list-style: none; font-size: 11px; }
-        .payment-grid li { display: flex; justify-content: space-between; padding: 3px 0; color: #334155; }
-        .terms-list { padding-left: 16px !important; list-style: decimal !important; }
-        .terms-list li { display: list-item !important; padding: 2px 0 !important; }
-        .footer { display: flex; justify-content: space-between; border-top: 1px solid #cbd5e1; padding-top: 20px; }
-        .sig { width: 40%; text-align: center; border-top: 1px solid #94a3b8; padding-top: 8px; font-size: 10px; color: #64748b; font-weight: 600; }
-      </style></head>
-      <body>
-        <div id="page-1" class="page-container">
-          <div class="header">
-            <div class="logo-area"><img src="${logoUrl}" alt="Divvy Solar Logo" style="width:190px; height:auto; display:block;" /></div>
-            <div class="company-details"><h2>DIVVY SOLAR Power & SOLUTIONS Pvt. Ltd</h2><p class="address">Unit-859, Tower- B1, 8th Floor, Spaze I - Tech Park, Sec - 49, Gurgaon - 122018 (HARYANA)</p><p class="contacts">Head Office: Lower Ground, SJ Tower, Sec-13, Hisar 125001<br/>Email: info@divvysolar.in | Web: www.divvysolar.in</p></div>
-            <div class="quote-meta"><span class="proposal-title">${projectTypeLabel}</span><p><strong>Quote Ref:</strong> ${quoteRefStr}</p><p><strong>Date:</strong> ${dateStr}</p></div>
-          </div>
-          <div class="grid2">
-            <div class="box"><h3>Client Details</h3><p><strong>Client / Org:</strong> ${clientName || "N/A"}</p><p><strong>Contact:</strong> ${clientPhone || "N/A"}</p><p><strong>Site Location:</strong> ${clientLocation || "N/A"}</p><p><strong>Connected Grid Load:</strong> ${connectedLoad ? connectedLoad + " kW" : "N/A"}</p><p><strong>Type of Roof:</strong> ${ROOF_TYPES.find(r => r.v === roofType)?.l || "N/A"}</p><p><strong>DG Synchronization:</strong> ${dgSync ? "Required" : "Not Required"}</p></div>
-            <div class="box"><h3>Technical Specifications</h3><p><strong>Proposed Capacity:</strong> ${systemKW} kWp</p><p><strong>Solar Modules:</strong> ${calc.selMod?.modelName || "N/A"} (${calc.selMod?.wattage || ""}Wp)</p><p><strong>Inverter Model:</strong> ${calc.selectedInverterDetails?.map(inv => inv.modelName + " (x" + inv.qty + ")").join(", ") || "N/A"}</p><p><strong>Mounting Structure:</strong> ${calc.selectedStructures?.map(st => (ALL_STRUCTURE_TYPES.find(opt => opt.v === st.type)?.l || st.type || "") + " (" + st.kw + "kW)").join(", ") || "N/A"}</p></div>
-          </div>
-          <table><thead><tr><th style="width:40px">S.No</th><th>Particulars / Components</th><th style="width:80px;text-align:center">Qty</th><th style="width:50px;text-align:center">Unit</th><th style="width:100px;text-align:right">Unit Rate</th><th style="width:120px;text-align:right">Total (INR)</th></tr></thead><tbody>${rows}</tbody></table>
-        </div>
-        <div id="page-2" class="page-container">
-          <div class="header" style="border-bottom: 1.5px solid #cbd5e1; padding-bottom: 10px; margin-bottom: 24px;"><div class="logo-area"><img src="${logoUrl}" alt="Divvy Solar Logo" style="width:120px; height:auto; display:block;" /></div><div class="quote-meta" style="text-align: right;"><span style="font-size: 10px; color: #64748b; font-weight: 600; text-transform: uppercase;">${projectTypeLabel} | Quote Ref: ${quoteRefStr}</span></div></div>
-          
-          <div class="clearfix" style="margin-bottom: 20px;"><div class="totals-box"><div class="totals-row"><span>Base Project Cost:</span><span><strong>${fmtINR(calc.baseTotal)}</strong></span></div><div class="totals-row"><span>GST (8.90%):</span><span>${fmtINR(calc.gst)}</span></div><div class="grand-total"><span>Grand Total (Net Value):</span><span>${fmtINR(calc.grandTotal)}</span></div><p style="font-size:9px;color:#64748b;text-align:right;margin-top:6px;font-weight:600;">Average cost per watt: &#8377;${calc.perWp.toFixed(2)}/Wp (incl. GST)</p></div></div>
+        body { font-family: Arial, Helvetica, sans-serif; background: #fff; color: #334155; -webkit-print-color-adjust: exact; }
+        .page { width: 794px; background: #fff; padding: 32px 36px; }
+        .hdr { display: flex; justify-content: space-between; align-items: center; border-bottom: 2.5px solid #eab308; padding-bottom: 16px; margin-bottom: 24px; }
+        .hdr-logo img { width: 190px; height: auto; display: block; }
+        .hdr-mid { flex: 1; text-align: center; padding: 0 16px; }
+        .hdr-mid h1 { font-size: 15px; font-weight: 800; color: #1e3a8a; text-transform: uppercase; letter-spacing: 0.5px; }
+        .hdr-mid .addr1 { font-size: 9px; font-weight: 700; color: #1e293b; margin-top: 4px; }
+        .hdr-mid .addr2 { font-size: 8.5px; color: #64748b; margin-top: 2px; }
+        .hdr-right { width: 180px; text-align: right; }
+        .hdr-right .type { font-size: 11px; font-weight: 900; color: #eab308; text-transform: uppercase; }
+        .hdr-right p { font-size: 9px; color: #64748b; margin-top: 4px; }
+        .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px; }
+        .info-box { border: 1px solid #cbd5e1; background: #f8fafc; border-radius: 6px; padding: 12px; }
+        .info-box h3 { font-size: 10px; font-weight: 800; color: #1e3a8a; text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 2px solid #eab308; padding-bottom: 6px; margin-bottom: 8px; }
+        .info-box p { font-size: 11px; color: #334155; margin-bottom: 3px; }
+        table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
+        th { font-size: 10px; font-weight: 700; color: #fff; background: #1e3a8a; text-transform: uppercase; padding: 8px 12px; border: 1px solid #1e3a8a; }
+        td { font-size: 11px; color: #334155; padding: 8px 12px; border: 1px solid #cbd5e1; vertical-align: top; }
+        tr:nth-child(even) td { background: #f8fafc; }
+        .totals-wrap { display: flex; justify-content: flex-end; margin-bottom: 20px; }
+        .totals { width: 50%; border: 2px solid #eab308; background: #fefcf0; border-radius: 6px; padding: 12px 16px; }
+        .totals-row { display: flex; justify-content: space-between; font-size: 11px; color: #334155; padding: 3px 0; }
+        .totals-grand { display: flex; justify-content: space-between; font-size: 13px; font-weight: 900; color: #1e3a8a; border-top: 2px solid #eab308; padding-top: 8px; margin-top: 6px; }
+        .totals-note { font-size: 8.5px; color: #64748b; text-align: right; margin-top: 4px; font-weight: 600; }
+        .bottom-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; padding-top: 16px; border-top: 1px solid #e2e8f0; margin-bottom: 32px; }
+        .bottom-grid h4 { font-size: 10px; font-weight: 800; color: #1e3a8a; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 10px; }
+        .payment-list { list-style: none; }
+        .payment-list li { display: flex; justify-content: space-between; font-size: 11px; color: #334155; font-weight: 500; padding: 3px 0; }
+        .terms-list { list-style: decimal; padding-left: 16px; }
+        .terms-list li { font-size: 10px; color: #475569; padding: 2px 0; line-height: 1.5; }
+        .footer { display: flex; justify-content: space-between; padding-top: 24px; border-top: 1px solid #cbd5e1; }
+        .sig { width: 40%; text-align: center; }
+        .sig-line { border-top: 1px solid #94a3b8; padding-top: 8px; font-size: 10px; color: #64748b; font-weight: 600; }
+      `;
 
-          <div class="payment-grid" style="margin-top: 20px;"><div><h4>Payment Milestones</h4><ul><li style="display:flex; justify-content:space-between; margin-bottom:6px;"><span>1. Advance Booking (10%):</span><strong>${fmtINR(calc.grandTotal * 0.1)}</strong></li><li style="display:flex; justify-content:space-between; margin-bottom:6px;"><span>2. Material Dispatch (85%):</span><strong>${fmtINR(calc.grandTotal * 0.85)}</strong></li><li style="display:flex; justify-content:space-between; margin-bottom:6px;"><span>3. Post-Commissioning (5%):</span><strong>${fmtINR(calc.grandTotal * 0.05)}</strong></li></ul></div><div><h4>Project Terms</h4><ul class="terms-list"><li>Estimated Delivery: 4 to 6 weeks from advance receipt.</li><li>Net Metering timeline varies by State DISCOM.</li><li>Quotation validity: 15 days from issuance.</li><li>Warranty: 25 years on modules, 5 years on inverters.</li>${customTermRows}</ul></div></div>
-          <div class="footer" style="position: absolute; bottom: 40px; left: 40px; right: 40px; border-top: 1px solid #cbd5e1; padding-top: 20px;"><div class="sig">Authorized Signatory<br/><strong>Divvy Solar Representative</strong></div><div class="sig">Accepted and Agreed<br/><strong>Client Representative</strong></div></div>
+      const html = `<!DOCTYPE html><html><head><meta charset="UTF-8"><style>${css}</style></head><body>
+        <div class="page">
+          <div class="hdr">
+            <div class="hdr-logo"><img src="${logoUrl}" /></div>
+            <div class="hdr-mid">
+              <h1>DIVVY SOLAR Power &amp; SOLUTIONS Pvt. Ltd</h1>
+              <p class="addr1">Unit-859, Tower- B1, 8th Floor, Spaze I - Tech Park, Sec - 49, Gurgaon - 122018 (HARYANA)</p>
+              <p class="addr2">Head Office: Lower Ground, SJ Tower, Sec-13, Hisar 125001 (HARYANA) &nbsp;|&nbsp; Email: info@divvysolar.in &nbsp;|&nbsp; Web: www.divvysolar.in</p>
+            </div>
+            <div class="hdr-right">
+              <div class="type">${projectTypeLabel}</div>
+              <p><strong>Quote Ref:</strong> ${quoteRefStr}</p>
+              <p><strong>Date:</strong> ${dateStr}</p>
+            </div>
+          </div>
+          <div class="info-grid">
+            <div class="info-box">
+              <h3>Client Details</h3>
+              <p><strong>Client / Org:</strong> ${clientName || "N/A"}</p>
+              <p><strong>Contact:</strong> ${clientPhone || "N/A"}</p>
+              <p><strong>Site Location:</strong> ${clientLocation || "N/A"}</p>
+              <p><strong>Connected Grid Load:</strong> ${connectedLoad ? connectedLoad + " kW" : "N/A"}</p>
+              <p><strong>Type of Roof:</strong> ${ROOF_TYPES.find(r => r.v === roofType)?.l || "N/A"}</p>
+              <p><strong>DG Synchronization:</strong> ${dgSync ? "Required" : "Not Required"}</p>
+            </div>
+            <div class="info-box">
+              <h3>Technical Specifications</h3>
+              <p><strong>Proposed Capacity:</strong> ${systemKW} kWp (Solar PV Plant)</p>
+              <p><strong>Solar Modules:</strong> ${calc.selMod?.modelName || "N/A"}${calc.selMod?.wattage ? " (" + calc.selMod.wattage + "Wp)" : ""}</p>
+              <p><strong>Inverter Model:</strong> ${calc.selectedInverterDetails?.map(inv => inv.modelName + " (x" + inv.qty + ")").join(", ") || "N/A"}</p>
+              <p><strong>Mounting Structure:</strong> ${calc.selectedStructures?.map(st => (ALL_STRUCTURE_TYPES.find(opt => opt.v === st.type)?.l || st.type || "") + " (" + st.kw + "kW)").join(", ") || "N/A"}</p>
+              ${dcCableM > 0 ? `<p><strong>DC Cable Run:</strong> ${dcCableM}m of ${calc.selDcCable?.label || ""}</p>` : ""}
+              ${invToAcdbCableM > 0 ? `<p><strong>AC Cable (Inv-ACDB):</strong> ${invToAcdbCableM}m of ${calc.selInvToAcdbCable?.label || ""}</p>` : ""}
+              ${acdbToMainCableM > 0 ? `<p><strong>AC Cable (ACDB-Main):</strong> ${acdbToMainCableM}m of ${calc.selAcdbToMainCable?.label || ""}</p>` : ""}
+            </div>
+          </div>
+          <table>
+            <thead>
+              <tr>
+                <th style="width:40px;text-align:center">S.No</th>
+                <th style="text-align:left">Particulars / Components</th>
+                <th style="width:80px;text-align:center">Qty / Size</th>
+                <th style="width:50px;text-align:center">Unit</th>
+                <th style="width:100px;text-align:right">Unit Rate</th>
+                <th style="width:120px;text-align:right">Total (INR)</th>
+              </tr>
+            </thead>
+            <tbody>${rows}</tbody>
+          </table>
+          <div class="totals-wrap">
+            <div class="totals">
+              <div class="totals-row"><span>Base Project Cost:</span><span><strong>${fmtINR(calc.baseTotal)}</strong></span></div>
+              <div class="totals-row"><span>GST (8.90%):</span><span>${fmtINR(calc.gst)}</span></div>
+              <div class="totals-grand"><span>Grand Total (Net Value):</span><span>${fmtINR(calc.grandTotal)}</span></div>
+              <p class="totals-note">Average cost per watt: &#8377;${calc.perWp.toFixed(2)}/Wp (incl. GST)</p>
+            </div>
+          </div>
+          <div class="bottom-grid">
+            <div>
+              <h4>Payment Milestones Schedule</h4>
+              <ul class="payment-list">
+                <li><span>1. Advance Booking Amount (10%):</span><strong>${fmtINR(calc.grandTotal * 0.1)}</strong></li>
+                <li><span>2. Material Dispatch Stage (85%):</span><strong>${fmtINR(calc.grandTotal * 0.85)}</strong></li>
+                <li><span>3. Post-Commissioning Handover (5%):</span><strong>${fmtINR(calc.grandTotal * 0.05)}</strong></li>
+              </ul>
+            </div>
+            <div>
+              <h4>Project Execution Terms</h4>
+              <ul class="terms-list">
+                <li>Estimated Delivery: 4 to 6 weeks from structural layout approval and receipt of advance.</li>
+                <li>Grid integration approvals (Net Metering) timeline varies according to State DISCOM.</li>
+                <li>Quotation validity: 15 days from the date of issuance.</li>
+                <li>Warranty: 25 years performance warranty on solar modules, 5 years on grid-tie inverters.</li>
+                ${customTermRows}
+              </ul>
+            </div>
+          </div>
+          <div class="footer">
+            <div class="sig"><div class="sig-line">Authorized Signatory<br/><strong>Divvy Solar Representative</strong></div></div>
+            <div class="sig"><div class="sig-line">Accepted and Agreed<br/><strong>Client Representative</strong></div></div>
+          </div>
         </div>
       </body></html>`;
-    };
-    setPdfLoading(true);
-    try {
-      const html2canvas = (await import("html2canvas")).default;
-      const jsPDF = (await import("jspdf")).jsPDF;
+
+      // Create offscreen iframe at exact A4 width (794px = A4 at 96dpi)
       const iframe = document.createElement("iframe");
-      iframe.style.cssText = "position:fixed;left:-9999px;top:0;width:1024px;height:1px;border:none;visibility:hidden;";
+      iframe.style.cssText = "position:fixed;left:-9999px;top:0;width:794px;height:2000px;border:none;visibility:hidden;";
       document.body.appendChild(iframe);
-      const htmlContent = buildQuotationHTML();
       iframe.contentDocument.open();
-      iframe.contentDocument.write(htmlContent);
+      iframe.contentDocument.write(html);
       iframe.contentDocument.close();
-      await new Promise(resolve => setTimeout(resolve, 800));
-      const page1 = iframe.contentDocument.getElementById("page-1");
-      const page2 = iframe.contentDocument.getElementById("page-2");
-      const canvas1 = await html2canvas(page1, { scale: 2, useCORS: true, backgroundColor: "#ffffff", logging: false, width: 1024, height: 1448 });
-      const canvas2 = await html2canvas(page2, { scale: 2, useCORS: true, backgroundColor: "#ffffff", logging: false, width: 1024, height: 1448 });
-      document.body.removeChild(iframe);
+
+      // Wait for images and layout to settle
+      await new Promise(resolve => setTimeout(resolve, 1500));
+
+      const pageEl = iframe.contentDocument.querySelector(".page");
+      const totalH = pageEl.scrollHeight;
+      iframe.style.height = totalH + 100 + "px";
+      await new Promise(resolve => setTimeout(resolve, 300));
+
+      const canvas = await html2canvas(pageEl, {
+        scale: 2,
+        useCORS: true,
+        allowTaint: true,
+        backgroundColor: "#ffffff",
+        logging: false,
+        width: 794,
+        height: totalH,
+        windowWidth: 794,
+        windowHeight: totalH,
+      });
+
+      if (document.body.contains(iframe)) document.body.removeChild(iframe);
+
+      const imgData = canvas.toDataURL("image/jpeg", 0.85);
       const pdf = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
-      const pageWidth = pdf.internal.pageSize.getWidth();
-      const pageHeight = pdf.internal.pageSize.getHeight();
-      pdf.addImage(canvas1.toDataURL("image/png"), "PNG", 0, 0, pageWidth, pageHeight);
-      pdf.addPage();
-      pdf.addImage(canvas2.toDataURL("image/png"), "PNG", 0, 0, pageWidth, pageHeight);
+      const pdfW = pdf.internal.pageSize.getWidth();
+      const pdfH = pdf.internal.pageSize.getHeight();
+      const imgHeightMm = (canvas.height * pdfW) / canvas.width;
+
+      let heightLeft = imgHeightMm;
+      let position = 0;
+      pdf.addImage(imgData, "JPEG", 0, position, pdfW, imgHeightMm);
+      heightLeft -= pdfH;
+      while (heightLeft > 0) {
+        position = heightLeft - imgHeightMm;
+        pdf.addPage();
+        pdf.addImage(imgData, "JPEG", 0, position, pdfW, imgHeightMm);
+        heightLeft -= pdfH;
+      }
+
+      const pdfBase64 = pdf.output('datauristring');
       pdf.save(`Divvy_Solar_Quote_${clientName || "Client"}_${new Date().toLocaleDateString("en-IN").replace(/\//g, "-")}.pdf`);
+
+      // ── Quotation Log ─────────────────────────────────────────────────────────
+      // Only send pdfData if under 15MB to avoid database/body-size limits; always create the log entry.
+      const MAX_PDF_BYTES = 15 * 1024 * 1024; // 15 MB
+      const pdfToLog = (typeof pdfBase64 === 'string' && pdfBase64.length < MAX_PDF_BYTES)
+        ? pdfBase64
+        : '';
+
+      const calcStateData = {
+        clientName: clientName || '',
+        clientPhone: clientPhone || '',
+        clientLocation: clientLocation || '',
+        quoteRef: quoteRef || '',
+        systemKW: Number(systemKW) || 0,
+        projectCategory: projectCategory || 'residential',
+        connectedLoad: connectedLoad || '',
+        roofType: roofType || '',
+        dgSync: !!dgSync,
+        customTerms: customTerms || '',
+        dcCableM: Number(dcCableM) || 0,
+        invToAcdbCableM: Number(invToAcdbCableM) || 0,
+        acdbToMainCableM: Number(acdbToMainCableM) || 0,
+        earthingType: earthingType || '',
+        laType: laType || '',
+        walkwayType: walkwayType || '',
+        walkwayM: Number(walkwayM) || 0,
+        customSafety: Number(customSafety) || 0,
+        discomType: discomType || '',
+        discom: !!discom,
+        incBos: !!incBos,
+        incEng: !!incEng,
+        incMon: !!incMon,
+        incTrans: !!incTrans,
+        calc: calc,
+        rates: rates,
+      };
+
+      try {
+        const logRes = await fetch('/api/quotation-logs', {
+          method: 'POST',
+          credentials: 'include',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            clientName: clientName || '',
+            clientPhone: clientPhone || '',
+            clientLocation: clientLocation || '',
+            quoteRef: quoteRef || '',
+            systemKW: Number(systemKW) || 0,
+            grandTotal: calc?.grandTotal || 0,
+            projectCategory: projectCategory || 'residential',
+            action: 'downloaded',
+            pdfData: pdfToLog,
+            calcState: JSON.stringify(calcStateData),
+          }),
+        });
+
+        if (logRes.ok) {
+          // Show a brief success toast
+          const toast = document.createElement('div');
+          toast.textContent = '✓ Quotation logged successfully';
+          toast.style.cssText = 'position:fixed;bottom:24px;right:24px;z-index:9999;background:#16a34a;color:#fff;padding:10px 20px;border-radius:10px;font-size:13px;font-weight:600;box-shadow:0 4px 20px rgba(0,0,0,0.3);animation:fadeIn .3s ease';
+          document.body.appendChild(toast);
+          setTimeout(() => toast.remove(), 3000);
+        } else {
+          const errText = await logRes.text().catch(() => '');
+          console.error('[QuotationLog] Server error:', logRes.status, errText);
+          // Show a warning toast
+          const toast = document.createElement('div');
+          toast.textContent = `⚠ Log failed (${logRes.status}) — PDF downloaded OK`;
+          toast.style.cssText = 'position:fixed;bottom:24px;right:24px;z-index:9999;background:#b45309;color:#fff;padding:10px 20px;border-radius:10px;font-size:13px;font-weight:600;box-shadow:0 4px 20px rgba(0,0,0,0.3)';
+          document.body.appendChild(toast);
+          setTimeout(() => toast.remove(), 5000);
+        }
+      } catch (logErr) {
+        console.error('[QuotationLog] Network error:', logErr);
+      }
     } catch (err) {
       console.error("PDF generation failed:", err);
-      alert("PDF download failed.");
+      alert(`PDF download failed: ${err.message}`);
     } finally {
       setPdfLoading(false);
     }
   };
+
 
   if (loading) return (
     <div className="flex items-center justify-center py-32">

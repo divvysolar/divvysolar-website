@@ -122,9 +122,8 @@ export default function SalesLayout({ children }) {
                             <Link
                                 key={item.name}
                                 href={item.href}
-                                className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-150 group ${
-                                    active ? "text-[#FECB00]" : "text-white/50 hover:text-[#FECB00]"
-                                }`}
+                                className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-150 group ${active ? "text-[#FECB00]" : "text-white/50 hover:text-[#FECB00]"
+                                    }`}
                                 style={{
                                     background: active ? "rgba(254,203,0,0.1)" : "transparent",
                                     border: active ? "1px solid rgba(254,203,0,0.2)" : "1px solid transparent",
@@ -163,7 +162,7 @@ export default function SalesLayout({ children }) {
                     </button>
                 </div>
             </aside>
- 
+
             {/* ─── Mobile Overlay Sidebar ─── */}
             {mobileOpen && (
                 <div className="fixed inset-0 z-50 md:hidden flex print:hidden">
@@ -203,9 +202,8 @@ export default function SalesLayout({ children }) {
                                         key={item.name}
                                         href={item.href}
                                         onClick={() => setMobileOpen(false)}
-                                        className={`flex items-center gap-3 px-3 py-3 rounded-xl text-sm font-medium transition-all duration-150 ${
-                                            active ? "text-[#FECB00]" : "text-white/50"
-                                        }`}
+                                        className={`flex items-center gap-3 px-3 py-3 rounded-xl text-sm font-medium transition-all duration-150 ${active ? "text-[#FECB00]" : "text-white/50"
+                                            }`}
                                         style={{
                                             background: active ? "rgba(254,203,0,0.1)" : "transparent",
                                             border: active ? "1px solid rgba(254,203,0,0.2)" : "1px solid transparent",
@@ -228,7 +226,7 @@ export default function SalesLayout({ children }) {
                                 <div className="flex-1 min-w-0">
                                     <p className="text-white text-sm font-semibold truncate leading-none">
                                         {session?.user?.name || "Sales User"}
-                                    </p>
+                                    </p>;
                                     <p className="text-white/50 text-xs truncate mt-0.5">{session?.user?.email}</p>
                                 </div>
                             </div>
