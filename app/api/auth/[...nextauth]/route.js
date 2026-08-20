@@ -25,7 +25,9 @@ export const authOptions = {
 
                 await connectToDatabase();
 
-                const admin = await Admin.findOne({ email: credentials.email }).select('+password');
+                const admin = await Admin.findOne({ 
+                    email: { $regex: new RegExp(`^${credentials.email.trim()}$`, 'i') } 
+                }).select('+password');
 
                 if (!admin) {
                     throw new Error('No user found with this email');

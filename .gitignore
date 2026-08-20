@@ -12,3 +12,7 @@ yarn-error.log*
 out/
 dist/
 
+# Local Dev / Testing
+scripts/
+scratch/
+*.pdf
