@@ -48,7 +48,7 @@ const ALL_STRUCTURE_TYPES = Object.values(STRUCTURE_TYPES_MAP).flat();
 const STRUCTURE_TYPES = ALL_STRUCTURE_TYPES;
 
 
-const ROOF_TYPES = [{ v: "rcc", l: "RCC Flat Roof" }, { v: "profile", l: "Profile Sheet" }, { v: "ground", l: "Ground-Mounted" }];
+const ROOF_TYPES = [{ v: "rcc", l: "Rooftop RCC" }, { v: "profile", l: "Shed (Profile Sheet)" }, { v: "ground", l: "Ground Mounted" }];
 const PROJECT_CATEGORIES = [
   { v: "residential", l: "Residential (GST @ 8.90%)" },
   { v: "industrial", l: "Industrial (GST @ 8.90%)" },
@@ -335,7 +335,7 @@ export default function PricingCalculatorPage() {
         const capacity = selInv.capacity || 0;
         const qty = inv.qty || 1;
         const effectiveCap = capacity > 0 ? capacity : systemKW;
-        const cost = (selInv.ratePerKW || 0) * effectiveCap * qty;
+        const cost = (selInv.ratePerKW || 0) * qty;
         invCost += cost;
         selectedInverterDetails.push({ ...selInv, qty, cost, brand: inv.brand });
       }
@@ -393,7 +393,12 @@ export default function PricingCalculatorPage() {
       else if (discomType === "lt") discomCost = rates.discomLtCost || 0;
       else if (discomType === "ht") discomCost = rates.discomHtCost || 0;
     }
-    const installCost = (rates.installationRate || 0) * systemKW;
+    let installRate = rates.installationRate || 0;
+    if (roofType === "rcc") installRate = rates.installationRateRcc || 0;
+    else if (roofType === "profile") installRate = rates.installationRateShed || 0;
+    else if (roofType === "ground") installRate = rates.installationRateGround || 0;
+
+    const installCost = installRate * systemKW;
 
     const baseTotal = moduleCost + invCost + structCost + dcCost + acCost + earthingCost + laCost + walkCost + safetyCost + mc4Cost + mc4BranchCost + acdbCost + dcdbCost + discomCost + installCost;
     const gstRate = 0.089;
@@ -403,7 +408,7 @@ export default function PricingCalculatorPage() {
 
     return {
       moduleCost, invCost, structCost, dcCost, acCost, earthingCost, laCost,
-      walkCost, safetyCost, discomCost, installCost, mc4Cost,
+      walkCost, safetyCost, discomCost, installCost, mc4Cost, installRate,
       baseTotal, gst, grandTotal, perWp,
       pitsCount, laCount, selMod, selectedInverterDetails, selDcCable, selInvToAcdbCable, selAcdbToMainCable, modRate, selectedStructures, dcRate, invToAcdbCost, acdbToMainCost, acdbCost, dcdbCost, mc4BranchCost, mc4Pairs, mc4BranchQty, earthingRate
     };
@@ -450,7 +455,8 @@ export default function PricingCalculatorPage() {
       if (incMon) rows += `<tr>${snoCell()}${cell("<strong>Remote Monitoring Access</strong><br/><span style='font-size:10px;color:#64748b'>Continuous monitoring through data logger device</span>")}${cell(1, "center")}${cell("Set", "center")}${cell("Included", "right")}${cell("Included", "right")}</tr>`;
       if (incTrans) rows += `<tr>${snoCell()}${cell("<strong>Transportation &amp; Freight</strong><br/><span style='font-size:10px;color:#64748b'>Till site loading and unloading</span>")}${cell(1, "center")}${cell("Job", "center")}${cell("Included", "right")}${cell("Included", "right")}</tr>`;
       if (discom) rows += `<tr>${snoCell()}${cell("<strong>DISCOM Liaising &amp; Net Metering</strong><br/><span style='font-size:10px;color:#64748b'>Net-metering approval process with local electricity authority</span>")}${cell(1, "center")}${cell("job", "center")}${cell("&#8377;" + (discomType === 'single_phase' ? (rates?.discomSinglePhaseCost||0) : discomType === 'three_phase' ? (rates?.discomThreePhaseCost||0) : discomType === 'lt' ? (rates?.discomLtCost||0) : (rates?.discomHtCost||0)), "right")}${cell(fmtINR(calc.discomCost), "right")}</tr>`;
-      rows += `<tr>${snoCell()}${cell("<strong>Installation &amp; Commissioning:</strong> On-site mechanics, engineering execution, panel staging and commissioning")}${cell(systemKW, "center")}${cell("kW", "center")}${cell("&#8377;" + (rates?.installationRate || 0), "right")}${cell(fmtINR(calc.installCost), "right")}</tr>`;
+      const installTypeLabel = roofType === "rcc" ? "Rooftop RCC" : roofType === "profile" ? "Shed" : roofType === "ground" ? "Ground-Mounted" : "Standard";
+      rows += `<tr>${snoCell()}${cell(`<strong>Installation &amp; Commissioning (${installTypeLabel}):</strong> On-site mechanics, engineering execution, panel staging and commissioning`)}${cell(systemKW, "center")}${cell("kW", "center")}${cell("&#8377;" + (calc.installRate || 0), "right")}${cell(fmtINR(calc.installCost), "right")}</tr>`;
       return rows;
     };
 
@@ -950,7 +956,7 @@ export default function PricingCalculatorPage() {
                       <Sel label="Model" id={`inv-model-${index}`} value={inv.model} disabled={!inv.brand}
                         onChange={v => { const ni = [...inverters]; ni[index] = { ...ni[index], model: v }; setInverters(ni); }}>
                         <option value="" className="bg-[#0f172a]">Select Model</option>
-                        {availModels.map(m => <option key={m._id} value={m._id} className="bg-[#0f172a]">{m.modelName} ({m.capacity}kW) — ₹{m.ratePerKW}/kW</option>)}
+                        {availModels.map(m => <option key={m._id} value={m._id} className="bg-[#0f172a]">{m.modelName} ({m.capacity}kW) — ₹{m.ratePerKW}/Unit</option>)}
                       </Sel>
                       <Inp label="Qty" id={`inv-qty-${index}`} value={inv.qty} type="number" min={1}
                         onChange={v => { const ni = [...inverters]; ni[index] = { ...ni[index], qty: Number(v) }; setInverters(ni); }} />
@@ -1643,11 +1649,11 @@ export default function PricingCalculatorPage() {
                     <tr className="hover:bg-slate-50">
                       <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-center">{sno++}</td>
                       <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300">
-                        <strong>Installation & Commissioning:</strong> On-site mechanics, engineering execution, panel staging, and commissioning
+                        <strong>Installation & Commissioning ({roofType === "rcc" ? "Rooftop RCC" : roofType === "profile" ? "Shed" : roofType === "ground" ? "Ground-Mounted" : "Standard"}):</strong> On-site mechanics, engineering execution, panel staging, and commissioning
                       </td>
                       <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-center">{systemKW}</td>
                       <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-center">kW</td>
-                      <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-right">₹{rates?.installationRate || 0}</td>
+                      <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-right">₹{calc.installRate || 0}</td>
                       <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-right">{formatINR(calc.installCost)}</td>
                     </tr>
                   </>

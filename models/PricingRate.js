@@ -98,7 +98,10 @@ const PricingRateSchema = new mongoose.Schema(
         discomHtCost: { type: Number, default: 0 },       // Net metering HT
 
         // ─── 7. Installation & Commissioning ─────────────────────────────────
-        installationRate: { type: Number, default: 0 },   // ₹ per kW (scales with system size)
+        installationRate: { type: Number, default: 0 },   // ₹ per kW (fallback)
+        installationRateRcc: { type: Number, default: 0 },   // ₹ per kW
+        installationRateGround: { type: Number, default: 0 },// ₹ per kW
+        installationRateShed: { type: Number, default: 0 },  // ₹ per kW
 
         // ─── Active flag ──────────────────────────────────────────────────────
         isActive: { type: Boolean, default: true },
