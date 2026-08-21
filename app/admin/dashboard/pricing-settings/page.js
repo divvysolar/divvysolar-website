@@ -18,16 +18,46 @@ const STRUCTURE_TYPES_ADMIN = [
 ];
 const cap = s => s.charAt(0).toUpperCase()+s.slice(1);
 
-const NumInput = ({label,value,onChange,unit="₹"}) => (
-  <div className="flex flex-col gap-1.5">
-    <label className="text-xs font-bold text-white/50 uppercase tracking-wider">{label}</label>
-    <div className="relative">
-      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-white/30 text-sm font-bold">{unit}</span>
-      <input type="number" min="0" step="0.01" value={value??""} onChange={e=>onChange(e.target.value===""?0:Number(e.target.value))}
-        className="w-full pl-8 pr-4 py-2.5 bg-white/5 border border-white/10 rounded-xl text-white text-sm focus:outline-none focus:ring-2 focus:ring-[#FECB00]/50 focus:border-[#FECB00] transition-all" placeholder="0"/>
+const NumInput = ({label,value,onChange,unit="₹"}) => {
+  const [localVal, setLocalVal] = useState((value ?? "").toString());
+
+  useEffect(() => {
+    if (value !== undefined && Number(localVal) !== value) {
+      setLocalVal(value === 0 ? "0" : value.toString());
+    }
+  }, [value]);
+
+  return (
+    <div className="flex flex-col gap-1.5">
+      <label className="text-xs font-bold text-white/50 uppercase tracking-wider">{label}</label>
+      <div className="relative">
+        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-white/30 text-sm font-bold">{unit}</span>
+        <input 
+          type="text" 
+          value={localVal} 
+          onChange={e => {
+            const raw = e.target.value;
+            if (raw === "" || /^\d*\.?\d*$/.test(raw)) {
+              let cleaned = raw;
+              if (raw.startsWith('0') && raw.length > 1 && !raw.startsWith('0.')) {
+                cleaned = raw.replace(/^0+/, '') || '0';
+              }
+              setLocalVal(cleaned);
+              onChange(cleaned === "" || cleaned === "." ? 0 : Number(cleaned));
+            }
+          }}
+          onBlur={() => {
+            const num = Number(localVal);
+            setLocalVal(isNaN(num) ? "0" : num.toString());
+          }}
+          onFocus={e => e.target.select()}
+          className="w-full pl-8 pr-4 py-2.5 bg-white/5 border border-white/10 rounded-xl text-white text-sm focus:outline-none focus:ring-2 focus:ring-[#FECB00]/50 focus:border-[#FECB00] transition-all" 
+          placeholder="0"
+        />
+      </div>
     </div>
-  </div>
-);
+  );
+};
 
 const TextInput = ({label,value,onChange,placeholder=""}) => (
   <div className="flex flex-col gap-1.5">
@@ -57,6 +87,7 @@ function ModelManager({title,models=[],onAdd,onRemove,onToggle,onUpdateName,onUp
               className="flex-1 bg-transparent text-white text-sm outline-none" placeholder="Model name"/>
             <span className="text-white/30 text-xs">₹</span>
             <input type="number" value={m[rateField]??""} onChange={e=>onUpdateRate(i,Number(e.target.value))}
+              onFocus={e => e.target.select()}
               className="w-24 bg-transparent text-white text-sm outline-none text-right"/>
             <span className="text-white/30 text-xs">{rateLabel}</span>
             <button onClick={()=>onRemove(i)} className="text-red-400/60 hover:text-red-400 transition-colors flex-shrink-0">
@@ -69,6 +100,7 @@ function ModelManager({title,models=[],onAdd,onRemove,onToggle,onUpdateName,onUp
         <input value={name} onChange={e=>setName(e.target.value)} placeholder="Model name (e.g. Waaree 540Wp Mono)"
           className="flex-1 px-3 py-2 bg-white/5 border border-white/10 rounded-xl text-white text-sm focus:outline-none focus:ring-2 focus:ring-[#FECB00]/50 focus:border-[#FECB00] transition-all"/>
         <input type="number" value={rate} onChange={e=>setRate(e.target.value)} placeholder={`Rate (${rateLabel})`}
+          onFocus={e => e.target.select()}
           className="w-32 px-3 py-2 bg-white/5 border border-white/10 rounded-xl text-white text-sm focus:outline-none focus:ring-2 focus:ring-[#FECB00]/50 focus:border-[#FECB00] transition-all"/>
         <button onClick={()=>{if(name&&rate){onAdd({modelName:name,[rateField]:Number(rate),inStock:true});setName("");setRate("");}}}
           className="px-4 py-2 rounded-xl font-bold text-sm flex items-center gap-1 transition-all"
@@ -201,7 +233,7 @@ export default function PricingSettingsPage() {
         <div className="flex items-center gap-3">
           <BoltIcon className="w-6 h-6 text-[#FECB00]"/>
           <div>
-            <h2 className="text-lg font-bold text-white">Inverter Models (₹/kW)</h2>
+            <h2 className="text-lg font-bold text-white">Inverter Models (₹/Unit)</h2>
             <p className="text-white/40 text-xs mt-0.5">Toggle stock status per model.</p>
           </div>
         </div>
@@ -215,7 +247,7 @@ export default function PricingSettingsPage() {
               onToggle={i=>toggleInverterStock(brand,i)}
               onUpdateName={(i,v)=>updateInverterName(brand,i,v)}
               onUpdateRate={(i,v)=>updateInverterRate(brand,i,v)}
-              rateField="ratePerKW" rateLabel="₹/kW"
+              rateField="ratePerKW" rateLabel="₹/Unit"
             />
           </div>
         ))}
@@ -267,7 +299,9 @@ export default function PricingSettingsPage() {
           <NumInput label="DISCOM (Three Phase) (₹ flat)" value={rates.discomThreePhaseCost} onChange={v=>update("discomThreePhaseCost",v)}/>
           <NumInput label="DISCOM (LT) (₹ flat)" value={rates.discomLtCost} onChange={v=>update("discomLtCost",v)}/>
           <NumInput label="DISCOM (HT) (₹ flat)" value={rates.discomHtCost} onChange={v=>update("discomHtCost",v)}/>
-          <NumInput label="Installation (₹/kW)" value={rates.installationRate} onChange={v=>update("installationRate",v)}/>
+          <NumInput label="Installation: Rooftop RCC (₹/kW)" value={rates.installationRateRcc} onChange={v=>update("installationRateRcc",v)}/>
+          <NumInput label="Installation: GroundMounted (₹/kW)" value={rates.installationRateGround} onChange={v=>update("installationRateGround",v)}/>
+          <NumInput label="Installation: Shed (₹/kW)" value={rates.installationRateShed} onChange={v=>update("installationRateShed",v)}/>
         </div>
       </section>
 
