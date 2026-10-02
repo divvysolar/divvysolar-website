@@ -45,8 +45,8 @@ export const authOptions = {
                 if (credentials.portal === "sales" && role !== "salesperson") {
                     throw new Error('Access denied: Sales Portal is restricted to salesperson accounts');
                 }
-                if (credentials.portal === "admin" && role !== "admin") {
-                    throw new Error('Access denied: Admin Panel is restricted to admin accounts');
+                if (credentials.portal === "admin" && role !== "admin" && role !== "finance") {
+                    throw new Error('Access denied: Admin Panel is restricted to admin and finance accounts');
                 }
 
                 return { 

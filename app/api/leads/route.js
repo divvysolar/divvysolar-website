@@ -3,6 +3,7 @@ import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import connectToDatabase from '@/lib/mongodb';
 import Lead from '@/models/Lead';
+import ChatLog from '@/models/ChatLog';
 import { sendEmail } from '@/lib/sendEmail';
 
 
@@ -68,7 +69,7 @@ export async function OPTIONS() {
     return response;
 }
 
-// GET: Admin only - Fetch all leads
+// GET: Admin only - Fetch all leads & chat logs
 export async function GET(req) {
     try {
         const session = await getServerSession(authOptions);
@@ -81,15 +82,21 @@ export async function GET(req) {
 
         const { searchParams } = new URL(req.url);
         const status = searchParams.get('status');
-        const limit = parseInt(searchParams.get('limit')) || 50;
+        const limit = parseInt(searchParams.get('limit')) || 100;
 
         const query = status ? { status } : {};
 
-        const leads = await Lead.find(query)
-            .sort({ createdAt: -1 })
-            .limit(limit);
+        const [leads, chatLogs] = await Promise.all([
+            Lead.find(query).sort({ createdAt: -1, updatedAt: -1 }).limit(limit),
+            ChatLog.find({ 'messages.0': { $exists: true } }).sort({ updatedAt: -1, createdAt: -1 }).limit(100)
+        ]);
 
-        return NextResponse.json({ success: true, count: leads.length, data: leads });
+        return NextResponse.json({ 
+            success: true, 
+            count: leads.length, 
+            data: leads,
+            chatLogs: chatLogs || []
+        });
     } catch (error) {
         return NextResponse.json({ success: false, error: 'Server Error' }, { status: 500 });
     }
