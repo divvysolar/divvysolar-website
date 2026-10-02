@@ -37,13 +37,13 @@ export async function GET() {
     }
 }
 
-// PUT — Update pricing rates (admin only)
+// PUT — Update pricing rates & financial percentage settings (Admin & Finance access)
 export async function PUT(request) {
     try {
         const session = await getServerSession(authOptions);
-        if (!session?.user || session.user.role !== 'admin') {
+        if (!session?.user || (session.user.role !== 'admin' && session.user.role !== 'finance')) {
             return NextResponse.json(
-                { error: 'Forbidden — admin access required' },
+                { error: 'Forbidden — admin or finance access required' },
                 { status: 403 }
             );
         }
@@ -56,6 +56,14 @@ export async function PUT(request) {
         delete body.__v;
         delete body.createdAt;
         delete body.updatedAt;
+
+        // If user is not admin (e.g. finance), preserve all financialSettings (profit margin, discount caps, gst)
+        if (session.user.role !== 'admin') {
+            const existing = await PricingRate.findOne({ isActive: true }).lean();
+            if (existing?.financialSettings) {
+                body.financialSettings = existing.financialSettings;
+            }
+        }
 
         let rates = await PricingRate.findOneAndUpdate(
             { isActive: true },
