@@ -1,6 +1,3 @@
-<<<<<<< HEAD
-# divvysolar-website
-=======
 # ☀️ Divvy Solar Website
 
 Divvy Solar is a high-end B2B website built for solar infrastructure projects. It features a powerful **Admin Panel** to manage Leads and Blogs efficiently.
@@ -79,4 +76,3 @@ The admin panel can be accessed at the `/admin` URL.
 
 ---
 *Built with Next.js for Divvy Solar.*
->>>>>>> vineet/divvy

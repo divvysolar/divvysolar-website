@@ -92,8 +92,9 @@ export default function AboutPage() {
                 </div>
             </section>
 
-            {/* ─── Vision & Mission ─── */}
+            {/* ─── Vision & Mission (Premium Editorial Layout) ─── */}
             <section className="py-24 md:py-32 relative overflow-hidden bg-[#0a0f1c] selection:bg-[#FECB00] selection:text-black">
+                {/* Minimalist Background Grids */}
                 <div className="absolute inset-0 pointer-events-none">
                     <div className="absolute inset-0 opacity-[0.03]" style={{ backgroundImage: 'linear-gradient(rgba(255,255,255,1) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,1) 1px, transparent 1px)', backgroundSize: '64px 64px', backgroundPosition: 'center center' }} />
                     <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-blue-600/5 rounded-full blur-[150px] mix-blend-screen" />
@@ -102,6 +103,7 @@ export default function AboutPage() {
 
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
                     <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-start">
+                        {/* Left Content: Editorial Header & Description */}
                         <div className="lg:col-span-7">
                             <span className="flex items-center gap-3 text-white/50 text-[10px] font-bold tracking-[0.3em] uppercase mb-6">
                                 <span className="w-8 h-[1px] bg-white/20"></span>
@@ -115,6 +117,7 @@ export default function AboutPage() {
                                 We are a solar EPC company focused on building reliable, performance-driven solar assets. Through strong engineering, quality procurement, and disciplined execution, we help homes, businesses, and industries move toward lower energy costs and a more sustainable future.
                             </p>
 
+                            {/* Authentic Trust Indicators */}
                             <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mt-12 border-t border-white/5 pt-12">
                                 <div className="space-y-3">
                                     <div className="text-[#FECB00] font-bold text-sm tracking-widest uppercase">Precision Engineering</div>
@@ -131,9 +134,12 @@ export default function AboutPage() {
                             </div>
                         </div>
 
+                        {/* Right Content: Vision & Mission stacked */}
                         <div className="lg:col-span-5 flex flex-col gap-6">
+                            {/* Vision Card */}
                             <div className="group relative rounded-2xl overflow-hidden bg-white/[0.02] border border-white/5 backdrop-blur-xl p-8 transition-all duration-500 hover:bg-white/[0.04] hover:border-white/10">
                                 <div className="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-blue-500/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+
                                 <div className="flex items-center justify-between mb-6">
                                     <div className="flex items-center gap-3">
                                         <div className="w-10 h-10 rounded-full border border-white/10 flex items-center justify-center bg-white/5 shadow-inner">
@@ -143,16 +149,20 @@ export default function AboutPage() {
                                     </div>
                                     <span className="text-3xl font-black text-white/[0.05] pointer-events-none group-hover:text-white/[0.1] transition-colors" style={{ fontFamily: "Georgia, serif" }}>01</span>
                                 </div>
+
                                 <h3 className="text-2xl font-normal text-white mb-4 tracking-tight" style={{ fontFamily: "Georgia, serif" }}>
                                     Make Solar the First Choice
                                 </h3>
+
                                 <p className="text-white/50 text-sm leading-relaxed font-light">
                                     We envision an India where on-grid solar power is the default for homes and businesses, trusted for its savings, reliability, and environmental impact. By delivering consistent quality and transparent execution, we aim to make clean energy accessible at scale.
                                 </p>
                             </div>
 
+                            {/* Mission Card */}
                             <div className="group relative rounded-2xl overflow-hidden bg-gradient-to-b from-[#FECB00]/5 to-transparent border border-[#FECB00]/10 p-8 transition-all duration-500 hover:from-[#FECB00]/10 hover:border-[#FECB00]/30">
                                 <div className="absolute top-0 right-0 w-full h-[1px] bg-gradient-to-r from-transparent via-[#FECB00]/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+
                                 <div className="flex items-center justify-between mb-6">
                                     <div className="flex items-center gap-3">
                                         <div className="w-10 h-10 rounded-full border border-[#FECB00]/20 flex items-center justify-center bg-[#FECB00]/10 shadow-[0_0_15px_rgba(254,203,0,0.1)]">
@@ -162,13 +172,19 @@ export default function AboutPage() {
                                     </div>
                                     <span className="text-3xl font-black text-[#FECB00]/[0.05] pointer-events-none group-hover:text-[#FECB00]/[0.1] transition-colors" style={{ fontFamily: "Georgia, serif" }}>02</span>
                                 </div>
+
                                 <h3 className="text-2xl font-normal text-white mb-4 tracking-tight leading-snug" style={{ fontFamily: "Georgia, serif" }}>
                                     Deliver Solar That Performs
                                 </h3>
+
                                 <p className="text-white/50 text-sm leading-relaxed font-light">
                                     Our mission is to provide end-to-end solar EPC solutions, from survey and design to commissioning and O&M, so every project delivers measurable output, safer operations, and long-term ROI for residential, commercial, industrial, and utility-scale customers.
                                 </p>
                             </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
                         </div>
                     </div>
                 </div>

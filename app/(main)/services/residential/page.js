@@ -56,12 +56,12 @@ export default function ResidentialPage() {
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
                         <div className="animate-slide-up lg:pr-10">
-                             <div className="inline-flex items-center bg-[#0a0f1c] text-white px-4 py-1.5 rounded-full mb-6 shadow-lg transform hover:scale-105 transition-transform duration-300">
+                            <div className="inline-flex items-center bg-[#0a0f1c] text-white px-4 py-1.5 rounded-full mb-6 shadow-lg transform hover:scale-105 transition-transform duration-300">
                                 <h3 className="font-medium uppercase tracking-[0.2em] text-[10px] text-amber-400">PM Surya Ghar Rooftop Solar</h3>
                             </div>
                             <h2 className="text-3xl md:text-5xl font-medium text-[#0a1122] mb-8 leading-tight tracking-tight" style={{ fontFamily: 'Georgia, serif' }}>
-                                <span className="block md:whitespace-nowrap">Residential Solar Solutions</span>
-                                <span className="block text-amber-500 md:whitespace-nowrap">for Maximum Savings</span>
+                                <span className="block">Residential Solar Solutions</span>
+                                <span className="block text-amber-500">for Maximum Savings</span>
                             </h2>
 
                             <div className="space-y-10 text-[#0a1122] text-lg leading-relaxed">
