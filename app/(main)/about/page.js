@@ -185,10 +185,6 @@ export default function AboutPage() {
                     </div>
                 </div>
             </section>
-                        </div>
-                    </div>
-                </div>
-            </section>
 
             {/* ─── Timeline ─── */}
             <section className="py-14 bg-gray-50 relative overflow-hidden">
