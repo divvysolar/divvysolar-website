@@ -280,8 +280,7 @@ const DynamicCableSelector = ({ label, cables, selectedId, onChange, brand = "po
         </Sel>
       </div>
       <div className="flex items-center justify-between pt-1 border-t border-white/5 flex-wrap gap-1">
-        <span className="text-[11px] text-white/50 truncate max-w-[180px]">{currentBrandObj?.l} · {selCable?.label || `${selCores}C x ${selSize}sqmm ${cap(selConductor)}`}</span>
-        <span className="text-xs text-[#FECB00] font-bold shrink-0">Rate: ₹{selCable?.ratePerMeter || 0}/m</span>
+        <span className="text-[11px] text-white/50 truncate">{currentBrandObj?.l} · {selCable?.label || `${selCores}C x ${selSize}sqmm ${cap(selConductor)}`}</span>
       </div>
     </div>
   );
@@ -525,6 +524,31 @@ export default function PricingCalculatorPage() {
     if (!rates || !plantKW || plantKW <= 0) return null;
     const wp = plantKW * 1000;
 
+    // Financial Percentage Settings (configured by Super Admin & Finance Team)
+    const fin = rates.financialSettings || {
+      profitMarginPercent: 12,
+      dealerCommissionPercent: 0,
+      maxDiscountPercent: 5,
+      gstPercent: 8.9,
+      advancePaymentPercent: 10,
+      dispatchPaymentPercent: 85,
+      handoverPaymentPercent: 5,
+    };
+
+    // Category-specific financial settings
+    const catSettings = projectCategory === "residential" 
+      ? fin.residential 
+      : projectCategory === "industrial" 
+        ? fin.industrial 
+        : fin.utility;
+
+    const profitMarginPercent = catSettings?.profitMarginPercent ?? fin.profitMarginPercent ?? 12;
+    const maxDiscountPercent = catSettings?.maxDiscountPercent ?? fin.maxDiscountPercent ?? 5;
+    const gstPercent = fin.gstPercent ?? 8.9;
+
+    // Direct baked-in markup multiplier (strictly uses profit margin)
+    const markupMultiplier = 1 + (profitMarginPercent / 100);
+
     let moduleCost = 0;
     const selectedModuleDetails = [];
     modules.forEach(m => {
@@ -533,7 +557,8 @@ export default function PricingCalculatorPage() {
       const qty = Number(m.qty) || 0;
       if (selMod && qty > 0) {
         const adder = systemType === "hybrid" ? (rates.modules?.typeAdder?.hybrid || 0) : (rates.modules?.typeAdder?.ongrid || 0);
-        const ratePerWp = (selMod.ratePerWp || 0) + adder;
+        const rawRatePerWp = (selMod.ratePerWp || 0) + adder;
+        const ratePerWp = rawRatePerWp * markupMultiplier;
         const itemWp = qty * (selMod.wattage || 0);
         const kw = itemWp / 1000;
         const cost = ratePerWp * itemWp;
@@ -550,15 +575,17 @@ export default function PricingCalculatorPage() {
       if (selInv) {
         const capacity = selInv.capacity || 0;
         const qty = inv.qty || 1;
-        const effectiveCap = capacity > 0 ? capacity : plantKW;
-        const cost = (selInv.ratePerKW || 0) * qty;
+        const rawRate = selInv.ratePerKW || 0;
+        const rate = rawRate * markupMultiplier;
+        const cost = rate * qty;
         invCost += cost;
-        selectedInverterDetails.push({ ...selInv, qty, cost, brand: inv.brand });
+        selectedInverterDetails.push({ ...selInv, qty, cost, rate, brand: inv.brand });
       }
     });
 
     const selectedStructures = structures.map(st => {
-      const rate = rates.structure?.[st.type]?.ratePerKw || 0;
+      const rawRate = rates.structure?.[st.type]?.ratePerKw || 0;
+      const rate = rawRate * markupMultiplier;
       const cost = rate * (Number(st.kw) || 0);
       return { ...st, rate, cost };
     });
@@ -566,7 +593,8 @@ export default function PricingCalculatorPage() {
 
     const selectedDcCablesDetails = dcCablesList.map(item => {
       const cable = rates.dcCables?.find(c => c._id === item.cableId) || rates.dcCables?.[0];
-      const rate = cable?.ratePerMeter || 0;
+      const rawRate = cable?.ratePerMeter || 0;
+      const rate = rawRate * markupMultiplier;
       const meters = Number(item.meters) || 0;
       const cost = rate * meters;
       const brandObj = CABLE_BRANDS.find(b => b.v === item.brand) || CABLE_BRANDS[0];
@@ -584,22 +612,25 @@ export default function PricingCalculatorPage() {
     const dcCost = selectedDcCablesDetails.reduce((sum, item) => sum + item.cost, 0);
 
     const selInvToAcdbCable = rates.acCables?.find(c => c._id === invToAcdbCableId) || rates.acCables?.[0];
-    const invToAcdbRate = selInvToAcdbCable?.ratePerMeter || 0;
+    const rawInvToAcdbRate = selInvToAcdbCable?.ratePerMeter || 0;
+    const invToAcdbRate = rawInvToAcdbRate * markupMultiplier;
     const invToAcdbCost = invToAcdbRate * invToAcdbCableM;
 
     const selAcdbToMainCable = rates.acCables?.find(c => c._id === acdbToMainCableId) || rates.acCables?.[0];
-    const acdbToMainRate = selAcdbToMainCable?.ratePerMeter || 0;
+    const rawAcdbToMainRate = selAcdbToMainCable?.ratePerMeter || 0;
+    const acdbToMainRate = rawAcdbToMainRate * markupMultiplier;
     const acdbToMainCost = acdbToMainRate * acdbToMainCableM;
 
     const acCost = invToAcdbCost + acdbToMainCost;
 
     const pitsCount = earthing ? customPits : 0;
-    let earthingRate = 0;
-    if (earthingType === "gi_stripe") earthingRate = rates.earthingPitRateGi || 0;
-    else if (earthingType === "copper_wire" || earthingType === "copper") earthingRate = rates.earthingPitRateCu || 0;
-    else if (earthingType === "aluminium_wire" || earthingType === "aluminium") earthingRate = rates.earthingPitRateAl || 0;
-    else if (earthingType === "cu_bonded") earthingRate = rates.earthingPitRateCuBonded || 0;
+    let rawEarthingRate = 0;
+    if (earthingType === "gi_stripe") rawEarthingRate = rates.earthingPitRateGi || 0;
+    else if (earthingType === "copper_wire" || earthingType === "copper") rawEarthingRate = rates.earthingPitRateCu || 0;
+    else if (earthingType === "aluminium_wire" || earthingType === "aluminium") rawEarthingRate = rates.earthingPitRateAl || 0;
+    else if (earthingType === "cu_bonded") rawEarthingRate = rates.earthingPitRateCuBonded || 0;
 
+    const earthingRate = rawEarthingRate * markupMultiplier;
     const earthingLabel = earthingType === "copper_wire" 
       ? `Copper Single Core Wire (${earthingWireSize} sqmm)` 
       : earthingType === "aluminium_wire"
@@ -611,55 +642,57 @@ export default function PricingCalculatorPage() {
     const earthingCost = pitsCount * earthingRate;
 
     const laCount = laType !== "none" ? customLA : 0;
-    const laUnitRate = laType === "conventional" ? (rates.laConventionalRate || 0) : (rates.laEseRate || 0);
+    const rawLaUnitRate = laType === "conventional" ? (rates.laConventionalRate || 0) : (rates.laEseRate || 0);
+    const laUnitRate = rawLaUnitRate * markupMultiplier;
     const laCost = laCount * laUnitRate;
 
-    const walkRate = walkway ? (walkwayType === "gi" ? (rates.walkwayGiRate || 0) : (rates.walkwayFrpRate || 0)) : 0;
+    const rawWalkRate = walkway ? (walkwayType === "gi" ? (rates.walkwayGiRate || 0) : (rates.walkwayFrpRate || 0)) : 0;
+    const walkRate = rawWalkRate * markupMultiplier;
     const walkCost = (walkway && Number(walkwayM) > 0) ? walkRate * Number(walkwayM) : 0;
 
     const safetyM = safetyLine ? customSafety : 0;
-    const safetyCost = safetyM * (rates.safetyLineRate || 0);
+    const rawSafetyRate = rates.safetyLineRate || 0;
+    const safetyLineRate = rawSafetyRate * markupMultiplier;
+    const safetyCost = safetyM * safetyLineRate;
 
-    const acdbCost = acdb ? (rates.acdbRatePerKw || 0) * plantKW : 0;
-    const dcdbCost = dcdb ? (rates.dcdbRatePerKw || 0) * plantKW : 0;
-    const mc4Cost = (Number(mc4Pairs) || 0) * (rates.mc4ConnectorRate || 0);
-    const mc4BranchCost = (Number(mc4BranchQty) || 0) * (rates.branchConnectorRate || 0);
+    const rawAcdbRate = rates.acdbRatePerKw || 0;
+    const acdbRate = rawAcdbRate * markupMultiplier;
+    const acdbCost = acdb ? acdbRate * plantKW : 0;
 
-    let discomCost = 0;
+    const rawDcdbRate = rates.dcdbRatePerKw || 0;
+    const dcdbRate = rawDcdbRate * markupMultiplier;
+    const dcdbCost = dcdb ? dcdbRate * plantKW : 0;
+
+    const rawMc4Rate = rates.mc4ConnectorRate || 0;
+    const mc4Rate = rawMc4Rate * markupMultiplier;
+    const mc4Cost = (Number(mc4Pairs) || 0) * mc4Rate;
+
+    const rawBranchRate = rates.branchConnectorRate || 0;
+    const branchRate = rawBranchRate * markupMultiplier;
+    const mc4BranchCost = (Number(mc4BranchQty) || 0) * branchRate;
+
+    let rawDiscomCost = 0;
     if (discom) {
-      if (discomType === "single_phase") discomCost = rates.discomSinglePhaseCost || 0;
-      else if (discomType === "three_phase") discomCost = rates.discomThreePhaseCost || 0;
-      else if (discomType === "lt") discomCost = rates.discomLtCost || 0;
-      else if (discomType === "ht") discomCost = rates.discomHtCost || 0;
+      if (discomType === "single_phase") rawDiscomCost = rates.discomSinglePhaseCost || 0;
+      else if (discomType === "three_phase") rawDiscomCost = rates.discomThreePhaseCost || 0;
+      else if (discomType === "lt") rawDiscomCost = rates.discomLtCost || 0;
+      else if (discomType === "ht") rawDiscomCost = rates.discomHtCost || 0;
     }
-    let installRate = rates.installationRate || 0;
-    if (roofType === "rcc") installRate = rates.installationRateRcc || 0;
-    else if (roofType === "profile") installRate = rates.installationRateShed || 0;
-    else if (roofType === "ground") installRate = rates.installationRateGround || 0;
+    const discomCost = rawDiscomCost * markupMultiplier;
 
+    let rawInstallRate = rates.installationRate || 0;
+    if (roofType === "rcc") rawInstallRate = rates.installationRateRcc || 0;
+    else if (roofType === "profile") rawInstallRate = rates.installationRateShed || 0;
+    else if (roofType === "ground") rawInstallRate = rates.installationRateGround || 0;
+
+    const installRate = rawInstallRate * markupMultiplier;
     const installCost = installRate * plantKW;
 
-    const rawHardwareCost = moduleCost + invCost + structCost + dcCost + acCost + earthingCost + laCost + walkCost + safetyCost + mc4Cost + mc4BranchCost + acdbCost + dcdbCost + discomCost + installCost;
+    // Total markedUpBase is now mathematically the exact sum of all marked-up components
+    const markedUpBase = moduleCost + invCost + structCost + dcCost + acCost + earthingCost + laCost + walkCost + safetyCost + mc4Cost + mc4BranchCost + acdbCost + dcdbCost + discomCost + installCost;
 
-    // Financial Percentage Settings (configured by Super Admin & Finance Team)
-    const fin = rates.financialSettings || {
-      profitMarginPercent: 12,
-      dealerCommissionPercent: 2,
-      maxDiscountPercent: 5,
-      gstPercent: 8.9,
-      advancePaymentPercent: 10,
-      dispatchPaymentPercent: 85,
-      handoverPaymentPercent: 5,
-    };
-
-    const profitMarginPercent = fin.residential?.profitMarginPercent ?? fin.profitMarginPercent ?? 12;
-    const dealerCommissionPercent = fin.dealerCommissionPercent ?? 2;
-    const maxDiscountPercent = fin.residential?.maxDiscountPercent ?? fin.maxDiscountPercent ?? 5;
-    const gstPercent = fin.gstPercent ?? 8.9;
-
-    const marginAmount = rawHardwareCost * (profitMarginPercent / 100);
-    const dealerCommissionAmount = rawHardwareCost * (dealerCommissionPercent / 100);
-    const markedUpBase = rawHardwareCost + marginAmount + dealerCommissionAmount;
+    const rawHardwareCost = markedUpBase / markupMultiplier;
+    const marginAmount = markedUpBase - rawHardwareCost;
 
     // Clamped Discount
     const effectiveDiscountPercent = Math.min(Math.max(0, Number(discountPercent) || 0), maxDiscountPercent);
@@ -687,6 +720,7 @@ export default function PricingCalculatorPage() {
       advancePercent: advP, dispatchPercent: dispP, handoverPercent: handP, advanceAmount, dispatchAmount, handoverAmount,
       maxDiscountPercent,
       pitsCount, laCount, selectedModuleDetails, selectedInverterDetails, selectedDcCablesDetails, selInvToAcdbCable, selAcdbToMainCable, selectedStructures, invToAcdbCost, acdbToMainCost, acdbCost, dcdbCost, mc4BranchCost, mc4Pairs, mc4BranchQty, earthingRate, earthingLabel,
+      invToAcdbRate, acdbToMainRate, acdbRate, dcdbRate, mc4Rate, branchRate, laUnitRate, walkRate, safetyLineRate,
       invToAcdbCableBrand, acdbToMainCableBrand
     };
   })();
@@ -716,12 +750,12 @@ export default function PricingCalculatorPage() {
         rows += `<tr>${snoCell()}${cell(`<strong>Solar Grid-Tie Inverter:</strong> ${inv.modelName}<br/><span style="font-size:10px;color:#64748b">Multi-MPPT High-efficiency inverter system</span>`)}${cell(inv.qty, "center")}${cell("Nos", "center")}${cell("&#8377;" + (inv.cost / (inv.qty || 1)).toFixed(2), "right")}${cell(fmtINR(inv.cost), "right")}</tr>`;
       });
 
-      if (calc.acdbCost > 0) rows += `<tr>${snoCell()}${cell("<strong>ACDB Combiner / Panel</strong><br/><span style='font-size:10px;color:#64748b'>L&amp;T / Elmex / Schneider / Reputed Make</span>")}${cell(effectiveSystemKW, "center")}${cell("kW", "center")}${cell("&#8377;" + (rates?.acdbRatePerKw || 0), "right")}${cell(fmtINR(calc.acdbCost), "right")}</tr>`;
-      if (calc.dcdbCost > 0) rows += `<tr>${snoCell()}${cell("<strong>DCDB Combiner / Panel</strong><br/><span style='font-size:10px;color:#64748b'>Reputed Make</span>")}${cell(effectiveSystemKW, "center")}${cell("kW", "center")}${cell("&#8377;" + (rates?.dcdbRatePerKw || 0), "right")}${cell(fmtINR(calc.dcdbCost), "right")}</tr>`;
+      if (calc.acdbCost > 0) rows += `<tr>${snoCell()}${cell("<strong>ACDB Combiner / Panel</strong><br/><span style='font-size:10px;color:#64748b'>L&amp;T / Elmex / Schneider / Reputed Make</span>")}${cell(effectiveSystemKW, "center")}${cell("kW", "center")}${cell("&#8377;" + (calc.acdbRate || 0).toFixed(2), "right")}${cell(fmtINR(calc.acdbCost), "right")}</tr>`;
+      if (calc.dcdbCost > 0) rows += `<tr>${snoCell()}${cell("<strong>DCDB Combiner / Panel</strong><br/><span style='font-size:10px;color:#64748b'>Reputed Make</span>")}${cell(effectiveSystemKW, "center")}${cell("kW", "center")}${cell("&#8377;" + (calc.dcdbRate || 0).toFixed(2), "right")}${cell(fmtINR(calc.dcdbCost), "right")}</tr>`;
 
       calc.selectedStructures?.forEach(st => {
         const stLabel = ALL_STRUCTURE_TYPES.find(opt => opt.v === st.type)?.l || st.type || "N/A";
-        rows += `<tr>${snoCell()}${cell(`<strong>Mounting Structure:</strong> ${stLabel}<br/><span style="font-size:10px;color:#64748b">Wind load sustained structural rails &amp; clamps</span>`)}${cell(st.kw, "center")}${cell("kW", "center")}${cell("&#8377;" + st.rate, "right")}${cell(fmtINR(st.cost), "right")}</tr>`;
+        rows += `<tr>${snoCell()}${cell(`<strong>Mounting Structure:</strong> ${stLabel}<br/><span style="font-size:10px;color:#64748b">Wind load sustained structural rails &amp; clamps</span>`)}${cell(st.kw, "center")}${cell("kW", "center")}${cell("&#8377;" + (st.rate || 0).toFixed(2), "right")}${cell(fmtINR(st.cost), "right")}</tr>`;
       });
 
       rows += `<tr>${snoCell()}${cell("<strong>Structure Accessories:</strong> SS 304 Nut Bolts &amp; Fasteners<br/><span style='font-size:10px;color:#64748b'>Anti-corrosion hardware for mechanical integrity</span>")}${cell(effectiveSystemKW, "center")}${cell("kW", "center")}${cell("Included", "right")}${cell("Included", "right")}</tr>`;
@@ -729,25 +763,25 @@ export default function PricingCalculatorPage() {
       if (calc.selectedDcCablesDetails?.length > 0) {
         calc.selectedDcCablesDetails.forEach(item => {
           if (item.meters > 0) {
-            rows += `<tr>${snoCell()}${cell(`<strong>DC Solar Cable (${item.brandLabel}):</strong> ${item.cableLabel}<br/><span style="font-size:10px;color:#64748b">Tinned copper flexible single-core solar wire</span>`)}${cell(item.meters, "center")}${cell("m", "center")}${cell("&#8377;" + item.rate, "right")}${cell(fmtINR(item.cost), "right")}</tr>`;
+            rows += `<tr>${snoCell()}${cell(`<strong>DC Solar Cable (${item.brandLabel}):</strong> ${item.cableLabel}<br/><span style="font-size:10px;color:#64748b">Tinned copper flexible single-core solar wire</span>`)}${cell(item.meters, "center")}${cell("m", "center")}${cell("&#8377;" + (item.rate || 0).toFixed(2), "right")}${cell(fmtINR(item.cost), "right")}</tr>`;
           }
         });
       }
-      if (invToAcdbCableM > 0) rows += `<tr>${snoCell()}${cell(`<strong>AC Cable - Inv to ACDB (${invAcdbBrandLabel}):</strong> ${calc.selInvToAcdbCable?.label || "N/A"}<br/><span style="font-size:10px;color:#64748b">Multicore flexible AC cabling run</span>`)}${cell(invToAcdbCableM, "center")}${cell("m", "center")}${cell("&#8377;" + (calc.selInvToAcdbCable?.ratePerMeter || 0), "right")}${cell(fmtINR(calc.invToAcdbCost), "right")}</tr>`;
-      if (acdbToMainCableM > 0) rows += `<tr>${snoCell()}${cell(`<strong>AC Cable - ACDB to Main (${acdbMainBrandLabel}):</strong> ${calc.selAcdbToMainCable?.label || "N/A"}<br/><span style="font-size:10px;color:#64748b">AC distribution cable run</span>`)}${cell(acdbToMainCableM, "center")}${cell("m", "center")}${cell("&#8377;" + (calc.selAcdbToMainCable?.ratePerMeter || 0), "right")}${cell(fmtINR(calc.acdbToMainCost), "right")}</tr>`;
-      if (calc.pitsCount > 0) rows += `<tr>${snoCell()}${cell(`<strong>Chemical Earthing Pits:</strong> ${calc.earthingLabel}<br/><span style="font-size:10px;color:#64748b">Low-resistance maintenance-free earthing</span>`)}${cell(calc.pitsCount, "center")}${cell("pits", "center")}${cell("&#8377;" + calc.earthingRate, "right")}${cell(fmtINR(calc.earthingCost), "right")}</tr>`;
-      if (calc.laCount > 0) rows += `<tr>${snoCell()}${cell(`<strong>Lightning Protection:</strong> ${laType === "ese" ? "ESE Active" : "Conventional"}<br/><span style="font-size:10px;color:#64748b">Safety shield against high-voltage lightning surges</span>`)}${cell(calc.laCount, "center")}${cell("units", "center")}${cell("&#8377;" + (laType === "conventional" ? (rates?.laConventionalRate || 0) : (rates?.laEseRate || 0)), "right")}${cell(fmtINR(calc.laCost), "right")}</tr>`;
-      if (walkway && Number(walkwayM) > 0) rows += `<tr>${snoCell()}${cell(`<strong>Roof Walkway:</strong> ${walkwayType === "gi" ? "GI Walkway" : "FRP Walkway"}<br/><span style="font-size:10px;color:#64748b">Safe pathway on roof for O&amp;M visits</span>`)}${cell(walkwayM, "center")}${cell("m", "center")}${cell("&#8377;" + (walkwayType === "gi" ? (rates?.walkwayGiRate || 0) : (rates?.walkwayFrpRate || 0)), "right")}${cell(fmtINR(calc.walkCost), "right")}</tr>`;
-      if (customSafety > 0) rows += `<tr>${snoCell()}${cell("<strong>Safety Lifeline</strong><br/><span style='font-size:10px;color:#64748b'>Anchor lifeline system for cleaning personnel</span>")}${cell(customSafety, "center")}${cell("m", "center")}${cell("&#8377;" + (rates?.safetyLineRate || 0), "right")}${cell(fmtINR(calc.safetyCost), "right")}</tr>`;
-      if (calc.mc4Cost > 0) rows += `<tr>${snoCell()}${cell("<strong>MC4 Connectors</strong><br/><span style='font-size:10px;color:#64748b'>Waterproof module string connector links</span>")}${cell(calc.mc4Pairs, "center")}${cell("pairs", "center")}${cell("&#8377;" + (rates?.mc4ConnectorRate || 0), "right")}${cell(fmtINR(calc.mc4Cost), "right")}</tr>`;
-      if (calc.mc4BranchCost > 0) rows += `<tr>${snoCell()}${cell("<strong>Branch (Y) Connectors</strong><br/><span style='font-size:10px;color:#64748b'>Parallel string configuration connectors</span>")}${cell(calc.mc4BranchQty, "center")}${cell("nos", "center")}${cell("&#8377;" + (rates?.branchConnectorRate || 0), "right")}${cell(fmtINR(calc.mc4BranchCost), "right")}</tr>`;
+      if (invToAcdbCableM > 0) rows += `<tr>${snoCell()}${cell(`<strong>AC Cable - Inv to ACDB (${invAcdbBrandLabel}):</strong> ${calc.selInvToAcdbCable?.label || "N/A"}<br/><span style="font-size:10px;color:#64748b">Multicore flexible AC cabling run</span>`)}${cell(invToAcdbCableM, "center")}${cell("m", "center")}${cell("&#8377;" + (calc.invToAcdbRate || 0).toFixed(2), "right")}${cell(fmtINR(calc.invToAcdbCost), "right")}</tr>`;
+      if (acdbToMainCableM > 0) rows += `<tr>${snoCell()}${cell(`<strong>AC Cable - ACDB to Main (${acdbMainBrandLabel}):</strong> ${calc.selAcdbToMainCable?.label || "N/A"}<br/><span style="font-size:10px;color:#64748b">AC distribution cable run</span>`)}${cell(acdbToMainCableM, "center")}${cell("m", "center")}${cell("&#8377;" + (calc.acdbToMainRate || 0).toFixed(2), "right")}${cell(fmtINR(calc.acdbToMainCost), "right")}</tr>`;
+      if (calc.pitsCount > 0) rows += `<tr>${snoCell()}${cell(`<strong>Chemical Earthing Pits:</strong> ${calc.earthingLabel}<br/><span style="font-size:10px;color:#64748b">Low-resistance maintenance-free earthing</span>`)}${cell(calc.pitsCount, "center")}${cell("pits", "center")}${cell("&#8377;" + (calc.earthingRate || 0).toFixed(2), "right")}${cell(fmtINR(calc.earthingCost), "right")}</tr>`;
+      if (calc.laCount > 0) rows += `<tr>${snoCell()}${cell(`<strong>Lightning Protection:</strong> ${laType === "ese" ? "ESE Active" : "Conventional"}<br/><span style="font-size:10px;color:#64748b">Safety shield against high-voltage lightning surges</span>`)}${cell(calc.laCount, "center")}${cell("units", "center")}${cell("&#8377;" + (calc.laUnitRate || 0).toFixed(2), "right")}${cell(fmtINR(calc.laCost), "right")}</tr>`;
+      if (walkway && Number(walkwayM) > 0) rows += `<tr>${snoCell()}${cell(`<strong>Roof Walkway:</strong> ${walkwayType === "gi" ? "GI Walkway" : "FRP Walkway"}<br/><span style="font-size:10px;color:#64748b">Safe pathway on roof for O&amp;M visits</span>`)}${cell(walkwayM, "center")}${cell("m", "center")}${cell("&#8377;" + (calc.walkRate || 0).toFixed(2), "right")}${cell(fmtINR(calc.walkCost), "right")}</tr>`;
+      if (customSafety > 0) rows += `<tr>${snoCell()}${cell("<strong>Safety Lifeline</strong><br/><span style='font-size:10px;color:#64748b'>Anchor lifeline system for cleaning personnel</span>")}${cell(customSafety, "center")}${cell("m", "center")}${cell("&#8377;" + (calc.safetyLineRate || 0).toFixed(2), "right")}${cell(fmtINR(calc.safetyCost), "right")}</tr>`;
+      if (calc.mc4Cost > 0) rows += `<tr>${snoCell()}${cell("<strong>MC4 Connectors</strong><br/><span style='font-size:10px;color:#64748b'>Waterproof module string connector links</span>")}${cell(calc.mc4Pairs, "center")}${cell("pairs", "center")}${cell("&#8377;" + (calc.mc4Rate || 0).toFixed(2), "right")}${cell(fmtINR(calc.mc4Cost), "right")}</tr>`;
+      if (calc.mc4BranchCost > 0) rows += `<tr>${snoCell()}${cell("<strong>Branch (Y) Connectors</strong><br/><span style='font-size:10px;color:#64748b'>Parallel string configuration connectors</span>")}${cell(calc.mc4BranchQty, "center")}${cell("nos", "center")}${cell("&#8377;" + (calc.branchRate || 0).toFixed(2), "right")}${cell(fmtINR(calc.mc4BranchCost), "right")}</tr>`;
       if (incBos) rows += `<tr>${snoCell()}${cell("<strong>BOS &amp; Accessories:</strong> Cable Lugs, Tape, Cable tie &amp; Conduit Pipe")}${cell(effectiveSystemKW, "center")}${cell("kWp", "center")}${cell("Included", "right")}${cell("Included", "right")}</tr>`;
       if (incEng) rows += `<tr>${snoCell()}${cell("<strong>Engineering &amp; Supervision</strong><br/><span style='font-size:10px;color:#64748b'>String designing, Shadow Analysis, electrical design</span>")}${cell(effectiveSystemKW, "center")}${cell("kWp", "center")}${cell("Included", "right")}${cell("Included", "right")}</tr>`;
       if (incMon) rows += `<tr>${snoCell()}${cell("<strong>Remote Monitoring Access</strong><br/><span style='font-size:10px;color:#64748b'>Continuous monitoring through data logger device</span>")}${cell(1, "center")}${cell("Set", "center")}${cell("Included", "right")}${cell("Included", "right")}</tr>`;
       if (incTrans) rows += `<tr>${snoCell()}${cell("<strong>Transportation &amp; Freight</strong><br/><span style='font-size:10px;color:#64748b'>Till site loading and unloading</span>")}${cell(1, "center")}${cell("Job", "center")}${cell("Included", "right")}${cell("Included", "right")}</tr>`;
-      if (discom) rows += `<tr>${snoCell()}${cell("<strong>DISCOM Liaising &amp; Net Metering</strong><br/><span style='font-size:10px;color:#64748b'>Net-metering approval process with local electricity authority</span>")}${cell(1, "center")}${cell("job", "center")}${cell("&#8377;" + (discomType === 'single_phase' ? (rates?.discomSinglePhaseCost || 0) : discomType === 'three_phase' ? (rates?.discomThreePhaseCost || 0) : discomType === 'lt' ? (rates?.discomLtCost || 0) : (rates?.discomHtCost || 0)), "right")}${cell(fmtINR(calc.discomCost), "right")}</tr>`;
+      if (discom) rows += `<tr>${snoCell()}${cell("<strong>DISCOM Liaising &amp; Net Metering</strong><br/><span style='font-size:10px;color:#64748b'>Net-metering approval process with local electricity authority</span>")}${cell(1, "center")}${cell("job", "center")}${cell("&#8377;" + (calc.discomCost || 0).toFixed(2), "right")}${cell(fmtINR(calc.discomCost), "right")}</tr>`;
       const installTypeLabel = roofType === "rcc" ? "Rooftop RCC" : roofType === "profile" ? "Shed" : roofType === "ground" ? "Ground-Mounted" : "Standard";
-      rows += `<tr>${snoCell()}${cell(`<strong>Installation &amp; Commissioning (${installTypeLabel}):</strong> On-site mechanics, engineering execution, panel staging and commissioning`)}${cell(effectiveSystemKW, "center")}${cell("kW", "center")}${cell("&#8377;" + (calc.installRate || 0), "right")}${cell(fmtINR(calc.installCost), "right")}</tr>`;
+      rows += `<tr>${snoCell()}${cell(`<strong>Installation &amp; Commissioning (${installTypeLabel}):</strong> On-site mechanics, engineering execution, panel staging and commissioning`)}${cell(effectiveSystemKW, "center")}${cell("kW", "center")}${cell("&#8377;" + (calc.installRate || 0).toFixed(2), "right")}${cell(fmtINR(calc.installCost), "right")}</tr>`;
       return rows;
     };
 
@@ -1304,11 +1338,6 @@ export default function PricingCalculatorPage() {
                       <span className="text-xs font-semibold text-white/70 uppercase tracking-wider">
                         Module #{index + 1}
                       </span>
-                      {selModObj && Number(mod.qty) > 0 && (
-                        <span className="text-[11px] text-[#FECB00] font-medium bg-[#FECB00]/10 px-2.5 py-0.5 rounded-md border border-[#FECB00]/20">
-                          {mod.qty} panels × {selModObj.wattage}Wp = {modCapacityKW} kWp
-                        </span>
-                      )}
                     </div>
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                       <Sel
@@ -1333,7 +1362,7 @@ export default function PricingCalculatorPage() {
                         <option value="" className="bg-[#0f172a]">Select Model</option>
                         {availModels.map(m => (
                           <option key={m._id} value={m._id} className="bg-[#0f172a]">
-                            {m.modelName} ({m.wattage}Wp) — ₹{m.ratePerWp}/Wp
+                            {m.modelName} ({m.wattage}Wp)
                           </option>
                         ))}
                       </Sel>
@@ -1390,7 +1419,7 @@ export default function PricingCalculatorPage() {
                       <Sel label="Model" id={`inv-model-${index}`} value={inv.model} disabled={!inv.brand}
                         onChange={v => { const ni = [...inverters]; ni[index] = { ...ni[index], model: v }; setInverters(ni); }}>
                         <option value="" className="bg-[#0f172a]">Select Model</option>
-                        {availModels.map(m => <option key={m._id} value={m._id} className="bg-[#0f172a]">{m.modelName} ({m.capacity}kW) — ₹{m.ratePerKW}/Unit</option>)}
+                        {availModels.map(m => <option key={m._id} value={m._id} className="bg-[#0f172a]">{m.modelName} ({m.capacity}kW)</option>)}
                       </Sel>
                       <Inp label="Qty" id={`inv-qty-${index}`} value={inv.qty} type="number" min={1} placeholder="e.g. 1"
                         onChange={v => { const ni = [...inverters]; ni[index] = { ...ni[index], qty: v === "" ? "" : Number(v) }; setInverters(ni); }} />
@@ -1444,16 +1473,6 @@ export default function PricingCalculatorPage() {
                           newSt[index].kw = v;
                           setStructures(newSt);
                         }} />
-                    </div>
-                    {/* Live Price Preview */}
-                    <div className="flex items-center justify-between pt-2 border-t border-white/5">
-                      <span className="text-xs text-white/40">
-                        Rate: <span className="text-white/60 font-semibold">₹{structRate.toLocaleString("en-IN")}/kW</span>
-                        {structRate === 0 && <span className="text-yellow-400/70 ml-1">(Set rate in Admin → Pricing)</span>}
-                      </span>
-                      <span className="text-sm font-bold text-[#FECB00]">
-                        {structTotal > 0 ? `= ${formatINR(structTotal)}` : "₹0"}
-                      </span>
                     </div>
                     {st.type.startsWith("ground") && (
                       <div className="p-2 bg-red-500/10 border border-red-500/20 rounded-lg text-xs text-red-200">
@@ -1542,7 +1561,7 @@ export default function PricingCalculatorPage() {
                             }}
                           >
                             {rates?.dcCables?.map(c => (
-                              <option key={c._id} value={c._id} className="bg-[#0f172a]">{c.label} (₹{c.ratePerMeter}/m)</option>
+                              <option key={c._id} value={c._id} className="bg-[#0f172a]">{c.label}</option>
                             ))}
                           </Sel>
                           <Inp
@@ -1560,9 +1579,6 @@ export default function PricingCalculatorPage() {
                           />
                           <div className="flex items-center justify-between pt-1 border-t border-white/5 flex-wrap gap-1">
                             <span className="text-[11px] text-white/50">{currentBrandObj?.l} · {selCable?.label || "DC Cable"}</span>
-                            <span className="text-xs text-[#FECB00] font-bold">
-                              {itemTotal > 0 ? `= ${formatINR(itemTotal)}` : `Rate: ₹${itemRate}/m`}
-                            </span>
                           </div>
                         </div>
                       );
@@ -2132,7 +2148,7 @@ export default function PricingCalculatorPage() {
                         </td>
                         <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-center">{effectiveSystemKW}</td>
                         <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-center">kW</td>
-                        <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-right">₹{rates?.acdbRatePerKw || 0}</td>
+                        <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-right">₹{(calc.acdbRate || 0).toFixed(2)}</td>
                         <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-right">{formatINR(calc.acdbCost)}</td>
                       </tr>
                     )}
@@ -2145,7 +2161,7 @@ export default function PricingCalculatorPage() {
                         </td>
                         <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-center">{effectiveSystemKW}</td>
                         <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-center">kW</td>
-                        <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-right">₹{rates?.dcdbRatePerKw || 0}</td>
+                        <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-right">₹{(calc.dcdbRate || 0).toFixed(2)}</td>
                         <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-right">{formatINR(calc.dcdbCost)}</td>
                       </tr>
                     )}
@@ -2158,7 +2174,7 @@ export default function PricingCalculatorPage() {
                         </td>
                         <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-center">{st.kw}</td>
                         <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-center">kW</td>
-                        <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-right">₹{st.rate}</td>
+                        <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-right">₹{(st.rate || 0).toFixed(2)}</td>
                         <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-right">{formatINR(st.cost)}</td>
                       </tr>
                     ))}
@@ -2185,7 +2201,7 @@ export default function PricingCalculatorPage() {
                           </td>
                           <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-center">{item.meters}</td>
                           <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-center">m</td>
-                          <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-right">₹{item.rate}</td>
+                          <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-right">₹{(item.rate || 0).toFixed(2)}</td>
                           <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-right">{formatINR(item.cost)}</td>
                         </tr>
                       );
@@ -2194,12 +2210,12 @@ export default function PricingCalculatorPage() {
                       <tr className="hover:bg-slate-50">
                         <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-center">{sno++}</td>
                         <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300">
-                          <strong>AC Solar Cable - Inv to ACDB (${CABLE_BRANDS.find(b => b.v === invToAcdbCableBrand)?.l || cap(invToAcdbCableBrand)}):</strong> ${calc.selInvToAcdbCable?.label || "N/A"} <br />
+                          <strong>AC Solar Cable - Inv to ACDB ({CABLE_BRANDS.find(b => b.v === invToAcdbCableBrand)?.l || cap(invToAcdbCableBrand)}):</strong> {calc.selInvToAcdbCable?.label || "N/A"} <br />
                           <span className="text-[10px] text-slate-500">Multicore flexible AC cabling run</span>
                         </td>
                         <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-center">{invToAcdbCableM}</td>
                         <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-center">m</td>
-                        <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-right">₹{calc.selInvToAcdbCable?.ratePerMeter || 0}</td>
+                        <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-right">₹{(calc.invToAcdbRate || 0).toFixed(2)}</td>
                         <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-right">{formatINR(calc.invToAcdbCost)}</td>
                       </tr>
                     )}
@@ -2207,12 +2223,12 @@ export default function PricingCalculatorPage() {
                       <tr className="hover:bg-slate-50">
                         <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-center">{sno++}</td>
                         <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300">
-                          <strong>AC Solar Cable - ACDB to Main (${CABLE_BRANDS.find(b => b.v === acdbToMainCableBrand)?.l || cap(acdbToMainCableBrand)}):</strong> ${calc.selAcdbToMainCable?.label || "N/A"} <br />
+                          <strong>AC Solar Cable - ACDB to Main ({CABLE_BRANDS.find(b => b.v === acdbToMainCableBrand)?.l || cap(acdbToMainCableBrand)}):</strong> {calc.selAcdbToMainCable?.label || "N/A"} <br />
                           <span className="text-[10px] text-slate-500">AC distribution cable run</span>
                         </td>
                         <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-center">{acdbToMainCableM}</td>
                         <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-center">m</td>
-                        <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-right">₹{calc.selAcdbToMainCable?.ratePerMeter || 0}</td>
+                        <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-right">₹{(calc.acdbToMainRate || 0).toFixed(2)}</td>
                         <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-right">{formatINR(calc.acdbToMainCost)}</td>
                       </tr>
                     )}
@@ -2225,7 +2241,7 @@ export default function PricingCalculatorPage() {
                         </td>
                         <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-center">{calc.pitsCount}</td>
                         <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-center">pits</td>
-                        <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-right">₹{calc.earthingRate}</td>
+                        <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-right">₹{(calc.earthingRate || 0).toFixed(2)}</td>
                         <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-right">{formatINR(calc.earthingCost)}</td>
                       </tr>
                     )}
@@ -2238,7 +2254,7 @@ export default function PricingCalculatorPage() {
                         </td>
                         <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-center">{calc.laCount}</td>
                         <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-center">units</td>
-                        <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-right">₹{laType === "conventional" ? (rates?.laConventionalRate || 0) : (rates?.laEseRate || 0)}</td>
+                        <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-right">₹{(calc.laUnitRate || 0).toFixed(2)}</td>
                         <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-right">{formatINR(calc.laCost)}</td>
                       </tr>
                     )}
@@ -2251,7 +2267,7 @@ export default function PricingCalculatorPage() {
                         </td>
                         <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-center">{walkwayM}</td>
                         <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-center">m</td>
-                        <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-right">₹{walkwayType === "gi" ? (rates?.walkwayGiRate || 0) : (rates?.walkwayFrpRate || 0)}</td>
+                        <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-right">₹{(calc.walkRate || 0).toFixed(2)}</td>
                         <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-right">{formatINR(calc.walkCost)}</td>
                       </tr>
                     )}
@@ -2264,7 +2280,7 @@ export default function PricingCalculatorPage() {
                         </td>
                         <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-center">{customSafety}</td>
                         <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-center">m</td>
-                        <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-right">₹{rates?.safetyLineRate || 0}</td>
+                        <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-right">₹{(calc.safetyLineRate || 0).toFixed(2)}</td>
                         <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-right">{formatINR(calc.safetyCost)}</td>
                       </tr>
                     )}
@@ -2277,7 +2293,7 @@ export default function PricingCalculatorPage() {
                         </td>
                         <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-center">{calc.mc4Pairs}</td>
                         <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-center">pairs</td>
-                        <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-right">₹{rates?.mc4ConnectorRate || 0}</td>
+                        <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-right">₹{(calc.mc4Rate || 0).toFixed(2)}</td>
                         <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-right">{formatINR(calc.mc4Cost)}</td>
                       </tr>
                     )}
@@ -2290,7 +2306,7 @@ export default function PricingCalculatorPage() {
                         </td>
                         <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-center">{calc.mc4BranchQty}</td>
                         <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-center">nos</td>
-                        <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-right">₹{rates?.branchConnectorRate || 0}</td>
+                        <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-right">₹{(calc.branchRate || 0).toFixed(2)}</td>
                         <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-right">{formatINR(calc.mc4BranchCost)}</td>
                       </tr>
                     )}
@@ -2362,7 +2378,7 @@ export default function PricingCalculatorPage() {
                         </td>
                         <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-center">1</td>
                         <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-center">job</td>
-                        <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-right">₹{discomType === 'single_phase' ? (rates?.discomSinglePhaseCost || 0) : discomType === 'three_phase' ? (rates?.discomThreePhaseCost || 0) : discomType === 'lt' ? (rates?.discomLtCost || 0) : (rates?.discomHtCost || 0)}</td>
+                        <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-right">₹{(calc.discomCost || 0).toFixed(2)}</td>
                         <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-right">{formatINR(calc.discomCost)}</td>
                       </tr>
                     )}
@@ -2373,7 +2389,7 @@ export default function PricingCalculatorPage() {
                       </td>
                       <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-center">{effectiveSystemKW}</td>
                       <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-center">kW</td>
-                      <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-right">₹{calc.installRate || 0}</td>
+                      <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-right">₹{(calc.installRate || 0).toFixed(2)}</td>
                       <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-right">{formatINR(calc.installCost)}</td>
                     </tr>
                   </>
