@@ -6,7 +6,7 @@ import Admin from '@/models/Admin';
 import bcrypt from 'bcryptjs';
 
 // ── GET /api/salespersons ─────────────────────────────────────────────────────
-// Admin only. Returns all salesperson accounts (no passwords).
+// Admin only. Returns all salesperson and finance accounts (no passwords).
 export async function GET() {
     try {
         const session = await getServerSession(authOptions);
@@ -16,7 +16,7 @@ export async function GET() {
 
         await connectToDatabase();
 
-        const salespersons = await Admin.find({ role: 'salesperson' })
+        const salespersons = await Admin.find({ role: { $in: ['salesperson', 'finance'] } })
             .select('-password')
             .sort({ createdAt: -1 })
             .lean();
@@ -29,8 +29,8 @@ export async function GET() {
 }
 
 // ── POST /api/salespersons ────────────────────────────────────────────────────
-// Admin only. Creates a new salesperson account.
-// Body: { name, email, password }
+// Admin only. Creates a new salesperson or finance team account.
+// Body: { name, email, password, role }
 export async function POST(request) {
     try {
         const session = await getServerSession(authOptions);
@@ -38,7 +38,7 @@ export async function POST(request) {
             return NextResponse.json({ success: false, message: 'Unauthorized' }, { status: 401 });
         }
 
-        const { name, email, password } = await request.json();
+        const { name, email, password, role = 'salesperson' } = await request.json();
 
         if (!name || !email || !password) {
             return NextResponse.json(
@@ -67,15 +67,17 @@ export async function POST(request) {
         const salt = await bcrypt.genSalt(10);
         const hashedPassword = await bcrypt.hash(password, salt);
 
-        const salesperson = await Admin.create({
+        const assignedRole = role === 'finance' ? 'finance' : 'salesperson';
+
+        const user = await Admin.create({
             name: name.trim(),
             email: email.toLowerCase().trim(),
             password: hashedPassword,
-            role: 'salesperson',
+            role: assignedRole,
         });
 
         // Return without password
-        const result = salesperson.toObject();
+        const result = user.toObject();
         delete result.password;
 
         return NextResponse.json({ success: true, data: result }, { status: 201 });

@@ -35,6 +35,10 @@ const QuotationLogSchema = new mongoose.Schema(
             type: Number,
             default: 0,
         },
+        issuingBranch: {
+            type: String,
+            default: 'gurgaon',
+        },
         grandTotal: {
             type: Number,
             default: 0,

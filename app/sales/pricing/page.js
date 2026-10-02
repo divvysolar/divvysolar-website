@@ -12,10 +12,87 @@ import {
   DocumentArrowDownIcon,
   UserIcon,
   SunIcon,
-  PrinterIcon
+  PrinterIcon,
+  ArrowPathIcon,
+  BuildingOffice2Icon,
+  MapPinIcon,
 } from "@heroicons/react/24/outline";
 
-const ACTIVE_MODULE_BRANDS = ["waaree", "vikram", "jakson", "adani", "havells", "luminous"];
+export const DIVVY_BRANCH_OFFICES = {
+  gurgaon: {
+    id: "gurgaon",
+    name: "Gurgaon (Corporate Office)",
+    shortName: "Gurgaon Office",
+    state: "Haryana / Delhi-NCR",
+    addr1: "Unit-859, Tower- B1, 8th Floor, Spaze I - Tech Park, Sec - 49, Gurgaon - 122018 (HARYANA)",
+    addr2: "Head Office: Lower Ground, SJ Tower, Sec-13, Hisar 125001 (HR) | Email: info@divvysolar.in | Web: www.divvysolar.in",
+    tagline: "Corporate Headquarters (NCR & North India)"
+  },
+  punjab: {
+    id: "punjab",
+    name: "Punjab / Mohali (Regional Office)",
+    shortName: "Punjab / Mohali Office",
+    state: "Punjab",
+    addr1: "626, First Floor, Opp. Franco Hotel, Sec-55, Phase-I, Mohali, Punjab - 140501",
+    addr2: "Corporate Office: Spaze I-Tech Park, Gurgaon | Email: info@divvysolar.in | Web: www.divvysolar.in",
+    tagline: "Punjab Regional Operations & Sales Office"
+  },
+  ludhiana: {
+    id: "ludhiana",
+    name: "Punjab / Ludhiana (Regional Office)",
+    shortName: "Punjab / Ludhiana Office",
+    state: "Punjab",
+    addr1: "Plot no 14, Phase-VII (ADJ), Focal Point, Gobindgarh, Ludhiana, Punjab - 141010",
+    addr2: "Corporate Office: Spaze I-Tech Park, Gurgaon | Email: info@divvysolar.in | Web: www.divvysolar.in",
+    tagline: "Punjab Industrial Corridor Office"
+  },
+  hisar: {
+    id: "hisar",
+    name: "Hisar (Head Office)",
+    shortName: "Hisar Head Office",
+    state: "Haryana",
+    addr1: "Lower Ground, SJ Tower, Sector-13, Dabra Road, Hisar - 125001 (HARYANA)",
+    addr2: "Gurgaon Office: Spaze I-Tech Park, Sec-49, Gurgaon | Email: info@divvysolar.in | Web: www.divvysolar.in",
+    tagline: "Registered Head Office & Logistics Hub"
+  }
+};
+
+export const detectBranchOffice = (locationText) => {
+  if (!locationText || typeof locationText !== 'string') return null;
+  const loc = locationText.toLowerCase();
+
+  if (loc.includes('ludhiana') || loc.includes('gobindgarh')) {
+    return 'ludhiana';
+  }
+  const punjabKeywords = [
+    'punjab', 'mohali', 'chandigarh', 'zirakpur', 'kharar', 'panchkula',
+    'derabassi', 'patiala', 'bathinda', 'sangrur', 'malerkotla',
+    'hoshiarpur', 'kapurthala', 'amritsar', 'jalandhar', 'khanna', 'morinda',
+    'samrala', 'khamano', 'focal point', 'barnala', 'faridkot', 'moga', 'rupnagar', 'nabha', 'rajpura'
+  ];
+  if (punjabKeywords.some(kw => loc.includes(kw))) {
+    return 'punjab';
+  }
+
+  const hisarKeywords = [
+    'hisar', 'hissar', 'sirsa', 'fatehabad', 'bhiwani', 'rohtak', 'jind', 'hansi', 'tosham', 'adampur', 'uklana'
+  ];
+  if (hisarKeywords.some(kw => loc.includes(kw))) {
+    return 'hisar';
+  }
+
+  const gurgaonKeywords = [
+    'gurgaon', 'gurugram', 'delhi', 'noida', 'greater noida', 'ghaziabad', 'faridabad', 'manesar', 'rewari',
+    'sonipat', 'sonepat', 'panipat', 'karnal', 'kurukshetra', 'ambala', 'palwal', 'ncr', 'dharuhera', 'bawal'
+  ];
+  if (gurgaonKeywords.some(kw => loc.includes(kw))) {
+    return 'gurgaon';
+  }
+
+  return null;
+};
+
+const ACTIVE_MODULE_BRANDS = ["waaree", "vikram", "adani", "jakson", "havells", "luminous"];
 const ACTIVE_INVERTER_BRANDS = ["havells", "luminous", "utl", "sungrow"];
 const STRUCTURE_CATEGORIES = [
   { v: "ms", l: "MS Fabricated" },
@@ -50,9 +127,9 @@ const STRUCTURE_TYPES = ALL_STRUCTURE_TYPES;
 
 const ROOF_TYPES = [{ v: "rcc", l: "Rooftop RCC" }, { v: "profile", l: "Shed (Profile Sheet)" }, { v: "ground", l: "Ground Mounted" }];
 const PROJECT_CATEGORIES = [
-  { v: "residential", l: "Residential (GST @ 8.90%)" },
-  { v: "industrial", l: "Industrial (GST @ 8.90%)" },
-  { v: "utility", l: "Utility (GST @ 8.90%)" },
+  { v: "residential", l: "Residential Rooftop Solar (GST @ 8.90%)" },
+  { v: "industrial", l: "Industrial / C&I Solar (GST @ 8.90%)" },
+  { v: "utility", l: "Utility-Scale Solar (GST @ 8.90%)" },
 ];
 const LA_OPTS = [
   { v: "none", l: "None" },
@@ -67,12 +144,28 @@ const ACDB_OPTS = [
   { v: "lt-panel", l: "LT Panel (ACB/MCCB)", desc: "LT Synchronization Panel with ACB/MCCB, SPD, Fuses & Metering" },
   { v: "ht-panel", l: "HT Panel / VCB", desc: "HT Panel / VCB with comprehensive protection relays and SPDs" },
 ];
-const WALKWAY_OPTS = [{ v: "none", l: "None" }, { v: "gi", l: "GI Walkway" }, { v: "frp", l: "FRP Walkway" }];
+const WALKWAY_OPTS = [{ v: "gi", l: "GI Walkway" }, { v: "frp", l: "FRP Walkway" }];
 const EARTHING_OPTS = [
   { v: "gi_stripe", l: "GI Strip Earthing" },
-  { v: "copper", l: "Copper Earthing" },
+  { v: "copper_wire", l: "Copper Single Core Wire" },
+  { v: "aluminium_wire", l: "Aluminium Single Core Wire" },
   { v: "cu_bonded", l: "Copper Bonded Earthing" }
 ];
+
+const CABLE_BRANDS = [
+  { v: "polycab", l: "Polycab" },
+  { v: "havells", l: "Havells" },
+  { v: "kei", l: "KEI" },
+  { v: "lapp", l: "LAPP" },
+  { v: "finolex", l: "Finolex" },
+  { v: "apar", l: "Apar / Siechem" },
+  { v: "reputed", l: "Reputed Make / Tier-1" },
+];
+
+const EARTHING_WIRE_SIZES = {
+  copper_wire: ["6", "10", "16", "25", "35", "50"],
+  aluminium_wire: ["16", "25", "35", "50", "70"]
+};
 const cap = s => s.charAt(0).toUpperCase() + s.slice(1);
 
 
@@ -114,58 +207,82 @@ const Chk = ({ label, id, checked, onChange }) => (
   </label>
 );
 
-const DynamicCableSelector = ({ label, cables, selectedId, onChange }) => {
+const DynamicCableSelector = ({ label, cables, selectedId, onChange, brand = "polycab", onBrandChange }) => {
   const selCable = cables?.find(c => c._id === selectedId) || cables?.[0];
   if (!cables || cables.length === 0) return null;
 
-  const typeOpts = Array.from(new Set(cables.map(c => `${c.conductor}-${c.armoured ? 'armoured' : 'unarmoured'}`)));
-  const selType = selCable ? `${selCable.conductor}-${selCable.armoured ? 'armoured' : 'unarmoured'}` : typeOpts[0];
+  const conductors = Array.from(new Set(cables.map(c => c.conductor)));
+  const selConductor = selCable?.conductor || conductors[0] || 'copper';
 
-  const availableCores = Array.from(new Set(cables.filter(c => `${c.conductor}-${c.armoured ? 'armoured' : 'unarmoured'}` === selType).map(c => c.cores))).sort();
-  const selCores = selCable?.cores || availableCores[0];
+  const coreOrder = { "2": 1, "4": 2, "3.5": 3 };
+  const availableCores = Array.from(new Set(cables.filter(c => c.conductor === selConductor).map(c => c.cores))).sort((a, b) => (coreOrder[a] || 99) - (coreOrder[b] || 99));
+  const selCores = selCable && selCable.conductor === selConductor ? selCable.cores : availableCores[0];
 
-  const availableSizes = cables.filter(c => `${c.conductor}-${c.armoured ? 'armoured' : 'unarmoured'}` === selType && c.cores === selCores).map(c => c.sizeSqMm).sort((a, b) => a - b);
-  const selSize = selCable?.sizeSqMm || availableSizes[0];
+  const availableSizes = cables
+    .filter(c => c.conductor === selConductor && c.cores === selCores)
+    .map(c => c.sizeSqMm)
+    .sort((a, b) => a - b);
+  const selSize = selCable && selCable.conductor === selConductor && selCable.cores === selCores 
+    ? selCable.sizeSqMm 
+    : availableSizes[0];
 
-  const updateSelection = (t, c, s) => {
-    const [cond, arm] = t.split('-');
-    const isArm = arm === 'armoured';
-    const match = cables.find(x => x.conductor === cond && !!x.armoured === isArm && x.cores === c && x.sizeSqMm === Number(s));
+  const updateSelection = (cond, cores, size) => {
+    const match = cables.find(x => x.conductor === cond && x.cores === cores && x.sizeSqMm === Number(size));
     if (match) {
       onChange(match._id);
-    } else {
-      // Fallback if combination doesn't exist, pick the first size of that type/core
-      const fallback = cables.find(x => x.conductor === cond && !!x.armoured === isArm && x.cores === c);
-      if (fallback) onChange(fallback._id);
-      else {
-        // Ultimate fallback: just pick first of type
-        const ultFallback = cables.find(x => x.conductor === cond && !!x.armoured === isArm);
-        if (ultFallback) onChange(ultFallback._id);
-      }
+      return;
+    }
+    const fallbackCores = cables.find(x => x.conductor === cond && x.cores === cores);
+    if (fallbackCores) {
+      onChange(fallbackCores._id);
+      return;
+    }
+    const fallbackCond = cables.find(x => x.conductor === cond);
+    if (fallbackCond) {
+      onChange(fallbackCond._id);
     }
   };
 
+  const currentBrandObj = CABLE_BRANDS.find(b => b.v === brand) || CABLE_BRANDS[0];
+
   return (
     <div className="space-y-3 bg-white/5 border border-white/10 p-3.5 rounded-xl">
-      <Sel label={`${label} Type`} id={`${label}-type`} value={selType} onChange={v => updateSelection(v, selCores, selSize)}>
-        {typeOpts.map(t => {
-          let name = "";
-          if (t === 'copper-unarmoured') name = "Copper Unarmoured";
-          if (t === 'copper-armoured') name = "Copper Armoured";
-          if (t === 'aluminium-unarmoured') name = "Aluminium Unarmoured";
-          if (t === 'aluminium-armoured') name = "Aluminium Armoured";
-          return <option key={t} value={t} className="bg-[#0f172a]">{name}</option>;
-        })}
-      </Sel>
-      <div className="grid grid-cols-2 gap-2">
-        <Sel label="Cores" id={`${label}-cores`} value={selCores} onChange={v => updateSelection(selType, v, selSize)}>
-          {availableCores.map(c => <option key={c} value={c} className="bg-[#0f172a]">{c} Core</option>)}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+        <Sel label="Cable Brand" id={`${label}-brand`} value={brand} onChange={onBrandChange}>
+          {CABLE_BRANDS.map(b => (
+            <option key={b.v} value={b.v} className="bg-[#0f172a]">
+              {b.l}
+            </option>
+          ))}
         </Sel>
-        <Sel label="Size (sqmm)" id={`${label}-size`} value={selSize} onChange={v => updateSelection(selType, selCores, v)}>
-          {availableSizes.map(s => <option key={s} value={s} className="bg-[#0f172a]">{s} sqmm</option>)}
+        <Sel label="Conductor" id={`${label}-conductor`} value={selConductor} onChange={v => updateSelection(v, selCores, selSize)}>
+          {conductors.map(c => (
+            <option key={c} value={c} className="bg-[#0f172a]">
+              {c === 'copper' ? 'Copper' : c === 'aluminium' ? 'Aluminium' : cap(c)}
+            </option>
+          ))}
         </Sel>
       </div>
-      <p className="text-xs text-[#FECB00] font-medium pt-1">Rate: ₹{selCable?.ratePerMeter}/m</p>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+        <Sel label="Cores" id={`${label}-cores`} value={selCores} onChange={v => updateSelection(selConductor, v, selSize)}>
+          {availableCores.map(c => (
+            <option key={c} value={c} className="bg-[#0f172a]">
+              {c} Core
+            </option>
+          ))}
+        </Sel>
+        <Sel label="Size (sqmm)" id={`${label}-size`} value={selSize} onChange={v => updateSelection(selConductor, selCores, v)}>
+          {availableSizes.map(s => (
+            <option key={s} value={s} className="bg-[#0f172a]">
+              {s} sqmm
+            </option>
+          ))}
+        </Sel>
+      </div>
+      <div className="flex items-center justify-between pt-1 border-t border-white/5 flex-wrap gap-1">
+        <span className="text-[11px] text-white/50 truncate max-w-[180px]">{currentBrandObj?.l} · {selCable?.label || `${selCores}C x ${selSize}sqmm ${cap(selConductor)}`}</span>
+        <span className="text-xs text-[#FECB00] font-bold shrink-0">Rate: ₹{selCable?.ratePerMeter || 0}/m</span>
+      </div>
     </div>
   );
 };
@@ -175,46 +292,75 @@ export default function PricingCalculatorPage() {
   const [rates, setRates] = useState(null);
   const [loading, setLoading] = useState(true);
   const printRef = useRef(null);
-
-  // Client Details
+  // Client & Project Details
   const [clientName, setClientName] = useState("");
   const [clientPhone, setClientPhone] = useState("");
   const [clientLocation, setClientLocation] = useState("");
+  const [issuingBranch, setIssuingBranch] = useState("gurgaon");
   const [quoteRef, setQuoteRef] = useState("");
+  const [systemKW, setSystemKW] = useState("");
+  const [systemType, setSystemType] = useState("ongrid");
   const [projectCategory, setProjectCategory] = useState("residential");
   const [roofType, setRoofType] = useState("");
   const [connectedLoad, setConnectedLoad] = useState("");
   const [dgSync, setDgSync] = useState(false);
 
-  // Solar modules
-  const [moduleBrand, setModuleBrand] = useState("");
-  const [moduleModel, setModuleModel] = useState("");
-  const [systemType, setSystemType] = useState("ongrid");
-  const [systemKW, setSystemKW] = useState("");
+  // Auto-detect branch based on logged in salesperson profile if applicable
+  useEffect(() => {
+    if (session?.user?.email || session?.user?.name) {
+      const userStr = `${session?.user?.name || ''} ${session?.user?.email || ''}`.toLowerCase();
+      const detected = detectBranchOffice(userStr);
+      if (detected) {
+        setIssuingBranch(detected);
+      }
+    }
+  }, [session]);
+
+  const handleClientLocationChange = (val) => {
+    setClientLocation(val);
+    const detected = detectBranchOffice(val);
+    if (detected) {
+      setIssuingBranch(detected);
+    }
+  };
+
+  // Solar modules (Multi-module array support)
+  const [modules, setModules] = useState([{ brand: "", model: "", qty: "" }]);
+
+  const modulesKW = modules.reduce((sum, m) => {
+    const avail = rates?.modules?.[m.brand] || [];
+    const sel = avail.find(x => x._id === m.model);
+    return sum + ((Number(m.qty) || 0) * (sel?.wattage || 0) / 1000);
+  }, 0);
+  const effectiveSystemKW = Number(systemKW) > 0 ? Number(systemKW) : modulesKW;
 
   // Inverter
-  const [inverters, setInverters] = useState([{ brand: "", model: "", qty: 1 }]);
+  const [inverters, setInverters] = useState([{ brand: "", model: "", qty: "" }]);
 
   // Structure
-  const [structures, setStructures] = useState([{ id: Date.now(), type: "gi", kw: 10 }]);
+  const [structures, setStructures] = useState([{ id: Date.now(), type: "gi", kw: "" }]);
 
   // ACDB / DCDB
   const [acdb, setAcdb] = useState(false);
   const [dcdb, setDcdb] = useState(false);
 
   // Cables Selections
-  const [dcCableId, setDcCableId] = useState("");
-  const [dcCableM, setDcCableM] = useState("");
+  const [dcCablesList, setDcCablesList] = useState([
+    { id: Date.now(), brand: "polycab", cableId: "", meters: "" }
+  ]);
 
+  const [invToAcdbCableBrand, setInvToAcdbCableBrand] = useState("polycab");
   const [invToAcdbCableId, setInvToAcdbCableId] = useState("");
   const [invToAcdbCableM, setInvToAcdbCableM] = useState("");
 
+  const [acdbToMainCableBrand, setAcdbToMainCableBrand] = useState("polycab");
   const [acdbToMainCableId, setAcdbToMainCableId] = useState("");
   const [acdbToMainCableM, setAcdbToMainCableM] = useState("");
 
   // BOS Checkboxes & Overrides
   const [earthing, setEarthing] = useState(false);
   const [earthingType, setEarthingType] = useState("gi_stripe");
+  const [earthingWireSize, setEarthingWireSize] = useState("10");
   const [isOverridePits, setIsOverridePits] = useState(false);
   const [customPits, setCustomPits] = useState(0);
 
@@ -222,7 +368,8 @@ export default function PricingCalculatorPage() {
   const [isOverrideLA, setIsOverrideLA] = useState(false);
   const [customLA, setCustomLA] = useState("");
 
-  const [walkwayType, setWalkwayType] = useState("none");
+  const [walkway, setWalkway] = useState(false);
+  const [walkwayType, setWalkwayType] = useState("gi");
   const [walkwayM, setWalkwayM] = useState("");
 
   const [safetyLine, setSafetyLine] = useState(false);
@@ -231,6 +378,14 @@ export default function PricingCalculatorPage() {
 
   const [mc4Pairs, setMc4Pairs] = useState("");
   const [mc4BranchQty, setMc4BranchQty] = useState("");
+
+  // Commercial & Financial Controls
+  const [discountPercent, setDiscountPercent] = useState(0); // 0 to maxDiscountPercent
+
+  // Payment Milestones (Salesperson customizable per quotation)
+  const [advancePercent, setAdvancePercent] = useState("");
+  const [dispatchPercent, setDispatchPercent] = useState("");
+  const [handoverPercent, setHandoverPercent] = useState("");
 
   // Print Inclusions
   const [incBos, setIncBos] = useState(true);
@@ -244,6 +399,7 @@ export default function PricingCalculatorPage() {
   const [discomType, setDiscomType] = useState("lt_three");
   const [customTerms, setCustomTerms] = useState("");
   const [pdfLoading, setPdfLoading] = useState(false);
+  const [quoteRefLoading, setQuoteRefLoading] = useState(false);
 
   const fetchRates = useCallback(async () => {
     try {
@@ -257,21 +413,46 @@ export default function PricingCalculatorPage() {
     }
   }, []);
 
+  const fetchNextQuoteRef = useCallback(async () => {
+    setQuoteRefLoading(true);
+    try {
+      const res = await fetch("/api/quotation-logs/next-ref");
+      const json = await res.json();
+      if (json.success && json.nextRef) {
+        setQuoteRef(json.nextRef);
+      }
+    } catch (err) {
+      console.error("Failed to fetch next quote ref:", err);
+    } finally {
+      setQuoteRefLoading(false);
+    }
+  }, []);
+
   useEffect(() => {
     fetchRates();
-  }, [fetchRates]);
+    fetchNextQuoteRef();
+
+    const onFocus = () => fetchNextQuoteRef();
+    window.addEventListener("focus", onFocus);
+    return () => window.removeEventListener("focus", onFocus);
+  }, [fetchRates, fetchNextQuoteRef]);
 
   // Sync cables & default overrides when rates are loaded
   useEffect(() => {
     if (rates) {
-      if (rates.dcCables?.length && !dcCableId) setDcCableId(rates.dcCables[0]._id);
+      if (rates.dcCables?.length && dcCablesList.length > 0 && !dcCablesList[0].cableId) {
+        setDcCablesList(prev => prev.map((item, idx) => idx === 0 && !item.cableId ? { ...item, cableId: rates.dcCables[0]._id } : item));
+      }
       if (rates.acCables?.length && !invToAcdbCableId) setInvToAcdbCableId(rates.acCables[0]._id);
       if (rates.acCables?.length && !acdbToMainCableId) setAcdbToMainCableId(rates.acCables[0]._id);
+      if (rates.financialSettings) {
+        if (advancePercent === "") setAdvancePercent(rates.financialSettings.advancePaymentPercent ?? 10);
+        if (dispatchPercent === "") setDispatchPercent(rates.financialSettings.dispatchPaymentPercent ?? 85);
+        if (handoverPercent === "") setHandoverPercent(rates.financialSettings.handoverPaymentPercent ?? 5);
+      }
     }
-  }, [rates, dcCableId, invToAcdbCableId, acdbToMainCableId]);
+  }, [rates, invToAcdbCableId, acdbToMainCableId]);
 
-  // Reset models when brand changes (Module only now, inverters handled in loop)
-  useEffect(() => { setModuleModel(""); }, [moduleBrand]);
 
   // Auto-filter out brands with no active models in stock
   const visibleModuleBrands = rates ? ACTIVE_MODULE_BRANDS.filter(brand => {
@@ -284,14 +465,11 @@ export default function PricingCalculatorPage() {
     return models.some(m => m.inStock !== false);
   }) : [];
 
-  const availableModuleModels = moduleBrand && rates?.modules?.[moduleBrand]
-    ? rates.modules[moduleBrand].filter(m => m.inStock !== false)
-    : [];
 
 
-  const defaultPits = earthing ? Math.max(2, Math.ceil(systemKW * (rates?.earthingPitsPerKW || 0.3))) : 0;
-  const defaultLA = laType !== "none" ? Math.max(1, Math.ceil(systemKW * (rates?.laPerKW || 0.1))) : 0;
-  const defaultSafety = safetyLine ? Math.round(systemKW * (rates?.safetyLinePerKW || 2)) : 0;
+  const defaultPits = earthing ? 3 : 0;
+  const defaultLA = laType !== "none" ? Math.max(1, Math.ceil(effectiveSystemKW * (rates?.laPerKW || 0.1))) : 0;
+  const defaultSafety = safetyLine ? Math.round(effectiveSystemKW * (rates?.safetyLinePerKW || 2)) : 0;
 
   useEffect(() => {
     if (!isOverridePits) setCustomPits(defaultPits);
@@ -309,6 +487,11 @@ export default function PricingCalculatorPage() {
     setEarthing(val);
     if (!val) setIsOverridePits(false);
   };
+  const handleEarthingTypeChange = (val) => {
+    setEarthingType(val);
+    if (val === "copper_wire") setEarthingWireSize("10");
+    else if (val === "aluminium_wire") setEarthingWireSize("16");
+  };
   const handleLAChange = (val) => {
     setLaType(val);
     if (val === "none") setIsOverrideLA(false);
@@ -317,14 +500,47 @@ export default function PricingCalculatorPage() {
     setSafetyLine(val);
     if (!val) setIsOverrideSafety(false);
   };
+  const handleWalkwayChange = (val) => {
+    setWalkway(val);
+    if (!val) setWalkwayM("");
+  };
+
+  const updateModule = (index, field, value) => {
+    const nm = [...modules];
+    nm[index] = { ...nm[index], [field]: value };
+    if (field === "brand") {
+      nm[index].model = "";
+      nm[index].qty = "";
+    }
+    setModules(nm);
+  };
 
   const calc = (() => {
-    if (!rates || !systemKW) return null;
-    const wp = systemKW * 1000;
+    const modKW = modules.reduce((sum, m) => {
+      const avail = rates?.modules?.[m.brand] || [];
+      const sel = avail.find(x => x._id === m.model);
+      return sum + ((Number(m.qty) || 0) * (sel?.wattage || 0) / 1000);
+    }, 0);
+    const plantKW = Number(systemKW) > 0 ? Number(systemKW) : modKW;
+    if (!rates || !plantKW || plantKW <= 0) return null;
+    const wp = plantKW * 1000;
 
-    const selMod = availableModuleModels.find(m => m._id === moduleModel);
-    const modRate = selMod?.ratePerWp || 0;
-    const moduleCost = modRate * wp;
+    let moduleCost = 0;
+    const selectedModuleDetails = [];
+    modules.forEach(m => {
+      const availModels = m.brand && rates.modules?.[m.brand] ? rates.modules[m.brand] : [];
+      const selMod = availModels.find(item => item._id === m.model);
+      const qty = Number(m.qty) || 0;
+      if (selMod && qty > 0) {
+        const adder = systemType === "hybrid" ? (rates.modules?.typeAdder?.hybrid || 0) : (rates.modules?.typeAdder?.ongrid || 0);
+        const ratePerWp = (selMod.ratePerWp || 0) + adder;
+        const itemWp = qty * (selMod.wattage || 0);
+        const kw = itemWp / 1000;
+        const cost = ratePerWp * itemWp;
+        moduleCost += cost;
+        selectedModuleDetails.push({ ...selMod, brand: m.brand, kw, itemWp, ratePerWp, cost, panels: qty, qty });
+      }
+    });
 
     let invCost = 0;
     const selectedInverterDetails = [];
@@ -334,7 +550,7 @@ export default function PricingCalculatorPage() {
       if (selInv) {
         const capacity = selInv.capacity || 0;
         const qty = inv.qty || 1;
-        const effectiveCap = capacity > 0 ? capacity : systemKW;
+        const effectiveCap = capacity > 0 ? capacity : plantKW;
         const cost = (selInv.ratePerKW || 0) * qty;
         invCost += cost;
         selectedInverterDetails.push({ ...selInv, qty, cost, brand: inv.brand });
@@ -348,9 +564,24 @@ export default function PricingCalculatorPage() {
     });
     const structCost = selectedStructures.reduce((sum, st) => sum + st.cost, 0);
 
-    const selDcCable = rates.dcCables?.find(c => c._id === dcCableId) || rates.dcCables?.[0];
-    const dcRate = selDcCable?.ratePerMeter || 0;
-    const dcCost = dcRate * dcCableM;
+    const selectedDcCablesDetails = dcCablesList.map(item => {
+      const cable = rates.dcCables?.find(c => c._id === item.cableId) || rates.dcCables?.[0];
+      const rate = cable?.ratePerMeter || 0;
+      const meters = Number(item.meters) || 0;
+      const cost = rate * meters;
+      const brandObj = CABLE_BRANDS.find(b => b.v === item.brand) || CABLE_BRANDS[0];
+      return {
+        id: item.id,
+        brand: item.brand,
+        brandLabel: brandObj?.l || cap(item.brand),
+        cableId: item.cableId,
+        cableLabel: cable?.label || "DC Cable",
+        rate,
+        meters,
+        cost
+      };
+    });
+    const dcCost = selectedDcCablesDetails.reduce((sum, item) => sum + item.cost, 0);
 
     const selInvToAcdbCable = rates.acCables?.find(c => c._id === invToAcdbCableId) || rates.acCables?.[0];
     const invToAcdbRate = selInvToAcdbCable?.ratePerMeter || 0;
@@ -365,9 +596,17 @@ export default function PricingCalculatorPage() {
     const pitsCount = earthing ? customPits : 0;
     let earthingRate = 0;
     if (earthingType === "gi_stripe") earthingRate = rates.earthingPitRateGi || 0;
-    else if (earthingType === "aluminium") earthingRate = rates.earthingPitRateAl || 0;
-    else if (earthingType === "copper") earthingRate = rates.earthingPitRateCu || 0;
+    else if (earthingType === "copper_wire" || earthingType === "copper") earthingRate = rates.earthingPitRateCu || 0;
+    else if (earthingType === "aluminium_wire" || earthingType === "aluminium") earthingRate = rates.earthingPitRateAl || 0;
     else if (earthingType === "cu_bonded") earthingRate = rates.earthingPitRateCuBonded || 0;
+
+    const earthingLabel = earthingType === "copper_wire" 
+      ? `Copper Single Core Wire (${earthingWireSize} sqmm)` 
+      : earthingType === "aluminium_wire"
+      ? `Aluminium Single Core Wire (${earthingWireSize} sqmm)`
+      : earthingType === "cu_bonded"
+      ? "Copper Bonded Earthing"
+      : "GI Strip Earthing";
 
     const earthingCost = pitsCount * earthingRate;
 
@@ -375,14 +614,14 @@ export default function PricingCalculatorPage() {
     const laUnitRate = laType === "conventional" ? (rates.laConventionalRate || 0) : (rates.laEseRate || 0);
     const laCost = laCount * laUnitRate;
 
-    const walkRate = walkwayType === "gi" ? (rates.walkwayGiRate || 0) : (rates.walkwayFrpRate || 0);
-    const walkCost = walkwayType !== "none" ? walkRate * walkwayM : 0;
+    const walkRate = walkway ? (walkwayType === "gi" ? (rates.walkwayGiRate || 0) : (rates.walkwayFrpRate || 0)) : 0;
+    const walkCost = (walkway && Number(walkwayM) > 0) ? walkRate * Number(walkwayM) : 0;
 
     const safetyM = safetyLine ? customSafety : 0;
     const safetyCost = safetyM * (rates.safetyLineRate || 0);
 
-    const acdbCost = acdb ? (rates.acdbRatePerKw || 0) * systemKW : 0;
-    const dcdbCost = dcdb ? (rates.dcdbRatePerKw || 0) * systemKW : 0;
+    const acdbCost = acdb ? (rates.acdbRatePerKw || 0) * plantKW : 0;
+    const dcdbCost = dcdb ? (rates.dcdbRatePerKw || 0) * plantKW : 0;
     const mc4Cost = (Number(mc4Pairs) || 0) * (rates.mc4ConnectorRate || 0);
     const mc4BranchCost = (Number(mc4BranchQty) || 0) * (rates.branchConnectorRate || 0);
 
@@ -398,19 +637,57 @@ export default function PricingCalculatorPage() {
     else if (roofType === "profile") installRate = rates.installationRateShed || 0;
     else if (roofType === "ground") installRate = rates.installationRateGround || 0;
 
-    const installCost = installRate * systemKW;
+    const installCost = installRate * plantKW;
 
-    const baseTotal = moduleCost + invCost + structCost + dcCost + acCost + earthingCost + laCost + walkCost + safetyCost + mc4Cost + mc4BranchCost + acdbCost + dcdbCost + discomCost + installCost;
-    const gstRate = 0.089;
+    const rawHardwareCost = moduleCost + invCost + structCost + dcCost + acCost + earthingCost + laCost + walkCost + safetyCost + mc4Cost + mc4BranchCost + acdbCost + dcdbCost + discomCost + installCost;
+
+    // Financial Percentage Settings (configured by Super Admin & Finance Team)
+    const fin = rates.financialSettings || {
+      profitMarginPercent: 12,
+      dealerCommissionPercent: 2,
+      maxDiscountPercent: 5,
+      gstPercent: 8.9,
+      advancePaymentPercent: 10,
+      dispatchPaymentPercent: 85,
+      handoverPaymentPercent: 5,
+    };
+
+    const profitMarginPercent = fin.residential?.profitMarginPercent ?? fin.profitMarginPercent ?? 12;
+    const dealerCommissionPercent = fin.dealerCommissionPercent ?? 2;
+    const maxDiscountPercent = fin.residential?.maxDiscountPercent ?? fin.maxDiscountPercent ?? 5;
+    const gstPercent = fin.gstPercent ?? 8.9;
+
+    const marginAmount = rawHardwareCost * (profitMarginPercent / 100);
+    const dealerCommissionAmount = rawHardwareCost * (dealerCommissionPercent / 100);
+    const markedUpBase = rawHardwareCost + marginAmount + dealerCommissionAmount;
+
+    // Clamped Discount
+    const effectiveDiscountPercent = Math.min(Math.max(0, Number(discountPercent) || 0), maxDiscountPercent);
+    const discountAmount = markedUpBase * (effectiveDiscountPercent / 100);
+    const baseTotal = markedUpBase - discountAmount;
+
+    const gstRate = gstPercent / 100;
     const gst = baseTotal * gstRate;
     const grandTotal = baseTotal + gst;
     const perWp = wp > 0 ? grandTotal / wp : 0;
 
+    // Payment Milestones (Salesperson customizable per proposal)
+    const advP = advancePercent !== "" ? Number(advancePercent) : (fin.advancePaymentPercent ?? 10);
+    const dispP = dispatchPercent !== "" ? Number(dispatchPercent) : (fin.dispatchPaymentPercent ?? 85);
+    const handP = handoverPercent !== "" ? Number(handoverPercent) : (fin.handoverPaymentPercent ?? 5);
+    const advanceAmount = grandTotal * (advP / 100);
+    const dispatchAmount = grandTotal * (dispP / 100);
+    const handoverAmount = grandTotal * (handP / 100);
+
     return {
       moduleCost, invCost, structCost, dcCost, acCost, earthingCost, laCost,
       walkCost, safetyCost, discomCost, installCost, mc4Cost, installRate,
-      baseTotal, gst, grandTotal, perWp,
-      pitsCount, laCount, selMod, selectedInverterDetails, selDcCable, selInvToAcdbCable, selAcdbToMainCable, modRate, selectedStructures, dcRate, invToAcdbCost, acdbToMainCost, acdbCost, dcdbCost, mc4BranchCost, mc4Pairs, mc4BranchQty, earthingRate
+      rawHardwareCost, marginAmount, markedUpBase, effectiveDiscountPercent, discountAmount,
+      baseTotal, gstRate, gstPercent, gst, grandTotal, perWp, effectiveKW: plantKW,
+      advancePercent: advP, dispatchPercent: dispP, handoverPercent: handP, advanceAmount, dispatchAmount, handoverAmount,
+      maxDiscountPercent,
+      pitsCount, laCount, selectedModuleDetails, selectedInverterDetails, selectedDcCablesDetails, selInvToAcdbCable, selAcdbToMainCable, selectedStructures, invToAcdbCost, acdbToMainCost, acdbCost, dcdbCost, mc4BranchCost, mc4Pairs, mc4BranchQty, earthingRate, earthingLabel,
+      invToAcdbCableBrand, acdbToMainCableBrand
     };
   })();
   const handleDownloadPDF = async () => {
@@ -418,6 +695,8 @@ export default function PricingCalculatorPage() {
     setPdfLoading(true);
 
     const fmtINR = n => new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR", maximumFractionDigits: 0 }).format(n || 0);
+    const invAcdbBrandLabel = CABLE_BRANDS.find(b => b.v === invToAcdbCableBrand)?.l || cap(invToAcdbCableBrand);
+    const acdbMainBrandLabel = CABLE_BRANDS.find(b => b.v === acdbToMainCableBrand)?.l || cap(acdbToMainCableBrand);
 
     const buildRows = () => {
       let rows = "";
@@ -425,45 +704,62 @@ export default function PricingCalculatorPage() {
       const snoCell = () => `<td style="border:1px solid #cbd5e1;padding:8px 12px;font-size:11px;text-align:center;color:#334155;vertical-align:top">${sno++}</td>`;
       const cell = (content, align = "left") => `<td style="border:1px solid #cbd5e1;padding:8px 12px;font-size:11px;text-align:${align};color:#334155;vertical-align:top">${content}</td>`;
 
-      rows += `<tr>${snoCell()}${cell(`<strong>Solar Modules:</strong> ${calc.selMod?.modelName || "N/A"}<br/><span style="font-size:10px;color:#64748b">Tier-1 High-efficiency PV modules</span>`)}${cell(systemKW * 1000, "center")}${cell("Wp", "center")}${cell("&#8377;" + (calc.modRate || 0).toFixed(2), "right")}${cell(fmtINR(calc.moduleCost), "right")}</tr>`;
+      if (calc.selectedModuleDetails?.length > 0) {
+        calc.selectedModuleDetails.forEach(mod => {
+          rows += `<tr>${snoCell()}${cell(`<strong>Solar Modules (${cap(mod.brand)}):</strong> ${mod.modelName || "N/A"}<br/><span style="font-size:10px;color:#64748b">Tier-1 High-efficiency PV modules (${mod.wattage}Wp)</span>`)}${cell(mod.itemWp, "center")}${cell("Wp", "center")}${cell("&#8377;" + (mod.ratePerWp || 0).toFixed(2), "right")}${cell(fmtINR(mod.cost), "right")}</tr>`;
+        });
+      } else {
+        rows += `<tr>${snoCell()}${cell(`<strong>Solar Modules:</strong> Not Selected<br/><span style="font-size:10px;color:#64748b">Tier-1 High-efficiency PV modules</span>`)}${cell((effectiveSystemKW || 0) * 1000, "center")}${cell("Wp", "center")}${cell("&#8377;0.00", "right")}${cell(fmtINR(0), "right")}</tr>`;
+      }
 
       calc.selectedInverterDetails?.forEach(inv => {
         rows += `<tr>${snoCell()}${cell(`<strong>Solar Grid-Tie Inverter:</strong> ${inv.modelName}<br/><span style="font-size:10px;color:#64748b">Multi-MPPT High-efficiency inverter system</span>`)}${cell(inv.qty, "center")}${cell("Nos", "center")}${cell("&#8377;" + (inv.cost / (inv.qty || 1)).toFixed(2), "right")}${cell(fmtINR(inv.cost), "right")}</tr>`;
       });
 
-      if (calc.acdbCost > 0) rows += `<tr>${snoCell()}${cell("<strong>ACDB Combiner / Panel</strong><br/><span style='font-size:10px;color:#64748b'>L&amp;T / Elmex / Schneider / Reputed Make</span>")}${cell(systemKW, "center")}${cell("kW", "center")}${cell("&#8377;" + (rates?.acdbRatePerKw || 0), "right")}${cell(fmtINR(calc.acdbCost), "right")}</tr>`;
-      if (calc.dcdbCost > 0) rows += `<tr>${snoCell()}${cell("<strong>DCDB Combiner / Panel</strong><br/><span style='font-size:10px;color:#64748b'>Reputed Make</span>")}${cell(systemKW, "center")}${cell("kW", "center")}${cell("&#8377;" + (rates?.dcdbRatePerKw || 0), "right")}${cell(fmtINR(calc.dcdbCost), "right")}</tr>`;
+      if (calc.acdbCost > 0) rows += `<tr>${snoCell()}${cell("<strong>ACDB Combiner / Panel</strong><br/><span style='font-size:10px;color:#64748b'>L&amp;T / Elmex / Schneider / Reputed Make</span>")}${cell(effectiveSystemKW, "center")}${cell("kW", "center")}${cell("&#8377;" + (rates?.acdbRatePerKw || 0), "right")}${cell(fmtINR(calc.acdbCost), "right")}</tr>`;
+      if (calc.dcdbCost > 0) rows += `<tr>${snoCell()}${cell("<strong>DCDB Combiner / Panel</strong><br/><span style='font-size:10px;color:#64748b'>Reputed Make</span>")}${cell(effectiveSystemKW, "center")}${cell("kW", "center")}${cell("&#8377;" + (rates?.dcdbRatePerKw || 0), "right")}${cell(fmtINR(calc.dcdbCost), "right")}</tr>`;
 
       calc.selectedStructures?.forEach(st => {
         const stLabel = ALL_STRUCTURE_TYPES.find(opt => opt.v === st.type)?.l || st.type || "N/A";
         rows += `<tr>${snoCell()}${cell(`<strong>Mounting Structure:</strong> ${stLabel}<br/><span style="font-size:10px;color:#64748b">Wind load sustained structural rails &amp; clamps</span>`)}${cell(st.kw, "center")}${cell("kW", "center")}${cell("&#8377;" + st.rate, "right")}${cell(fmtINR(st.cost), "right")}</tr>`;
       });
 
-      rows += `<tr>${snoCell()}${cell("<strong>Structure Accessories:</strong> SS 304 Nut Bolts &amp; Fasteners<br/><span style='font-size:10px;color:#64748b'>Anti-corrosion hardware for mechanical integrity</span>")}${cell(systemKW, "center")}${cell("kW", "center")}${cell("Included", "right")}${cell("Included", "right")}</tr>`;
+      rows += `<tr>${snoCell()}${cell("<strong>Structure Accessories:</strong> SS 304 Nut Bolts &amp; Fasteners<br/><span style='font-size:10px;color:#64748b'>Anti-corrosion hardware for mechanical integrity</span>")}${cell(effectiveSystemKW, "center")}${cell("kW", "center")}${cell("Included", "right")}${cell("Included", "right")}</tr>`;
 
-      if (dcCableM > 0) rows += `<tr>${snoCell()}${cell(`<strong>DC Solar Cable:</strong> ${calc.selDcCable?.label || "N/A"}<br/><span style="font-size:10px;color:#64748b">Tinned copper flexible single-core solar wire</span>`)}${cell(dcCableM, "center")}${cell("m", "center")}${cell("&#8377;" + calc.dcRate, "right")}${cell(fmtINR(calc.dcCost), "right")}</tr>`;
-      if (invToAcdbCableM > 0) rows += `<tr>${snoCell()}${cell(`<strong>AC Cable (Inv to ACDB):</strong> ${calc.selInvToAcdbCable?.label || "N/A"}<br/><span style="font-size:10px;color:#64748b">Multicore flexible AC cabling run</span>`)}${cell(invToAcdbCableM, "center")}${cell("m", "center")}${cell("&#8377;" + (calc.selInvToAcdbCable?.ratePerMeter || 0), "right")}${cell(fmtINR(calc.invToAcdbCost), "right")}</tr>`;
-      if (acdbToMainCableM > 0) rows += `<tr>${snoCell()}${cell(`<strong>AC Cable (ACDB to Main):</strong> ${calc.selAcdbToMainCable?.label || "N/A"}<br/><span style="font-size:10px;color:#64748b">AC distribution armored/unarmored cable</span>`)}${cell(acdbToMainCableM, "center")}${cell("m", "center")}${cell("&#8377;" + (calc.selAcdbToMainCable?.ratePerMeter || 0), "right")}${cell(fmtINR(calc.acdbToMainCost), "right")}</tr>`;
-      if (calc.pitsCount > 0) rows += `<tr>${snoCell()}${cell(`<strong>Chemical Earthing Pits:</strong> ${EARTHING_OPTS.find(e => e.v === earthingType)?.l || "Chemical Earthing"}<br/><span style="font-size:10px;color:#64748b">Low-resistance maintenance-free earthing</span>`)}${cell(calc.pitsCount, "center")}${cell("pits", "center")}${cell("&#8377;" + calc.earthingRate, "right")}${cell(fmtINR(calc.earthingCost), "right")}</tr>`;
+      if (calc.selectedDcCablesDetails?.length > 0) {
+        calc.selectedDcCablesDetails.forEach(item => {
+          if (item.meters > 0) {
+            rows += `<tr>${snoCell()}${cell(`<strong>DC Solar Cable (${item.brandLabel}):</strong> ${item.cableLabel}<br/><span style="font-size:10px;color:#64748b">Tinned copper flexible single-core solar wire</span>`)}${cell(item.meters, "center")}${cell("m", "center")}${cell("&#8377;" + item.rate, "right")}${cell(fmtINR(item.cost), "right")}</tr>`;
+          }
+        });
+      }
+      if (invToAcdbCableM > 0) rows += `<tr>${snoCell()}${cell(`<strong>AC Cable - Inv to ACDB (${invAcdbBrandLabel}):</strong> ${calc.selInvToAcdbCable?.label || "N/A"}<br/><span style="font-size:10px;color:#64748b">Multicore flexible AC cabling run</span>`)}${cell(invToAcdbCableM, "center")}${cell("m", "center")}${cell("&#8377;" + (calc.selInvToAcdbCable?.ratePerMeter || 0), "right")}${cell(fmtINR(calc.invToAcdbCost), "right")}</tr>`;
+      if (acdbToMainCableM > 0) rows += `<tr>${snoCell()}${cell(`<strong>AC Cable - ACDB to Main (${acdbMainBrandLabel}):</strong> ${calc.selAcdbToMainCable?.label || "N/A"}<br/><span style="font-size:10px;color:#64748b">AC distribution cable run</span>`)}${cell(acdbToMainCableM, "center")}${cell("m", "center")}${cell("&#8377;" + (calc.selAcdbToMainCable?.ratePerMeter || 0), "right")}${cell(fmtINR(calc.acdbToMainCost), "right")}</tr>`;
+      if (calc.pitsCount > 0) rows += `<tr>${snoCell()}${cell(`<strong>Chemical Earthing Pits:</strong> ${calc.earthingLabel}<br/><span style="font-size:10px;color:#64748b">Low-resistance maintenance-free earthing</span>`)}${cell(calc.pitsCount, "center")}${cell("pits", "center")}${cell("&#8377;" + calc.earthingRate, "right")}${cell(fmtINR(calc.earthingCost), "right")}</tr>`;
       if (calc.laCount > 0) rows += `<tr>${snoCell()}${cell(`<strong>Lightning Protection:</strong> ${laType === "ese" ? "ESE Active" : "Conventional"}<br/><span style="font-size:10px;color:#64748b">Safety shield against high-voltage lightning surges</span>`)}${cell(calc.laCount, "center")}${cell("units", "center")}${cell("&#8377;" + (laType === "conventional" ? (rates?.laConventionalRate || 0) : (rates?.laEseRate || 0)), "right")}${cell(fmtINR(calc.laCost), "right")}</tr>`;
-      if (walkwayM > 0) rows += `<tr>${snoCell()}${cell(`<strong>Roof Walkway:</strong> ${walkwayType === "gi" ? "GI Walkway" : "FRP Walkway"}<br/><span style="font-size:10px;color:#64748b">Safe pathway on roof for O&amp;M visits</span>`)}${cell(walkwayM, "center")}${cell("m", "center")}${cell("&#8377;" + (walkwayType === "gi" ? (rates?.walkwayGiRate || 0) : (rates?.walkwayFrpRate || 0)), "right")}${cell(fmtINR(calc.walkCost), "right")}</tr>`;
+      if (walkway && Number(walkwayM) > 0) rows += `<tr>${snoCell()}${cell(`<strong>Roof Walkway:</strong> ${walkwayType === "gi" ? "GI Walkway" : "FRP Walkway"}<br/><span style="font-size:10px;color:#64748b">Safe pathway on roof for O&amp;M visits</span>`)}${cell(walkwayM, "center")}${cell("m", "center")}${cell("&#8377;" + (walkwayType === "gi" ? (rates?.walkwayGiRate || 0) : (rates?.walkwayFrpRate || 0)), "right")}${cell(fmtINR(calc.walkCost), "right")}</tr>`;
       if (customSafety > 0) rows += `<tr>${snoCell()}${cell("<strong>Safety Lifeline</strong><br/><span style='font-size:10px;color:#64748b'>Anchor lifeline system for cleaning personnel</span>")}${cell(customSafety, "center")}${cell("m", "center")}${cell("&#8377;" + (rates?.safetyLineRate || 0), "right")}${cell(fmtINR(calc.safetyCost), "right")}</tr>`;
       if (calc.mc4Cost > 0) rows += `<tr>${snoCell()}${cell("<strong>MC4 Connectors</strong><br/><span style='font-size:10px;color:#64748b'>Waterproof module string connector links</span>")}${cell(calc.mc4Pairs, "center")}${cell("pairs", "center")}${cell("&#8377;" + (rates?.mc4ConnectorRate || 0), "right")}${cell(fmtINR(calc.mc4Cost), "right")}</tr>`;
       if (calc.mc4BranchCost > 0) rows += `<tr>${snoCell()}${cell("<strong>Branch (Y) Connectors</strong><br/><span style='font-size:10px;color:#64748b'>Parallel string configuration connectors</span>")}${cell(calc.mc4BranchQty, "center")}${cell("nos", "center")}${cell("&#8377;" + (rates?.branchConnectorRate || 0), "right")}${cell(fmtINR(calc.mc4BranchCost), "right")}</tr>`;
-      if (incBos) rows += `<tr>${snoCell()}${cell("<strong>BOS &amp; Accessories:</strong> Cable Lugs, Tape, Cable tie &amp; Conduit Pipe")}${cell(systemKW, "center")}${cell("kWp", "center")}${cell("Included", "right")}${cell("Included", "right")}</tr>`;
-      if (incEng) rows += `<tr>${snoCell()}${cell("<strong>Engineering &amp; Supervision</strong><br/><span style='font-size:10px;color:#64748b'>String designing, Shadow Analysis, electrical design</span>")}${cell(systemKW, "center")}${cell("kWp", "center")}${cell("Included", "right")}${cell("Included", "right")}</tr>`;
+      if (incBos) rows += `<tr>${snoCell()}${cell("<strong>BOS &amp; Accessories:</strong> Cable Lugs, Tape, Cable tie &amp; Conduit Pipe")}${cell(effectiveSystemKW, "center")}${cell("kWp", "center")}${cell("Included", "right")}${cell("Included", "right")}</tr>`;
+      if (incEng) rows += `<tr>${snoCell()}${cell("<strong>Engineering &amp; Supervision</strong><br/><span style='font-size:10px;color:#64748b'>String designing, Shadow Analysis, electrical design</span>")}${cell(effectiveSystemKW, "center")}${cell("kWp", "center")}${cell("Included", "right")}${cell("Included", "right")}</tr>`;
       if (incMon) rows += `<tr>${snoCell()}${cell("<strong>Remote Monitoring Access</strong><br/><span style='font-size:10px;color:#64748b'>Continuous monitoring through data logger device</span>")}${cell(1, "center")}${cell("Set", "center")}${cell("Included", "right")}${cell("Included", "right")}</tr>`;
       if (incTrans) rows += `<tr>${snoCell()}${cell("<strong>Transportation &amp; Freight</strong><br/><span style='font-size:10px;color:#64748b'>Till site loading and unloading</span>")}${cell(1, "center")}${cell("Job", "center")}${cell("Included", "right")}${cell("Included", "right")}</tr>`;
-      if (discom) rows += `<tr>${snoCell()}${cell("<strong>DISCOM Liaising &amp; Net Metering</strong><br/><span style='font-size:10px;color:#64748b'>Net-metering approval process with local electricity authority</span>")}${cell(1, "center")}${cell("job", "center")}${cell("&#8377;" + (discomType === 'single_phase' ? (rates?.discomSinglePhaseCost||0) : discomType === 'three_phase' ? (rates?.discomThreePhaseCost||0) : discomType === 'lt' ? (rates?.discomLtCost||0) : (rates?.discomHtCost||0)), "right")}${cell(fmtINR(calc.discomCost), "right")}</tr>`;
+      if (discom) rows += `<tr>${snoCell()}${cell("<strong>DISCOM Liaising &amp; Net Metering</strong><br/><span style='font-size:10px;color:#64748b'>Net-metering approval process with local electricity authority</span>")}${cell(1, "center")}${cell("job", "center")}${cell("&#8377;" + (discomType === 'single_phase' ? (rates?.discomSinglePhaseCost || 0) : discomType === 'three_phase' ? (rates?.discomThreePhaseCost || 0) : discomType === 'lt' ? (rates?.discomLtCost || 0) : (rates?.discomHtCost || 0)), "right")}${cell(fmtINR(calc.discomCost), "right")}</tr>`;
       const installTypeLabel = roofType === "rcc" ? "Rooftop RCC" : roofType === "profile" ? "Shed" : roofType === "ground" ? "Ground-Mounted" : "Standard";
-      rows += `<tr>${snoCell()}${cell(`<strong>Installation &amp; Commissioning (${installTypeLabel}):</strong> On-site mechanics, engineering execution, panel staging and commissioning`)}${cell(systemKW, "center")}${cell("kW", "center")}${cell("&#8377;" + (calc.installRate || 0), "right")}${cell(fmtINR(calc.installCost), "right")}</tr>`;
+      rows += `<tr>${snoCell()}${cell(`<strong>Installation &amp; Commissioning (${installTypeLabel}):</strong> On-site mechanics, engineering execution, panel staging and commissioning`)}${cell(effectiveSystemKW, "center")}${cell("kW", "center")}${cell("&#8377;" + (calc.installRate || 0), "right")}${cell(fmtINR(calc.installCost), "right")}</tr>`;
       return rows;
     };
 
     try {
-      const projectTypeLabel = projectCategory === "residential" ? "RESIDENTIAL OFFER" : projectCategory === "industrial" ? "INDUSTRIAL PROPOSAL" : "UTILITY-SCALE PROPOSAL";
+      const activeQuoteRef = (quoteRef && quoteRef.trim()) || `DS/QP/${new Date().getFullYear()}/0001`;
+      const projectTypeLabel = projectCategory === "residential"
+        ? "RESIDENTIAL SOLAR PROPOSAL"
+        : projectCategory === "industrial"
+          ? "INDUSTRIAL / C&I SOLAR PROPOSAL"
+          : "UTILITY-SCALE SOLAR PROPOSAL";
       const dateStr = new Date().toLocaleDateString("en-IN", { day: "numeric", month: "long", year: "numeric" });
-      const quoteRefStr = quoteRef || `DS/QP/${new Date().getFullYear()}/---`;
+      const quoteRefStr = activeQuoteRef;
       const customTermRows = customTerms ? customTerms.split('\n').filter(t => t.trim()).map(t => `<li style="padding:2px 0">${t}</li>`).join('') : '';
       const logoUrl = window.location.origin + "/divvy_photo.png";
       const rows = buildRows();
@@ -490,7 +786,7 @@ export default function PricingCalculatorPage() {
         td { font-size: 11px; color: #334155; padding: 8px 12px; border: 1px solid #cbd5e1; vertical-align: top; }
         tr:nth-child(even) td { background: #f8fafc; }
         .totals-wrap { display: flex; justify-content: flex-end; margin-bottom: 20px; }
-        .totals { width: 50%; border: 2px solid #eab308; background: #fefcf0; border-radius: 6px; padding: 12px 16px; }
+        .totals { width: 55%; border: 2px solid #eab308; background: #fefcf0; border-radius: 6px; padding: 12px 16px; }
         .totals-row { display: flex; justify-content: space-between; font-size: 11px; color: #334155; padding: 3px 0; }
         .totals-grand { display: flex; justify-content: space-between; font-size: 13px; font-weight: 900; color: #1e3a8a; border-top: 2px solid #eab308; padding-top: 8px; margin-top: 6px; }
         .totals-note { font-size: 8.5px; color: #64748b; text-align: right; margin-top: 4px; font-weight: 600; }
@@ -505,14 +801,16 @@ export default function PricingCalculatorPage() {
         .sig-line { border-top: 1px solid #94a3b8; padding-top: 8px; font-size: 10px; color: #64748b; font-weight: 600; }
       `;
 
+      const activeOffice = DIVVY_BRANCH_OFFICES[issuingBranch] || DIVVY_BRANCH_OFFICES.gurgaon;
+
       const html = `<!DOCTYPE html><html><head><meta charset="UTF-8"><style>${css}</style></head><body>
         <div class="page">
           <div class="hdr">
             <div class="hdr-logo"><img src="${logoUrl}" /></div>
             <div class="hdr-mid">
               <h1>DIVVY SOLAR Power &amp; SOLUTIONS Pvt. Ltd</h1>
-              <p class="addr1">Unit-859, Tower- B1, 8th Floor, Spaze I - Tech Park, Sec - 49, Gurgaon - 122018 (HARYANA)</p>
-              <p class="addr2">Head Office: Lower Ground, SJ Tower, Sec-13, Hisar 125001 (HARYANA) &nbsp;|&nbsp; Email: info@divvysolar.in &nbsp;|&nbsp; Web: www.divvysolar.in</p>
+              <p class="addr1">${activeOffice.addr1}</p>
+              <p class="addr2">${activeOffice.addr2}</p>
             </div>
             <div class="hdr-right">
               <div class="type">${projectTypeLabel}</div>
@@ -532,13 +830,16 @@ export default function PricingCalculatorPage() {
             </div>
             <div class="info-box">
               <h3>Technical Specifications</h3>
-              <p><strong>Proposed Capacity:</strong> ${systemKW} kWp (Solar PV Plant)</p>
-              <p><strong>Solar Modules:</strong> ${calc.selMod?.modelName || "N/A"}${calc.selMod?.wattage ? " (" + calc.selMod.wattage + "Wp)" : ""}</p>
+              <p><strong>System Type:</strong> ${systemType === 'hybrid' ? 'Hybrid' : 'On-Grid'}</p>
+              <p><strong>Proposed Capacity:</strong> ${effectiveSystemKW || 0} kWp (Solar PV Plant)</p>
+              <p><strong>Solar Modules:</strong> ${calc.selectedModuleDetails?.map(m => `${cap(m.brand)} ${m.modelName} (${m.kw}kWp, ${m.panels} panels)`).join(", ") || "N/A"}</p>
               <p><strong>Inverter Model:</strong> ${calc.selectedInverterDetails?.map(inv => inv.modelName + " (x" + inv.qty + ")").join(", ") || "N/A"}</p>
               <p><strong>Mounting Structure:</strong> ${calc.selectedStructures?.map(st => (ALL_STRUCTURE_TYPES.find(opt => opt.v === st.type)?.l || st.type || "") + " (" + st.kw + "kW)").join(", ") || "N/A"}</p>
-              ${dcCableM > 0 ? `<p><strong>DC Cable Run:</strong> ${dcCableM}m of ${calc.selDcCable?.label || ""}</p>` : ""}
-              ${invToAcdbCableM > 0 ? `<p><strong>AC Cable (Inv-ACDB):</strong> ${invToAcdbCableM}m of ${calc.selInvToAcdbCable?.label || ""}</p>` : ""}
-              ${acdbToMainCableM > 0 ? `<p><strong>AC Cable (ACDB-Main):</strong> ${acdbToMainCableM}m of ${calc.selAcdbToMainCable?.label || ""}</p>` : ""}
+              ${calc.selectedDcCablesDetails?.filter(item => item.meters > 0).length > 0 ? `<p><strong>DC Cable Run:</strong> ${calc.selectedDcCablesDetails.filter(item => item.meters > 0).map(item => `${item.meters}m of ${item.cableLabel} (${item.brandLabel})`).join(", ")}</p>` : ""}
+              ${invToAcdbCableM > 0 ? `<p><strong>AC Cable (Inv-ACDB):</strong> ${invToAcdbCableM}m of ${calc.selInvToAcdbCable?.label || ""} (${invAcdbBrandLabel})</p>` : ""}
+              ${acdbToMainCableM > 0 ? `<p><strong>AC Cable (ACDB-Main):</strong> ${acdbToMainCableM}m of ${calc.selAcdbToMainCable?.label || ""} (${acdbMainBrandLabel})</p>` : ""}
+              ${walkway && Number(walkwayM) > 0 ? `<p><strong>Roof Walkway:</strong> ${walkwayM}m of ${walkwayType === "gi" ? "GI Walkway" : "FRP Walkway"}</p>` : ""}
+              ${calc.pitsCount > 0 ? `<p><strong>Earthing System:</strong> ${calc.pitsCount} Pits of ${calc.earthingLabel}</p>` : ""}
             </div>
           </div>
           <table>
@@ -556,8 +857,10 @@ export default function PricingCalculatorPage() {
           </table>
           <div class="totals-wrap">
             <div class="totals">
-              <div class="totals-row"><span>Base Project Cost:</span><span><strong>${fmtINR(calc.baseTotal)}</strong></span></div>
-              <div class="totals-row"><span>GST (8.90%):</span><span>${fmtINR(calc.gst)}</span></div>
+              <div class="totals-row"><span>Base Plant Cost:</span><span><strong>${fmtINR(calc.markedUpBase)}</strong></span></div>
+              ${calc.discountAmount > 0 ? `<div class="totals-row" style="color:#16a34a"><span>Special Negotiation Discount (${calc.effectiveDiscountPercent}%):</span><span>- ${fmtINR(calc.discountAmount)}</span></div>` : ''}
+              <div class="totals-row"><span>Subtotal (Taxable):</span><span>${fmtINR(calc.baseTotal)}</span></div>
+              <div class="totals-row"><span>GST (${calc.gstPercent}%):</span><span>${fmtINR(calc.gst)}</span></div>
               <div class="totals-grand"><span>Grand Total (Net Value):</span><span>${fmtINR(calc.grandTotal)}</span></div>
               <p class="totals-note">Average cost per watt: &#8377;${calc.perWp.toFixed(2)}/Wp (incl. GST)</p>
             </div>
@@ -566,9 +869,9 @@ export default function PricingCalculatorPage() {
             <div>
               <h4>Payment Milestones Schedule</h4>
               <ul class="payment-list">
-                <li><span>1. Advance Booking Amount (10%):</span><strong>${fmtINR(calc.grandTotal * 0.1)}</strong></li>
-                <li><span>2. Material Dispatch Stage (85%):</span><strong>${fmtINR(calc.grandTotal * 0.85)}</strong></li>
-                <li><span>3. Post-Commissioning Handover (5%):</span><strong>${fmtINR(calc.grandTotal * 0.05)}</strong></li>
+                <li><span>1. Advance Booking Amount (${calc.advancePercent}%):</span><strong>${fmtINR(calc.advanceAmount)}</strong></li>
+                <li><span>2. Material Dispatch Stage (${calc.dispatchPercent}%):</span><strong>${fmtINR(calc.dispatchAmount)}</strong></li>
+                <li><span>3. Post-Commissioning Handover (${calc.handoverPercent}%):</span><strong>${fmtINR(calc.handoverAmount)}</strong></li>
               </ul>
             </div>
             <div>
@@ -650,19 +953,28 @@ export default function PricingCalculatorPage() {
         clientName: clientName || '',
         clientPhone: clientPhone || '',
         clientLocation: clientLocation || '',
-        quoteRef: quoteRef || '',
+        issuingBranch: issuingBranch || 'gurgaon',
+        branchAddress: activeOffice.addr1,
+        branchSecondary: activeOffice.addr2,
+        quoteRef: quoteRefStr,
         systemKW: Number(systemKW) || 0,
+        modules: modules || [],
+        systemType: systemType || 'ongrid',
+        inverters: inverters || [],
+        structures: structures || [],
         projectCategory: projectCategory || 'residential',
         connectedLoad: connectedLoad || '',
         roofType: roofType || '',
         dgSync: !!dgSync,
         customTerms: customTerms || '',
-        dcCableM: Number(dcCableM) || 0,
+        dcCablesList: dcCablesList || [],
+        dcCableM: dcCablesList.reduce((sum, item) => sum + (Number(item.meters) || 0), 0),
         invToAcdbCableM: Number(invToAcdbCableM) || 0,
         acdbToMainCableM: Number(acdbToMainCableM) || 0,
         earthingType: earthingType || '',
         laType: laType || '',
-        walkwayType: walkwayType || '',
+        walkway: !!walkway,
+        walkwayType: walkwayType || 'gi',
         walkwayM: Number(walkwayM) || 0,
         customSafety: Number(customSafety) || 0,
         discomType: discomType || '',
@@ -671,6 +983,10 @@ export default function PricingCalculatorPage() {
         incEng: !!incEng,
         incMon: !!incMon,
         incTrans: !!incTrans,
+        advancePercent: Number(advancePercent) || 10,
+        dispatchPercent: Number(dispatchPercent) || 85,
+        handoverPercent: Number(handoverPercent) || 5,
+        discountPercent: Number(discountPercent) || 0,
         calc: calc,
         rates: rates,
       };
@@ -684,7 +1000,8 @@ export default function PricingCalculatorPage() {
             clientName: clientName || '',
             clientPhone: clientPhone || '',
             clientLocation: clientLocation || '',
-            quoteRef: quoteRef || '',
+            issuingBranch: issuingBranch || 'gurgaon',
+            quoteRef: quoteRefStr,
             systemKW: Number(systemKW) || 0,
             grandTotal: calc?.grandTotal || 0,
             projectCategory: projectCategory || 'residential',
@@ -695,6 +1012,8 @@ export default function PricingCalculatorPage() {
         });
 
         if (logRes.ok) {
+          // Auto-fetch next quote reference number for future proposal
+          fetchNextQuoteRef();
           // Show a brief success toast
           const toast = document.createElement('div');
           toast.textContent = '✓ Quotation logged successfully';
@@ -869,8 +1188,65 @@ export default function PricingCalculatorPage() {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <Inp label="Client Name" id="client-name" value={clientName} onChange={setClientName} />
               <Inp label="Phone" id="client-phone" value={clientPhone} onChange={setClientPhone} />
-              <Inp label="Location / Site Address" id="client-loc" value={clientLocation} onChange={setClientLocation} />
-              <Inp label="Quote Reference #" id="quote-ref" value={quoteRef} onChange={setQuoteRef} />
+              <Inp 
+                label="Location / Site Address" 
+                id="client-loc" 
+                value={clientLocation} 
+                onChange={handleClientLocationChange} 
+                placeholder="e.g. Mohali, Punjab / Gurgaon, HR / Hisar" 
+              />
+              <div className="flex flex-col gap-1.5">
+                <label htmlFor="quote-ref" className="text-xs font-bold text-white/50 uppercase tracking-wider">Quote Reference #</label>
+                <div className="relative">
+                  <input
+                    id="quote-ref"
+                    type="text"
+                    value={quoteRef || "DS/QP/2026/0001"}
+                    readOnly
+                    tabIndex={-1}
+                    className="w-full px-4 py-2.5 bg-white/[0.03] border border-white/10 rounded-xl text-white font-bold text-sm tracking-wide cursor-not-allowed select-all focus:outline-none transition-all"
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Issuing Branch / Office Synchronization */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-1">
+              <Sel 
+                label="Divvy Issuing Branch / Office (Letterhead Header)" 
+                id="issuing-branch" 
+                value={issuingBranch} 
+                onChange={setIssuingBranch}
+              >
+                <option value="gurgaon" className="bg-[#0f172a]">Gurgaon (Corporate Office) — Spaze I-Tech Park</option>
+                <option value="punjab" className="bg-[#0f172a]">Punjab / Mohali (Regional Office) — Phase-I, Mohali</option>
+                <option value="ludhiana" className="bg-[#0f172a]">Punjab / Ludhiana (Regional Office) — Focal Point</option>
+                <option value="hisar" className="bg-[#0f172a]">Hisar (Head Office) — SJ Tower, Sec-13</option>
+              </Sel>
+
+              <div className="rounded-xl bg-[#FECB00]/10 border border-[#FECB00]/20 p-3 flex items-start gap-2.5">
+                <BuildingOffice2Icon className="w-5 h-5 text-[#FECB00] shrink-0 mt-0.5" />
+                <div className="text-xs min-w-0 flex-1">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <span className="font-bold text-white truncate">
+                      {DIVVY_BRANCH_OFFICES[issuingBranch]?.name || "Corporate Office"}
+                    </span>
+                    <span className="text-[9px] px-1.5 py-0.5 rounded bg-[#FECB00]/20 text-[#FECB00] font-bold uppercase tracking-wider whitespace-nowrap">
+                      ✓ Sync Active
+                    </span>
+                  </div>
+                  <p className="text-white/70 text-[11px] mt-1 leading-snug line-clamp-2">
+                    {DIVVY_BRANCH_OFFICES[issuingBranch]?.addr1}
+                  </p>
+                </div>
+              </div>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <Inp label="System Size (kWp)" id="system-kw" value={systemKW} onChange={setSystemKW} type="number" min={0} step="0.1" placeholder="e.g. 10" />
+              <Sel label="System Type" id="sys-type" value={systemType} onChange={setSystemType}>
+                <option value="ongrid" className="bg-[#0f172a]">On-Grid</option>
+                <option value="hybrid" className="bg-[#0f172a]">Hybrid</option>
+              </Sel>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <Sel label="Project Category" id="proj-cat" value={projectCategory} onChange={setProjectCategory}>
@@ -882,43 +1258,101 @@ export default function PricingCalculatorPage() {
               </Sel>
               <Inp label="Connected Load (kW)" id="connected-load" value={connectedLoad} onChange={setConnectedLoad} type="number" min={0} />
             </div>
-            <div className="flex items-center gap-3">
-              <input type="checkbox" id="dg-sync" checked={dgSync} onChange={e => setDgSync(e.target.checked)} className="w-4 h-4 accent-[#FECB00]" />
-              <label htmlFor="dg-sync" className="text-sm text-white/70">DG Synchronisation Required</label>
-            </div>
           </section>
 
           {/* Section 2: Solar Modules */}
           <section className="rounded-2xl bg-white/5 border border-white/10 p-6 space-y-5">
-            <div className="flex items-center gap-3">
-              <SunIcon className="w-6 h-6 text-[#FECB00]" />
-              <div>
-                <h2 className="text-lg font-bold text-white">2. Solar Modules</h2>
-                <p className="text-white/40 text-xs mt-0.5">Select brand, model and system type.</p>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <SunIcon className="w-6 h-6 text-[#FECB00]" />
+                <div>
+                  <h2 className="text-lg font-bold text-white">2. Solar Modules</h2>
+                  <p className="text-white/40 text-xs mt-0.5">Select brand, model and quantity of panels.</p>
+                </div>
               </div>
+              <button
+                type="button"
+                onClick={() => setModules([...modules, { brand: "", model: "", qty: "" }])}
+                className="px-3 py-1.5 rounded-lg border border-[#FECB00]/30 text-[#FECB00] text-xs font-bold hover:bg-[#FECB00]/10 transition-colors flex items-center gap-1.5"
+              >
+                <span>+ Add Module</span>
+              </button>
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <Sel label="Module Brand" id="mod-brand" value={moduleBrand} onChange={setModuleBrand}>
-                <option value="" className="bg-[#0f172a]">Select Brand</option>
-                {visibleModuleBrands.map(b => <option key={b} value={b} className="bg-[#0f172a]">{cap(b)}</option>)}
-              </Sel>
-              <Sel label="Module Model" id="mod-model" value={moduleModel} onChange={setModuleModel} disabled={!moduleBrand}>
-                <option value="" className="bg-[#0f172a]">Select Model</option>
-                {availableModuleModels.map(m => <option key={m._id} value={m._id} className="bg-[#0f172a]">{m.modelName} ({m.wattage}Wp) — ₹{m.ratePerWp}/Wp</option>)}
-              </Sel>
+
+            {/* Multi-Module List */}
+            <div className="space-y-4">
+              {modules.map((mod, index) => {
+                const availModels = mod.brand && rates?.modules?.[mod.brand]
+                  ? rates.modules[mod.brand].filter(m => m.inStock !== false)
+                  : [];
+                const selModObj = availModels.find(m => m._id === mod.model);
+                const modCapacityKW = selModObj && mod.qty ? ((Number(mod.qty) * selModObj.wattage) / 1000).toFixed(2) : null;
+
+                return (
+                  <div key={index} className="p-4 bg-white/5 border border-white/10 rounded-xl space-y-3 relative">
+                    {modules.length > 1 && (
+                      <button
+                        type="button"
+                        onClick={() => setModules(modules.filter((_, i) => i !== index))}
+                        className="absolute top-2 right-2 text-white/30 hover:text-red-400 p-1 text-lg font-bold transition-colors leading-none"
+                        title="Remove Module"
+                      >
+                        ×
+                      </button>
+                    )}
+                    <div className="flex items-center justify-between pb-1">
+                      <span className="text-xs font-semibold text-white/70 uppercase tracking-wider">
+                        Module #{index + 1}
+                      </span>
+                      {selModObj && Number(mod.qty) > 0 && (
+                        <span className="text-[11px] text-[#FECB00] font-medium bg-[#FECB00]/10 px-2.5 py-0.5 rounded-md border border-[#FECB00]/20">
+                          {mod.qty} panels × {selModObj.wattage}Wp = {modCapacityKW} kWp
+                        </span>
+                      )}
+                    </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                      <Sel
+                        label="Module Brand"
+                        id={`mod-brand-${index}`}
+                        value={mod.brand}
+                        onChange={v => updateModule(index, "brand", v)}
+                      >
+                        <option value="" className="bg-[#0f172a]">Select Brand</option>
+                        {visibleModuleBrands.map(b => (
+                          <option key={b} value={b} className="bg-[#0f172a]">{cap(b)}</option>
+                        ))}
+                      </Sel>
+
+                      <Sel
+                        label="Module Model"
+                        id={`mod-model-${index}`}
+                        value={mod.model}
+                        disabled={!mod.brand}
+                        onChange={v => updateModule(index, "model", v)}
+                      >
+                        <option value="" className="bg-[#0f172a]">Select Model</option>
+                        {availModels.map(m => (
+                          <option key={m._id} value={m._id} className="bg-[#0f172a]">
+                            {m.modelName} ({m.wattage}Wp) — ₹{m.ratePerWp}/Wp
+                          </option>
+                        ))}
+                      </Sel>
+
+                      <Inp
+                        label="Quantity (Panels)"
+                        id={`mod-qty-${index}`}
+                        value={mod.qty}
+                        type="number"
+                        min={1}
+                        step="1"
+                        placeholder="e.g. 18"
+                        onChange={v => updateModule(index, "qty", v === "" ? "" : Number(v))}
+                      />
+                    </div>
+                  </div>
+                );
+              })}
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <Inp label="System Size (kWp)" id="system-kw" value={systemKW} onChange={setSystemKW} type="number" min={0} />
-              <Sel label="System Type" id="sys-type" value={systemType} onChange={setSystemType}>
-                <option value="ongrid" className="bg-[#0f172a]">On-Grid</option>
-                <option value="hybrid" className="bg-[#0f172a]">Hybrid</option>
-              </Sel>
-            </div>
-            {systemKW > 0 && moduleModel && (
-              <p className="text-xs text-white/40 pt-2 border-t border-white/5">
-                Panels needed: ~{Math.ceil((systemKW * 1000) / (availableModuleModels.find(m => m._id === moduleModel)?.wattage || 1))} panels @ {availableModuleModels.find(m => m._id === moduleModel)?.wattage}Wp each
-              </p>
-            )}
           </section>
 
           {/* Section 3: Inverter Configuration */}
@@ -931,7 +1365,7 @@ export default function PricingCalculatorPage() {
                   <p className="text-white/40 text-xs mt-0.5">Add one or more inverters for this system.</p>
                 </div>
               </div>
-              <button onClick={() => setInverters([...inverters, { brand: "", model: "", qty: 1 }])}
+              <button onClick={() => setInverters([...inverters, { brand: "", model: "", qty: "" }])}
                 className="px-3 py-1.5 rounded-lg border border-[#FECB00]/30 text-[#FECB00] text-xs font-bold hover:bg-[#FECB00]/10 transition-colors">
                 + Add Inverter
               </button>
@@ -958,8 +1392,8 @@ export default function PricingCalculatorPage() {
                         <option value="" className="bg-[#0f172a]">Select Model</option>
                         {availModels.map(m => <option key={m._id} value={m._id} className="bg-[#0f172a]">{m.modelName} ({m.capacity}kW) — ₹{m.ratePerKW}/Unit</option>)}
                       </Sel>
-                      <Inp label="Qty" id={`inv-qty-${index}`} value={inv.qty} type="number" min={1}
-                        onChange={v => { const ni = [...inverters]; ni[index] = { ...ni[index], qty: Number(v) }; setInverters(ni); }} />
+                      <Inp label="Qty" id={`inv-qty-${index}`} value={inv.qty} type="number" min={1} placeholder="e.g. 1"
+                        onChange={v => { const ni = [...inverters]; ni[index] = { ...ni[index], qty: v === "" ? "" : Number(v) }; setInverters(ni); }} />
                     </div>
                   </div>
                 );
@@ -977,12 +1411,12 @@ export default function PricingCalculatorPage() {
                   <p className="text-white/40 text-xs mt-0.5">Select structure types and set capacities</p>
                 </div>
               </div>
-              <button onClick={() => setStructures([...structures, { id: Date.now(), type: "ms_fabricated", kw: 1 }])}
+              <button onClick={() => setStructures([...structures, { id: Date.now(), type: "ms_fabricated", kw: "" }])}
                 className="px-3 py-1.5 rounded-lg border border-[#FECB00]/30 text-[#FECB00] text-xs font-bold hover:bg-[#FECB00]/10 transition-colors">
                 + Add Structure
               </button>
             </div>
-            
+
             <div className="space-y-4">
               {structures.map((st, index) => {
                 const structRate = rates?.structure?.[st.type]?.ratePerKw || 0;
@@ -1033,37 +1467,130 @@ export default function PricingCalculatorPage() {
           </section>
 
           {/* Section 5: Dynamic Cabling */}
+          {/* Section 5: Wiring & Cabling */}
           <section className="rounded-2xl bg-white/5 border border-white/10 p-6 space-y-5">
             <div className="flex items-center gap-3">
               <ShieldCheckIcon className="w-6 h-6 text-[#FECB00]" />
-              <h2 className="text-lg font-bold text-white">5. Wiring & Cabling (Conductor/Size Matrix)</h2>
+              <div>
+                <h2 className="text-lg font-bold text-white">5. Wiring & Cabling (Conductor/Size Matrix)</h2>
+                <p className="text-white/40 text-xs mt-0.5">Configure DC cabling runs and AC cabling specifications.</p>
+              </div>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              {/* DC Cable */}
-              <div className="space-y-3.5 border-b md:border-b-0 md:border-r border-white/5 pb-4 md:pb-0 md:pr-4">
-                <p className="text-sm font-bold text-white/80">DC Side Cabling</p>
-                <Sel label="DC Cable Size (Conductor)" id="dc-cable" value={dcCableId} onChange={setDcCableId}>
-                  {rates?.dcCables?.map(c => (
-                    <option key={c._id} value={c._id} className="bg-[#0f172a]">{c.label} (₹{c.ratePerMeter}/m)</option>
-                  ))}
-                </Sel>
-                <Inp label="DC Cable Run Length" id="dc-run" value={dcCableM} onChange={setDcCableM} type="number" min={0} unit="m" />
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-5 items-stretch">
+              {/* DC Cable Multi-Item Support */}
+              <div className="p-4 sm:p-5 rounded-2xl bg-white/[0.03] border border-white/10 flex flex-col justify-between space-y-4">
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between flex-wrap gap-2">
+                    <div>
+                      <p className="text-sm font-bold text-white/80">DC Side Cabling</p>
+                      <p className="text-[11px] text-white/40">Add multiple DC cable runs</p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setDcCablesList([...dcCablesList, { id: Date.now(), brand: "polycab", cableId: rates?.dcCables?.[0]?._id || "", meters: "" }])}
+                      className="px-2.5 py-1 rounded-lg border border-[#FECB00]/30 text-[#FECB00] text-xs font-bold hover:bg-[#FECB00]/10 transition-colors"
+                    >
+                      + Add DC Cable
+                    </button>
+                  </div>
+
+                  <div className="space-y-3">
+                    {dcCablesList.map((item, index) => {
+                      const selCable = rates?.dcCables?.find(c => c._id === item.cableId) || rates?.dcCables?.[0];
+                      const itemRate = selCable?.ratePerMeter || 0;
+                      const itemMeters = Number(item.meters) || 0;
+                      const itemTotal = itemRate * itemMeters;
+                      const currentBrandObj = CABLE_BRANDS.find(b => b.v === item.brand) || CABLE_BRANDS[0];
+
+                      return (
+                        <div key={item.id || index} className="space-y-3 bg-white/5 border border-white/10 p-3.5 rounded-xl relative">
+                          {dcCablesList.length > 1 && (
+                            <button
+                              type="button"
+                              onClick={() => setDcCablesList(dcCablesList.filter((_, i) => i !== index))}
+                              className="absolute top-2 right-2 text-white/30 hover:text-red-400 p-1 text-sm font-bold leading-none"
+                              title="Remove this DC cable run"
+                            >
+                              ×
+                            </button>
+                          )}
+                          <div className="text-[11px] font-bold text-[#FECB00]/80 uppercase tracking-wider">
+                            DC Cable #{index + 1}
+                          </div>
+                          <Sel
+                            label="DC Cable Brand"
+                            id={`dc-cable-brand-${index}`}
+                            value={item.brand}
+                            onChange={v => {
+                              const updated = [...dcCablesList];
+                              updated[index] = { ...updated[index], brand: v };
+                              setDcCablesList(updated);
+                            }}
+                          >
+                            {CABLE_BRANDS.map(b => (
+                              <option key={b.v} value={b.v} className="bg-[#0f172a]">{b.l}</option>
+                            ))}
+                          </Sel>
+                          <Sel
+                            label="DC Cable Size (Conductor)"
+                            id={`dc-cable-${index}`}
+                            value={item.cableId || (rates?.dcCables?.[0]?._id || "")}
+                            onChange={v => {
+                              const updated = [...dcCablesList];
+                              updated[index] = { ...updated[index], cableId: v };
+                              setDcCablesList(updated);
+                            }}
+                          >
+                            {rates?.dcCables?.map(c => (
+                              <option key={c._id} value={c._id} className="bg-[#0f172a]">{c.label} (₹{c.ratePerMeter}/m)</option>
+                            ))}
+                          </Sel>
+                          <Inp
+                            label="DC Cable Run Length"
+                            id={`dc-run-${index}`}
+                            value={item.meters}
+                            onChange={v => {
+                              const updated = [...dcCablesList];
+                              updated[index] = { ...updated[index], meters: v };
+                              setDcCablesList(updated);
+                            }}
+                            type="number"
+                            min={0}
+                            unit="m"
+                          />
+                          <div className="flex items-center justify-between pt-1 border-t border-white/5 flex-wrap gap-1">
+                            <span className="text-[11px] text-white/50">{currentBrandObj?.l} · {selCable?.label || "DC Cable"}</span>
+                            <span className="text-xs text-[#FECB00] font-bold">
+                              {itemTotal > 0 ? `= ${formatINR(itemTotal)}` : `Rate: ₹${itemRate}/m`}
+                            </span>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
               </div>
 
               {/* Inverter to ACDB */}
-              <div className="space-y-3.5 border-b md:border-b-0 md:border-r border-white/5 pb-4 md:pb-0 md:pr-4 flex flex-col justify-between">
-                <div>
-                  <p className="text-sm font-bold text-white/80 mb-3">Inverter to ACDB (AC)</p>
-                  <DynamicCableSelector label="Inv-ACDB" cables={rates?.acCables} selectedId={invToAcdbCableId} onChange={setInvToAcdbCableId} />
+              <div className="p-4 sm:p-5 rounded-2xl bg-white/[0.03] border border-white/10 flex flex-col justify-between space-y-4">
+                <div className="space-y-3">
+                  <div>
+                    <p className="text-sm font-bold text-white/80">Inverter to ACDB (AC)</p>
+                    <p className="text-[11px] text-white/40">Inverter to AC distribution board</p>
+                  </div>
+                  <DynamicCableSelector label="Inv-ACDB" cables={rates?.acCables} selectedId={invToAcdbCableId} onChange={setInvToAcdbCableId} brand={invToAcdbCableBrand} onBrandChange={setInvToAcdbCableBrand} />
                 </div>
                 <Inp label="Run Length" id="inv-acdb-run" value={invToAcdbCableM} onChange={setInvToAcdbCableM} type="number" min={0} unit="m" />
               </div>
 
               {/* ACDB to Main */}
-              <div className="space-y-3.5 flex flex-col justify-between">
-                <div>
-                  <p className="text-sm font-bold text-white/80 mb-3">ACDB to Main (AC)</p>
-                  <DynamicCableSelector label="ACDB-Main" cables={rates?.acCables} selectedId={acdbToMainCableId} onChange={setAcdbToMainCableId} />
+              <div className="p-4 sm:p-5 rounded-2xl bg-white/[0.03] border border-white/10 flex flex-col justify-between space-y-4">
+                <div className="space-y-3">
+                  <div>
+                    <p className="text-sm font-bold text-white/80">ACDB to Main (AC)</p>
+                    <p className="text-[11px] text-white/40">ACDB to main LT panel / meter</p>
+                  </div>
+                  <DynamicCableSelector label="ACDB-Main" cables={rates?.acCables} selectedId={acdbToMainCableId} onChange={setAcdbToMainCableId} brand={acdbToMainCableBrand} onBrandChange={setAcdbToMainCableBrand} />
                 </div>
                 <Inp label="Run Length" id="acdb-main-run" value={acdbToMainCableM} onChange={setAcdbToMainCableM} type="number" min={0} unit="m" />
               </div>
@@ -1080,30 +1607,47 @@ export default function PricingCalculatorPage() {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-5">
               {/* Earthing Pits */}
               <div className="p-4 rounded-xl bg-white/3 border border-white/5 space-y-3">
-                <Chk label="Earthing Pits Required" id="earthing-check" checked={earthing} onChange={handleEarthingChange} />
+                <Chk label="Earthing" id="earthing-check" checked={earthing} onChange={handleEarthingChange} />
                 {earthing && (
                   <div className="pt-2 space-y-2">
-                    <Sel label="Earthing Type" id="earthing-type" value={earthingType} onChange={setEarthingType}>
+                    <Sel label="Earthing Type" id="earthing-type" value={earthingType} onChange={handleEarthingTypeChange}>
                       {EARTHING_OPTS.map(o => <option key={o.v} value={o.v} className="bg-[#0f172a]">{o.l}</option>)}
                     </Sel>
+
+                    {(earthingType === "copper_wire" || earthingType === "aluminium_wire") && (
+                      <Sel 
+                        label="Wire Size (sqmm)" 
+                        id="earthing-wire-size" 
+                        value={earthingWireSize} 
+                        onChange={setEarthingWireSize}
+                      >
+                        {(EARTHING_WIRE_SIZES[earthingType] || []).map(sz => (
+                          <option key={sz} value={sz} className="bg-[#0f172a]">{sz} sqmm</option>
+                        ))}
+                      </Sel>
+                    )}
+
                     <Inp label="No. of Earthing Pits" id="pits-qty" value={customPits}
                       onChange={(v) => { setIsOverridePits(true); setCustomPits(v); }}
                       type="number" min={0} />
                     {isOverridePits && (
                       <button onClick={() => setIsOverridePits(false)} className="text-[10px] text-[#FECB00]/70 hover:underline">
-                        Reset to calculated default ({defaultPits} pits)
+                        Reset to default (3 pits)
                       </button>
                     )}
                   </div>
                 )}
               </div>
 
-              {/* ACDB & DCDB Combiner Boxes */}
+              {/* ACDB & DCDB Combiner Boxes & DG Synchronization */}
               <div className="p-4 rounded-xl bg-white/3 border border-white/5 space-y-4">
-                <p className="text-xs font-bold text-white/50 uppercase tracking-wider">Combiner Boxes (per kW)</p>
+                <p className="text-xs font-bold text-white/50 uppercase tracking-wider">Combiner & Grid Interfacing</p>
                 <div className="space-y-3">
                   <Chk label="ACDB Combiner Required" id="acdb-check" checked={acdb} onChange={setAcdb} />
                   <Chk label="DCDB Combiner Required" id="dcdb-check" checked={dcdb} onChange={setDcdb} />
+                  <div className="pt-2 border-t border-white/5">
+                    <Chk label="DG Synchronisation Required" id="dg-sync" checked={dgSync} onChange={setDgSync} />
+                  </div>
                 </div>
               </div>
 
@@ -1143,6 +1687,19 @@ export default function PricingCalculatorPage() {
                 )}
               </div>
 
+              {/* Walkway System */}
+              <div className="p-4 rounded-xl bg-white/3 border border-white/5 space-y-3">
+                <Chk label="Walkway Required" id="walkway-check" checked={walkway} onChange={handleWalkwayChange} />
+                {walkway && (
+                  <div className="pt-2 space-y-2">
+                    <Sel label="Walkway Material" id="walkway-type" value={walkwayType} onChange={setWalkwayType}>
+                      {WALKWAY_OPTS.map(o => <option key={o.v} value={o.v} className="bg-[#0f172a]">{o.l}</option>)}
+                    </Sel>
+                    <Inp label="Walkway Length (Meters)" id="walkway-qty" value={walkwayM} onChange={setWalkwayM} type="number" min={0} unit="m" placeholder="e.g. 20" />
+                  </div>
+                )}
+              </div>
+
               {/* MC4 & Branch Connectors */}
               <div className="p-4 rounded-xl bg-white/3 border border-white/5 space-y-4">
                 <p className="text-xs font-bold text-white/50 uppercase tracking-wider">MC4 Connectors</p>
@@ -1163,31 +1720,94 @@ export default function PricingCalculatorPage() {
               </div>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 pt-4 border-t border-white/5">
-              <div className="space-y-4">
-                <p className="text-sm font-bold text-white/80">Walkway System</p>
-                <Sel label="Walkway Material" id="walkway-opt" value={walkwayType} onChange={setWalkwayType}>
-                  {WALKWAY_OPTS.map(o => <option key={o.v} value={o.v} className="bg-[#0f172a]">{o.l}</option>)}
-                </Sel>
-                {walkwayType !== "none" && (
-                  <Inp label="Walkway Length" id="walkway-qty" value={walkwayM} onChange={setWalkwayM} type="number" min={0} unit="m" />
-                )}
-              </div>
-              <div className="flex flex-col space-y-4">
+            <div className="pt-4 border-t border-white/5">
+              <div className="p-4 rounded-xl bg-white/3 border border-white/5 space-y-3 max-w-md">
                 <Chk label="DISCOM approval & Net Metering" id="discom-check" checked={discom} onChange={setDiscom} />
                 {discom && (
-                  <Sel label="Connection Type" id="discom-type" value={discomType} onChange={setDiscomType}>
-                    <option value="single_phase" className="bg-[#0f172a]">Single Phase</option>
-                    <option value="three_phase" className="bg-[#0f172a]">Three Phase</option>
-                    <option value="lt" className="bg-[#0f172a]">LT</option>
-                    <option value="ht" className="bg-[#0f172a]">HT</option>
-                  </Sel>
+                  <div className="pt-2">
+                    <Sel label="Connection Type" id="discom-type" value={discomType} onChange={setDiscomType}>
+                      <option value="single_phase" className="bg-[#0f172a]">Single Phase</option>
+                      <option value="three_phase" className="bg-[#0f172a]">Three Phase</option>
+                      <option value="lt" className="bg-[#0f172a]">LT</option>
+                      <option value="ht" className="bg-[#0f172a]">HT</option>
+                    </Sel>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Payment Milestones Schedule (Salesperson on-the-fly customization) */}
+            <div className="pt-5 border-t border-white/10 space-y-3">
+              <div className="flex items-center justify-between flex-wrap gap-2">
+                <div>
+                  <p className="text-sm font-bold text-white/90">Payment Milestones Schedule (% of Project Value)</p>
+                  <p className="text-[11px] text-white/40">Adjust milestone percentages for this quotation (printed on proposal)</p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setAdvancePercent(rates?.financialSettings?.advancePaymentPercent ?? 10);
+                    setDispatchPercent(rates?.financialSettings?.dispatchPaymentPercent ?? 85);
+                    setHandoverPercent(rates?.financialSettings?.handoverPaymentPercent ?? 5);
+                  }}
+                  className="text-xs px-2.5 py-1 rounded bg-white/5 border border-white/10 text-[#FECB00]/80 hover:text-[#FECB00] hover:bg-white/10 transition-colors"
+                >
+                  Reset Defaults
+                </button>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 p-4 rounded-xl bg-white/3 border border-white/5">
+                <Inp
+                  label="1. Advance Booking"
+                  id="adv-percent"
+                  value={advancePercent}
+                  onChange={v => setAdvancePercent(v)}
+                  type="number"
+                  min={0}
+                  max={100}
+                  unit="%"
+                />
+                <Inp
+                  label="2. Material Dispatch"
+                  id="disp-percent"
+                  value={dispatchPercent}
+                  onChange={v => setDispatchPercent(v)}
+                  type="number"
+                  min={0}
+                  max={100}
+                  unit="%"
+                />
+                <Inp
+                  label="3. Commissioning Handover"
+                  id="hand-percent"
+                  value={handoverPercent}
+                  onChange={v => setHandoverPercent(v)}
+                  type="number"
+                  min={0}
+                  max={100}
+                  unit="%"
+                />
+              </div>
+
+              <div className="flex items-center justify-between text-xs px-1 pt-1">
+                <span className="text-white/40">
+                  Total Milestone: <strong className={((Number(advancePercent)||0) + (Number(dispatchPercent)||0) + (Number(handoverPercent)||0)) === 100 ? "text-emerald-400 font-bold" : "text-amber-400 font-bold"}>
+                    {((Number(advancePercent)||0) + (Number(dispatchPercent)||0) + (Number(handoverPercent)||0))}%
+                  </strong>
+                  {((Number(advancePercent)||0) + (Number(dispatchPercent)||0) + (Number(handoverPercent)||0)) !== 100 && (
+                    <span className="text-amber-400/80 ml-1.5">(Target: 100%)</span>
+                  )}
+                </span>
+                {calc && (
+                  <span className="text-[#FECB00] text-[11px] font-semibold">
+                    Adv: {formatINR(calc.advanceAmount)} | Disp: {formatINR(calc.dispatchAmount)} | Handover: {formatINR(calc.handoverAmount)}
+                  </span>
                 )}
               </div>
             </div>
 
             <div className="pt-4 border-t border-white/5 space-y-4">
-              <p className="text-sm font-bold text-white/80">Terms & Conditions (Exact Client Scope)</p>
+              <p className="text-sm font-bold text-white/80">Terms &amp; Conditions (Exact Client Scope)</p>
               <textarea
                 value={customTerms}
                 onChange={(e) => setCustomTerms(e.target.value)}
@@ -1198,8 +1818,46 @@ export default function PricingCalculatorPage() {
           </section>
         </div>
 
-        {/* RIGHT: Live Cost breakdown preview */}
+        {/* RIGHT: Live Cost breakdown preview & Commercial Controls */}
+        {/* RIGHT: Live Cost breakdown preview & Commercial Controls */}
         <div className="space-y-6">
+          {/* Commercial & Negotiation Discount Card */}
+          <div className="rounded-2xl border border-[#FECB00]/20 bg-[#FECB00]/5 p-5 space-y-4">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-bold text-[#FECB00] uppercase tracking-wider flex items-center gap-1.5">
+                <ShieldCheckIcon className="w-4 h-4" />
+                Negotiation Discount
+              </span>
+              <span className="text-[10px] px-2 py-0.5 rounded-full bg-[#FECB00]/20 text-[#FECB00] font-bold">
+                Max Cap: {calc?.maxDiscountPercent || 5}%
+              </span>
+            </div>
+
+            {/* Negotiation Discount Slider */}
+            <div className="space-y-2">
+              <div className="flex justify-between items-center text-xs">
+                <span className="text-white/70 font-semibold">Special Discount</span>
+                <span className="font-bold text-emerald-400 bg-emerald-500/10 px-2.5 py-0.5 rounded-md text-xs">
+                  {discountPercent}% {calc && calc.discountAmount > 0 ? `(-${formatINR(calc.discountAmount)})` : ""}
+                </span>
+              </div>
+              <input
+                type="range"
+                min="0"
+                max={calc?.maxDiscountPercent || 5}
+                step="0.5"
+                value={discountPercent}
+                onChange={(e) => setDiscountPercent(Number(e.target.value))}
+                className="w-full accent-[#FECB00] cursor-pointer h-1.5 bg-white/10 rounded-lg"
+              />
+              <div className="flex justify-between text-[10px] text-white/40 font-medium">
+                <span>0% (Standard Rate)</span>
+                <span className="text-[#FECB00]/70">Cap set by Finance Team: {calc?.maxDiscountPercent || 5}%</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Cost Breakdown Preview Sticky Card */}
           <div className="rounded-2xl border border-white/10 bg-white/5 p-6 space-y-6 sticky top-6">
             <h3 className="text-lg font-bold text-white flex items-center gap-2">
               <DocumentArrowDownIcon className="w-5 h-5 text-[#FECB00]" />
@@ -1213,26 +1871,35 @@ export default function PricingCalculatorPage() {
                 {/* Dynamic Items */}
                 <div className="space-y-3 text-sm border-b border-white/10 pb-4">
                   {[
-                    { l: `Solar Modules (${calc.selMod?.modelName || "Not Selected"})`, v: calc.moduleCost },
-                    ...((calc.selectedInverterDetails || []).length > 0 
+                    ...((calc.selectedModuleDetails || []).length > 0
+                      ? calc.selectedModuleDetails.map((mod, i) => ({
+                        l: `Solar Module ${i + 1} (${cap(mod.brand)} ${mod.modelName}) [${mod.kw}kWp]`,
+                        v: mod.cost
+                      }))
+                      : [{ l: `Solar Modules (Not Selected)`, v: 0 }]
+                    ),
+                    ...((calc.selectedInverterDetails || []).length > 0
                       ? calc.selectedInverterDetails.map((inv, i) => ({
-                          l: `Inverter ${i + 1} (${inv.modelName}) x${inv.qty}`, v: inv.cost
-                        }))
+                        l: `Inverter ${i + 1} (${inv.modelName}) x${inv.qty}`, v: inv.cost
+                      }))
                       : [{ l: `Inverter (Not Selected)`, v: 0 }]
                     ),
-                    ...(calc.selectedStructures?.length > 0 
+                    ...(calc.selectedStructures?.length > 0
                       ? calc.selectedStructures.map((st, i) => ({
-                          l: `Structure ${i + 1} (${ALL_STRUCTURE_TYPES.find(opt=>opt.v===st.type)?.l || st.type || 'Structure'}) [${st.kw}kW]`,
-                          v: st.cost
-                        }))
+                        l: `Structure ${i + 1} (${ALL_STRUCTURE_TYPES.find(opt => opt.v === st.type)?.l || st.type || 'Structure'}) [${st.kw}kW]`,
+                        v: st.cost
+                      }))
                       : [{ l: 'Mounting Structure (Not Selected)', v: 0 }]
                     ),
-                    { l: `DC Cabling (${calc.selDcCable?.label || "None"}, ${dcCableM}m)`, v: calc.dcCost },
-                    { l: `AC Cabling: Inv to ACDB (${calc.selInvToAcdbCable?.label || "None"}, ${invToAcdbCableM}m)`, v: calc.invToAcdbCost },
-                    { l: `AC Cabling: ACDB to Main (${calc.selAcdbToMainCable?.label || "None"}, ${acdbToMainCableM}m)`, v: calc.acdbToMainCost },
-                    { l: `Earthing Pits (${calc.pitsCount} pits)`, v: calc.earthingCost },
+                    ...(calc.selectedDcCablesDetails?.filter(item => item.cost > 0).map((item, idx) => ({
+                      l: `DC Cabling #${idx + 1} (${item.brandLabel} · ${item.cableLabel}, ${item.meters}m)`,
+                      v: item.cost
+                    })) || []),
+                    { l: `AC Cabling: Inv to ACDB (${CABLE_BRANDS.find(b => b.v === invToAcdbCableBrand)?.l || cap(invToAcdbCableBrand)} · ${calc.selInvToAcdbCable?.label || "None"}, ${invToAcdbCableM}m)`, v: calc.invToAcdbCost },
+                    { l: `AC Cabling: ACDB to Main (${CABLE_BRANDS.find(b => b.v === acdbToMainCableBrand)?.l || cap(acdbToMainCableBrand)} · ${calc.selAcdbToMainCable?.label || "None"}, ${acdbToMainCableM}m)`, v: calc.acdbToMainCost },
+                    { l: `Earthing (${calc.pitsCount} pits - ${calc.earthingLabel || "Chemical Earthing"})`, v: calc.earthingCost },
                     { l: `Lightning Arrestor (${calc.laCount} units, ${cap(laType)})`, v: calc.laCost },
-                    { l: `Walkway (${walkwayM}m, ${cap(walkwayType)})`, v: calc.walkCost },
+                    { l: `Walkway (${walkwayM}m, ${walkwayType === "gi" ? "GI" : "FRP"})`, v: calc.walkCost },
                     { l: `Safety Line (${customSafety}m)`, v: calc.safetyCost },
                     ...(calc.acdbCost ? [{ l: `ACDB Combiner`, v: calc.acdbCost }] : []),
                     ...(calc.dcdbCost ? [{ l: `DCDB Combiner`, v: calc.dcdbCost }] : []),
@@ -1249,14 +1916,34 @@ export default function PricingCalculatorPage() {
                 </div>
 
                 {/* Totals */}
-                <div className="space-y-2.5 text-sm">
-                  <div className="flex justify-between"><span className="text-white/60">Base Cost</span><span className="text-white font-medium">{formatINR(calc.baseTotal)}</span></div>
-                  <div className="flex justify-between"><span className="text-white/60">GST (8.90%)</span><span className="text-white font-medium">{formatINR(calc.gst)}</span></div>
+                <div className="space-y-2 text-sm">
+                  <div className="flex justify-between">
+                    <span className="text-white/60">Base Plant Cost</span>
+                    <span className="text-white font-medium">{formatINR(calc.markedUpBase)}</span>
+                  </div>
+
+                  {calc.discountAmount > 0 && (
+                    <div className="flex justify-between text-emerald-400 font-medium text-xs">
+                      <span>Discount ({calc.effectiveDiscountPercent}%)</span>
+                      <span>- {formatINR(calc.discountAmount)}</span>
+                    </div>
+                  )}
+
+                  <div className="flex justify-between text-white/70 text-xs">
+                    <span>Taxable Subtotal</span>
+                    <span>{formatINR(calc.baseTotal)}</span>
+                  </div>
+
+                  <div className="flex justify-between">
+                    <span className="text-white/60">GST ({calc.gstPercent}%)</span>
+                    <span className="text-white font-medium">{formatINR(calc.gst)}</span>
+                  </div>
+
                   <div className="flex justify-between items-center pt-2 border-t border-white/10">
                     <span className="text-white font-bold text-base">Total Quotation</span>
                     <span className="text-xl font-black" style={{ color: "#FECB00" }}>{formatINR(calc.grandTotal)}</span>
                   </div>
-                  <div className="flex justify-between text-xs pt-1"><span className="text-white/50">System Size</span><span className="text-white/80 font-bold">{systemKW} kWp</span></div>
+                  <div className="flex justify-between text-xs pt-1"><span className="text-white/50">System Size</span><span className="text-white/80 font-bold">{effectiveSystemKW || 0} kWp</span></div>
                   <div className="flex justify-between text-xs"><span className="text-white/50">Cost per Watt</span><span className="text-white/80 font-bold">₹{(calc.perWp || 0).toFixed(2)}/Wp</span></div>
                 </div>
 
@@ -1278,13 +1965,19 @@ export default function PricingCalculatorPage() {
                   </button>
                 </div>
 
-                {/* Payment Schedule */}
+                {/* Payment Milestones Schedule */}
                 <div className="rounded-xl bg-white/3 border border-white/5 p-4 space-y-2">
-                  <p className="text-xs font-bold text-white/40 uppercase tracking-wider">Payment Schedule</p>
-                  {[{ l: "Advance (Booking)", p: 10 }, { l: "Material Dispatch", p: 85 }, { l: "After Commissioning", p: 5 }].map(s => (
+                  <p className="text-xs font-bold text-white/40 uppercase tracking-wider">
+                    Payment Milestones Schedule
+                  </p>
+                  {[
+                    { l: "Advance (Booking)", p: calc.advancePercent, v: calc.advanceAmount },
+                    { l: "Material Dispatch", p: calc.dispatchPercent, v: calc.dispatchAmount },
+                    { l: "After Commissioning", p: calc.handoverPercent, v: calc.handoverAmount }
+                  ].map(s => (
                     <div key={s.l} className="flex justify-between text-xs">
                       <span className="text-white/60">{s.l} ({s.p}%)</span>
-                      <span className="text-white font-medium">{formatINR(calc.grandTotal * s.p / 100)}</span>
+                      <span className="text-white font-medium">{formatINR(s.v)}</span>
                     </div>
                   ))}
                 </div>
@@ -1304,23 +1997,22 @@ export default function PricingCalculatorPage() {
             </div>
             <div className="flex-grow text-center px-3">
               <h1 className="text-[15px] font-extrabold text-[#1e3a8a] uppercase tracking-wide m-0">
-                DIVVY SOLAR Power & SOLUTIONS Pvt. Ltd
+                DIVVY SOLAR Power &amp; SOLUTIONS Pvt. Ltd
               </h1>
               <p className="text-[9px] font-bold text-slate-800 mt-1">
-                Unit-859, Tower- B1, 8th Floor, Spaze I - Tech Park, Sec - 49, Gurgaon - 122018 (HARYANA)
+                {(DIVVY_BRANCH_OFFICES[issuingBranch] || DIVVY_BRANCH_OFFICES.gurgaon).addr1}
               </p>
               <p className="text-[8.5px] text-slate-500 mt-0.5 leading-relaxed">
-                Head Office: Lower Ground, SJ Tower, Sec-13, Hisar 125001 (HARYANA) <br />
-                Email: info@divvysolar.in | Web: www.divvysolar.in
+                {(DIVVY_BRANCH_OFFICES[issuingBranch] || DIVVY_BRANCH_OFFICES.gurgaon).addr2}
               </p>
             </div>
             <div className="flex-shrink-0 w-[180px] text-right">
               <h2 className="text-[11px] font-black text-[#eab308] uppercase tracking-wide">
                 {projectCategory === "residential"
-                  ? "RESIDENTIAL OFFER"
+                  ? "RESIDENTIAL SOLAR PROPOSAL"
                   : projectCategory === "industrial"
-                    ? "INDUSTRIAL PROPOSAL"
-                    : "UTILITY-SCALE PROPOSAL"}
+                    ? "INDUSTRIAL / C&I SOLAR PROPOSAL"
+                    : "UTILITY-SCALE SOLAR PROPOSAL"}
               </h2>
               <p className="text-[9px] text-slate-600 mt-1"><strong>Quote Ref:</strong> {quoteRef || `DS/QP/${new Date().getFullYear()}/---`}</p>
               <p className="text-[9px] text-slate-600"><strong>Date:</strong> {new Date().toLocaleDateString("en-IN", { day: "numeric", month: "long", year: "numeric" })}</p>
@@ -1343,13 +2035,24 @@ export default function PricingCalculatorPage() {
             {/* System Technical Specifications */}
             <div className="border border-slate-300 bg-slate-50/30 rounded-lg p-3 space-y-1">
               <h3 className="text-[10px] font-bold text-[#1e3a8a] uppercase border-b-2 border-[#eab308] pb-1.5 mb-2 tracking-wider">Technical Specifications</h3>
-              <p className="text-xs text-slate-700"><strong>Proposed Capacity:</strong> {systemKW} kWp (Solar PV Plant)</p>
-              <p className="text-xs text-slate-700"><strong>Solar Modules:</strong> {calc.selMod?.modelName || "N/A"} {calc.selMod?.wattage ? `(${calc.selMod.wattage}Wp)` : ""}</p>
+              <p className="text-xs text-slate-700"><strong>System Type:</strong> {systemType === 'hybrid' ? 'Hybrid' : 'On-Grid'}</p>
+              <p className="text-xs text-slate-700"><strong>Proposed Capacity:</strong> {effectiveSystemKW || 0} kWp (Solar PV Plant)</p>
+              <p className="text-xs text-slate-700"><strong>Solar Modules:</strong> {calc.selectedModuleDetails?.map(m => `${cap(m.brand)} ${m.modelName} (${m.kw}kWp, ${m.panels} panels)`).join(", ") || "N/A"}</p>
               <p className="text-xs text-slate-700"><strong>Inverter Model:</strong> {calc.selectedInverterDetails?.map(inv => `${inv.modelName} (x${inv.qty})`).join(", ") || "N/A"}</p>
-              <p className="text-xs text-slate-700"><strong>Mounting Structure:</strong> {calc.selectedStructures?.map(st => `${ALL_STRUCTURE_TYPES.find(opt=>opt.v===st.type)?.l || st.type || 'Structure'} (${st.kw}kW)`).join(", ") || "N/A"}</p>
-              <p className="text-xs text-slate-700"><strong>DC Cable Run:</strong> {dcCableM}m of {calc.selDcCable?.label || "N/A"}</p>
-              <p className="text-xs text-slate-700"><strong>AC Cable (Inv-ACDB):</strong> {invToAcdbCableM}m of {calc.selInvToAcdbCable?.label || "N/A"}</p>
-              <p className="text-xs text-slate-700"><strong>AC Cable (ACDB-Main):</strong> {acdbToMainCableM}m of {calc.selAcdbToMainCable?.label || "N/A"}</p>
+              <p className="text-xs text-slate-700"><strong>Mounting Structure:</strong> {calc.selectedStructures?.map(st => `${ALL_STRUCTURE_TYPES.find(opt => opt.v === st.type)?.l || st.type || 'Structure'} (${st.kw}kW)`).join(", ") || "N/A"}</p>
+              {calc.selectedDcCablesDetails?.filter(item => item.meters > 0).length > 0 && (
+                <p className="text-xs text-slate-700">
+                  <strong>DC Cable Run:</strong> {calc.selectedDcCablesDetails.filter(item => item.meters > 0).map(item => `${item.meters}m of ${item.cableLabel} (${item.brandLabel})`).join(", ")}
+                </p>
+              )}
+              <p className="text-xs text-slate-700"><strong>AC Cable (Inv-ACDB):</strong> {invToAcdbCableM}m of {calc.selInvToAcdbCable?.label || "N/A"} ({CABLE_BRANDS.find(b => b.v === invToAcdbCableBrand)?.l || cap(invToAcdbCableBrand)})</p>
+              <p className="text-xs text-slate-700"><strong>AC Cable (ACDB-Main):</strong> {acdbToMainCableM}m of {calc.selAcdbToMainCable?.label || "N/A"} ({CABLE_BRANDS.find(b => b.v === acdbToMainCableBrand)?.l || cap(acdbToMainCableBrand)})</p>
+              {walkway && Number(walkwayM) > 0 && (
+                <p className="text-xs text-slate-700"><strong>Roof Walkway:</strong> {walkwayM}m of {walkwayType === "gi" ? "GI Walkway" : "FRP Walkway"}</p>
+              )}
+              {calc.pitsCount > 0 && (
+                <p className="text-xs text-slate-700"><strong>Earthing System:</strong> {calc.pitsCount} Pits of {calc.earthingLabel}</p>
+              )}
             </div>
           </div>
 
@@ -1370,17 +2073,31 @@ export default function PricingCalculatorPage() {
                 let sno = 1;
                 return (
                   <>
-                    <tr className="hover:bg-slate-50">
-                      <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-center">{sno++}</td>
-                      <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300">
-                        <strong>Solar Modules:</strong> {calc.selMod?.modelName || "N/A"} <br />
-                        <span className="text-[10px] text-slate-500">Tier-1 High-efficiency PV modules</span>
-                      </td>
-                      <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-center">{systemKW * 1000}</td>
-                      <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-center">Wp</td>
-                      <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-right">₹{(calc.modRate || 0).toFixed(2)}</td>
-                      <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-right">{formatINR(calc.moduleCost)}</td>
-                    </tr>
+                    {calc.selectedModuleDetails?.length > 0 ? calc.selectedModuleDetails.map((mod, idx) => (
+                      <tr key={`print-mod-${idx}`} className="hover:bg-slate-50">
+                        <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-center">{sno++}</td>
+                        <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300">
+                          <strong>Solar Modules ({cap(mod.brand)}):</strong> {mod.modelName || "N/A"} <br />
+                          <span className="text-[10px] text-slate-500">Tier-1 High-efficiency PV modules ({mod.wattage}Wp)</span>
+                        </td>
+                        <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-center">{mod.itemWp}</td>
+                        <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-center">Wp</td>
+                        <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-right">₹{(mod.ratePerWp || 0).toFixed(2)}</td>
+                        <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-right">{formatINR(mod.cost)}</td>
+                      </tr>
+                    )) : (
+                      <tr className="hover:bg-slate-50">
+                        <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-center">{sno++}</td>
+                        <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300">
+                          <strong>Solar Modules:</strong> Not Selected <br />
+                          <span className="text-[10px] text-slate-500">Tier-1 High-efficiency PV modules</span>
+                        </td>
+                        <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-center">{(effectiveSystemKW || 0) * 1000}</td>
+                        <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-center">Wp</td>
+                        <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-right">₹0.00</td>
+                        <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-right">₹0</td>
+                      </tr>
+                    )}
                     {calc.selectedInverterDetails?.length > 0 ? calc.selectedInverterDetails.map((inv, idx) => (
                       <tr key={idx} className="hover:bg-slate-50">
                         <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-center">{sno++}</td>
@@ -1397,7 +2114,7 @@ export default function PricingCalculatorPage() {
                       <tr className="hover:bg-slate-50">
                         <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-center">{sno++}</td>
                         <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300">
-                          <strong>Solar Grid-Tie Inverters ({systemKW} kW):</strong> N/A <br />
+                          <strong>Solar Grid-Tie Inverters ({effectiveSystemKW || 0} kW):</strong> N/A <br />
                           <span className="text-[10px] text-slate-500">Multi-MPPT High-efficiency inverter system</span>
                         </td>
                         <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-center">1</td>
@@ -1413,7 +2130,7 @@ export default function PricingCalculatorPage() {
                           <strong>ACDB Combiner / Panel</strong> <br />
                           <span className="text-[10px] text-slate-500">L&T / Elmex / Schneider / Reputed Make</span>
                         </td>
-                        <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-center">{systemKW}</td>
+                        <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-center">{effectiveSystemKW}</td>
                         <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-center">kW</td>
                         <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-right">₹{rates?.acdbRatePerKw || 0}</td>
                         <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-right">{formatINR(calc.acdbCost)}</td>
@@ -1426,7 +2143,7 @@ export default function PricingCalculatorPage() {
                           <strong>DCDB Combiner / Panel</strong> <br />
                           <span className="text-[10px] text-slate-500">Reputed Make</span>
                         </td>
-                        <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-center">{systemKW}</td>
+                        <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-center">{effectiveSystemKW}</td>
                         <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-center">kW</td>
                         <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-right">₹{rates?.dcdbRatePerKw || 0}</td>
                         <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-right">{formatINR(calc.dcdbCost)}</td>
@@ -1436,7 +2153,7 @@ export default function PricingCalculatorPage() {
                       <tr key={index} className="hover:bg-slate-50">
                         <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-center">{sno++}</td>
                         <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300">
-                          <strong>Mounting Structure:</strong> {ALL_STRUCTURE_TYPES.find(opt=>opt.v===st.type)?.l || st.type || "N/A"} <br />
+                          <strong>Mounting Structure:</strong> {ALL_STRUCTURE_TYPES.find(opt => opt.v === st.type)?.l || st.type || "N/A"} <br />
                           <span className="text-[10px] text-slate-500">Wind load sustained structural rails & clamps</span>
                         </td>
                         <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-center">{st.kw}</td>
@@ -1451,31 +2168,34 @@ export default function PricingCalculatorPage() {
                         <strong>Structure Accessories:</strong> SS 304 Nut Bolts & Fasteners <br />
                         <span className="text-[10px] text-slate-500">Anti-corrosion hardware for mechanical integrity</span>
                       </td>
-                      <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-center">{systemKW}</td>
+                      <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-center">{effectiveSystemKW}</td>
                       <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-center">kW</td>
                       <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-right">Included</td>
                       <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-right">Included</td>
                     </tr>
 
-                    {dcCableM > 0 && (
-                      <tr className="hover:bg-slate-50">
-                        <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-center">{sno++}</td>
-                        <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300">
-                          <strong>DC Solar Cable:</strong> {calc.selDcCable?.label || "N/A"} <br />
-                          <span className="text-[10px] text-slate-500">Tinned copper flexible single-core solar wire</span>
-                        </td>
-                        <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-center">{dcCableM}</td>
-                        <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-center">m</td>
-                        <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-right">₹{calc.dcRate}</td>
-                        <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-right">{formatINR(calc.dcCost)}</td>
-                      </tr>
-                    )}
+                    {calc.selectedDcCablesDetails?.map((item, idx) => {
+                      if (item.meters <= 0) return null;
+                      return (
+                        <tr key={`print-dc-${idx}`} className="hover:bg-slate-50">
+                          <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-center">{sno++}</td>
+                          <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300">
+                            <strong>DC Solar Cable ({item.brandLabel}):</strong> {item.cableLabel} <br />
+                            <span className="text-[10px] text-slate-500">Tinned copper flexible single-core solar wire</span>
+                          </td>
+                          <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-center">{item.meters}</td>
+                          <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-center">m</td>
+                          <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-right">₹{item.rate}</td>
+                          <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-right">{formatINR(item.cost)}</td>
+                        </tr>
+                      );
+                    })}
                     {invToAcdbCableM > 0 && (
                       <tr className="hover:bg-slate-50">
                         <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-center">{sno++}</td>
                         <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300">
-                          <strong>AC Solar Cable (Inv to ACDB):</strong> {calc.selInvToAcdbCable?.label || "N/A"} <br />
-                          <span className="text-[10px] text-slate-500">Multicore flexible AC copper/aluminium cabling run</span>
+                          <strong>AC Solar Cable - Inv to ACDB (${CABLE_BRANDS.find(b => b.v === invToAcdbCableBrand)?.l || cap(invToAcdbCableBrand)}):</strong> ${calc.selInvToAcdbCable?.label || "N/A"} <br />
+                          <span className="text-[10px] text-slate-500">Multicore flexible AC cabling run</span>
                         </td>
                         <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-center">{invToAcdbCableM}</td>
                         <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-center">m</td>
@@ -1487,8 +2207,8 @@ export default function PricingCalculatorPage() {
                       <tr className="hover:bg-slate-50">
                         <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-center">{sno++}</td>
                         <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300">
-                          <strong>AC Solar Cable (ACDB to Main):</strong> {calc.selAcdbToMainCable?.label || "N/A"} <br />
-                          <span className="text-[10px] text-slate-500">AC distribution armored/unarmored cable</span>
+                          <strong>AC Solar Cable - ACDB to Main (${CABLE_BRANDS.find(b => b.v === acdbToMainCableBrand)?.l || cap(acdbToMainCableBrand)}):</strong> ${calc.selAcdbToMainCable?.label || "N/A"} <br />
+                          <span className="text-[10px] text-slate-500">AC distribution cable run</span>
                         </td>
                         <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-center">{acdbToMainCableM}</td>
                         <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-center">m</td>
@@ -1500,7 +2220,7 @@ export default function PricingCalculatorPage() {
                       <tr className="hover:bg-slate-50">
                         <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-center">{sno++}</td>
                         <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300">
-                          <strong>Chemical Earthing Pits:</strong> {EARTHING_OPTS.find(e => e.v === earthingType)?.l || "Chemical Earthing"}<br />
+                          <strong>Chemical Earthing Pits:</strong> {calc.earthingLabel}<br />
                           <span className="text-[10px] text-slate-500">Low-resistance maintenance-free earthing connection</span>
                         </td>
                         <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-center">{calc.pitsCount}</td>
@@ -1522,7 +2242,7 @@ export default function PricingCalculatorPage() {
                         <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-right">{formatINR(calc.laCost)}</td>
                       </tr>
                     )}
-                    {walkwayM > 0 && (
+                    {walkway && Number(walkwayM) > 0 && (
                       <tr className="hover:bg-slate-50">
                         <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-center">{sno++}</td>
                         <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300">
@@ -1578,9 +2298,9 @@ export default function PricingCalculatorPage() {
                       <tr className="hover:bg-slate-50">
                         <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-center">{sno++}</td>
                         <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300">
-                          <strong>BOS & Accessories:</strong> Cable Lugs, Tape, Cable tie & Conduit Pipe with accessories
+                          <strong>BOS &amp; Accessories:</strong> Cable Lugs, Tape, Cable tie &amp; Conduit Pipe with accessories
                         </td>
-                        <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-center">{systemKW}</td>
+                        <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-center">{effectiveSystemKW}</td>
                         <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-center">kWp</td>
                         <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-right">Included</td>
                         <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-right">Included</td>
@@ -1590,9 +2310,9 @@ export default function PricingCalculatorPage() {
                       <tr className="hover:bg-slate-50">
                         <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-center">{sno++}</td>
                         <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300">
-                          <strong>Engineering & Supervision:</strong> String designing, Shadow Analysis, electrical design, and panel placement
+                          <strong>Engineering &amp; Supervision:</strong> String designing, Shadow Analysis, electrical design, and panel placement
                         </td>
-                        <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-center">{systemKW}</td>
+                        <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-center">{effectiveSystemKW}</td>
                         <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-center">kWp</td>
                         <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-right">Included</td>
                         <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-right">Included</td>
@@ -1604,7 +2324,7 @@ export default function PricingCalculatorPage() {
                         <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300">
                           <strong>Structure Hardware:</strong> Only Nut Bolts
                         </td>
-                        <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-center">{systemKW}</td>
+                        <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-center">{effectiveSystemKW}</td>
                         <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-center">kWp</td>
                         <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-right">Included</td>
                         <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-right">Included</td>
@@ -1626,7 +2346,7 @@ export default function PricingCalculatorPage() {
                       <tr className="hover:bg-slate-50">
                         <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-center">{sno++}</td>
                         <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300">
-                          <strong>Transportation & Freight:</strong> Till site loading and unloading
+                          <strong>Transportation &amp; Freight:</strong> Till site loading and unloading
                         </td>
                         <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-center">1</td>
                         <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-center">Job</td>
@@ -1638,7 +2358,7 @@ export default function PricingCalculatorPage() {
                       <tr className="hover:bg-slate-50">
                         <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-center">{sno++}</td>
                         <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300">
-                          <strong>DISCOM Liaising & Net Metering:</strong> Net-metering approval process with local electricity authority
+                          <strong>DISCOM Liaising &amp; Net Metering:</strong> Net-metering approval process with local electricity authority
                         </td>
                         <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-center">1</td>
                         <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-center">job</td>
@@ -1649,9 +2369,9 @@ export default function PricingCalculatorPage() {
                     <tr className="hover:bg-slate-50">
                       <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-center">{sno++}</td>
                       <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300">
-                        <strong>Installation & Commissioning ({roofType === "rcc" ? "Rooftop RCC" : roofType === "profile" ? "Shed" : roofType === "ground" ? "Ground-Mounted" : "Standard"}):</strong> On-site mechanics, engineering execution, panel staging, and commissioning
+                        <strong>Installation &amp; Commissioning ({roofType === "rcc" ? "Rooftop RCC" : roofType === "profile" ? "Shed" : roofType === "ground" ? "Ground-Mounted" : "Standard"}):</strong> On-site mechanics, engineering execution, panel staging, and commissioning
                       </td>
-                      <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-center">{systemKW}</td>
+                      <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-center">{effectiveSystemKW}</td>
                       <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-center">kW</td>
                       <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-right">₹{calc.installRate || 0}</td>
                       <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-right">{formatINR(calc.installCost)}</td>
@@ -1666,11 +2386,21 @@ export default function PricingCalculatorPage() {
           <div className="flex justify-end mb-6 avoid-break">
             <div className="w-1/2 space-y-2 border-2 border-[#eab308] bg-[#fefcf0]/50 rounded-lg p-3">
               <div className="flex justify-between text-xs text-slate-700">
-                <span>Base Project Cost:</span>
+                <span>Base Plant Cost:</span>
+                <span className="font-semibold text-slate-800">{formatINR(calc.markedUpBase)}</span>
+              </div>
+              {calc.discountAmount > 0 && (
+                <div className="flex justify-between text-xs text-emerald-600 font-semibold">
+                  <span>Negotiation Discount ({calc.effectiveDiscountPercent}%):</span>
+                  <span>- {formatINR(calc.discountAmount)}</span>
+                </div>
+              )}
+              <div className="flex justify-between text-xs text-slate-700">
+                <span>Taxable Subtotal:</span>
                 <span className="font-semibold text-slate-800">{formatINR(calc.baseTotal)}</span>
               </div>
               <div className="flex justify-between text-xs text-slate-700">
-                <span>GST (8.90%):</span>
+                <span>GST ({calc.gstPercent}%):</span>
                 <span className="font-semibold text-slate-800">{formatINR(calc.gst)}</span>
               </div>
               <div className="flex justify-between text-sm text-[#1e3a8a] border-t border-[#eab308] pt-2 font-black">
@@ -1685,19 +2415,21 @@ export default function PricingCalculatorPage() {
 
           <div className="grid grid-cols-2 gap-6 pt-4 border-t border-slate-200 mb-8 avoid-break">
             <div>
-              <h4 className="text-xs font-bold text-[#1e3a8a] uppercase mb-2 tracking-wider">Payment Milestones Schedule</h4>
+              <h4 className="text-xs font-bold text-[#1e3a8a] uppercase mb-2 tracking-wider">
+                Payment Milestones Schedule
+              </h4>
               <ul className="text-xs text-slate-700 space-y-1.5 font-medium">
                 <li className="flex justify-between">
-                  <span>1. Advance Booking Amount (10%):</span>
-                  <span className="font-bold">{formatINR(calc.grandTotal * 0.1)}</span>
+                  <span>1. Advance Booking Amount ({calc.advancePercent}%):</span>
+                  <span className="font-bold">{formatINR(calc.advanceAmount)}</span>
                 </li>
                 <li className="flex justify-between">
-                  <span>2. Material Dispatch Stage (85%):</span>
-                  <span className="font-bold">{formatINR(calc.grandTotal * 0.85)}</span>
+                  <span>2. Material Dispatch Stage ({calc.dispatchPercent}%):</span>
+                  <span className="font-bold">{formatINR(calc.dispatchAmount)}</span>
                 </li>
                 <li className="flex justify-between">
-                  <span>3. Post-Commissioning Handover (5%):</span>
-                  <span className="font-bold">{formatINR(calc.grandTotal * 0.05)}</span>
+                  <span>3. Post-Commissioning Handover ({calc.handoverPercent}%):</span>
+                  <span className="font-bold">{formatINR(calc.handoverAmount)}</span>
                 </li>
               </ul>
             </div>
@@ -1705,6 +2437,7 @@ export default function PricingCalculatorPage() {
             <div>
               <h4 className="text-xs font-bold text-[#1e3a8a] uppercase mb-2 tracking-wider">Project Execution Terms</h4>
               <ul className="text-[10px] text-slate-600 list-disc list-inside space-y-1">
+                <li>Payment Mode: <strong>Milestone Payments (Bank Transfer / RTGS / Cheque)</strong></li>
                 <li>Estimated Delivery: 4 to 6 weeks from structural layout approval and receipt of advance.</li>
                 <li>Grid integration approvals (Net Metering) timeline varies according to State DISCOM.</li>
                 <li>Quotation validity: 15 days from the date of issuance.</li>

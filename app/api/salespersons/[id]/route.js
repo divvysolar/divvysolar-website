@@ -16,17 +16,21 @@ export async function PATCH(request, { params }) {
         }
 
         const { id } = params;
-        const { name, password } = await request.json();
+        const { name, password, role } = await request.json();
 
         await connectToDatabase();
 
-        const salesperson = await Admin.findOne({ _id: id, role: 'salesperson' }).select('+password');
+        const salesperson = await Admin.findOne({ _id: id, role: { $in: ['salesperson', 'finance'] } }).select('+password');
         if (!salesperson) {
-            return NextResponse.json({ success: false, message: 'Salesperson not found' }, { status: 404 });
+            return NextResponse.json({ success: false, message: 'User not found' }, { status: 404 });
         }
 
         if (name && name.trim()) {
             salesperson.name = name.trim();
+        }
+
+        if (role && (role === 'salesperson' || role === 'finance')) {
+            salesperson.role = role;
         }
 
         if (password) {
@@ -53,7 +57,7 @@ export async function PATCH(request, { params }) {
 }
 
 // ── DELETE /api/salespersons/[id] ─────────────────────────────────────────────
-// Admin only. Deletes a salesperson account.
+// Admin only. Deletes a salesperson or finance account.
 export async function DELETE(request, { params }) {
     try {
         const session = await getServerSession(authOptions);
@@ -65,12 +69,12 @@ export async function DELETE(request, { params }) {
 
         await connectToDatabase();
 
-        const deleted = await Admin.findOneAndDelete({ _id: id, role: 'salesperson' });
+        const deleted = await Admin.findOneAndDelete({ _id: id, role: { $in: ['salesperson', 'finance'] } });
         if (!deleted) {
-            return NextResponse.json({ success: false, message: 'Salesperson not found' }, { status: 404 });
+            return NextResponse.json({ success: false, message: 'User not found' }, { status: 404 });
         }
 
-        return NextResponse.json({ success: true, message: 'Salesperson deleted successfully' });
+        return NextResponse.json({ success: true, message: 'Account deleted successfully' });
     } catch (error) {
         console.error('[DELETE /api/salespersons/[id]]', error);
         return NextResponse.json({ success: false, message: 'Server error' }, { status: 500 });

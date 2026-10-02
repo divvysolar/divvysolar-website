@@ -35,6 +35,76 @@ const EARTHING_OPTS = [
     { v: "pure_cu", l: "Pure Copper Electrode (with chemical compound)" },
 ];
 
+export const DIVVY_BRANCH_OFFICES = {
+    gurgaon: {
+        id: "gurgaon",
+        name: "Gurgaon (Corporate Office)",
+        shortName: "Gurgaon Office",
+        state: "Haryana / Delhi-NCR",
+        addr1: "Unit-859, Tower- B1, 8th Floor, Spaze I - Tech Park, Sec - 49, Gurgaon - 122018 (HARYANA)",
+        addr2: "Head Office: Lower Ground, SJ Tower, Sec-13, Hisar 125001 (HR) | Email: info@divvysolar.in | Web: www.divvysolar.in",
+    },
+    punjab: {
+        id: "punjab",
+        name: "Punjab / Mohali (Regional Office)",
+        shortName: "Punjab / Mohali Office",
+        state: "Punjab",
+        addr1: "626, First Floor, Opp. Franco Hotel, Sec-55, Phase-I, Mohali, Punjab - 140501",
+        addr2: "Corporate Office: Spaze I-Tech Park, Gurgaon | Email: info@divvysolar.in | Web: www.divvysolar.in",
+    },
+    ludhiana: {
+        id: "ludhiana",
+        name: "Punjab / Ludhiana (Regional Office)",
+        shortName: "Punjab / Ludhiana Office",
+        state: "Punjab",
+        addr1: "Plot no 14, Phase-VII (ADJ), Focal Point, Gobindgarh, Ludhiana, Punjab - 141010",
+        addr2: "Corporate Office: Spaze I-Tech Park, Gurgaon | Email: info@divvysolar.in | Web: www.divvysolar.in",
+    },
+    hisar: {
+        id: "hisar",
+        name: "Hisar (Head Office)",
+        shortName: "Hisar Head Office",
+        state: "Haryana",
+        addr1: "Lower Ground, SJ Tower, Sector-13, Dabra Road, Hisar - 125001 (HARYANA)",
+        addr2: "Gurgaon Office: Spaze I-Tech Park, Sec-49, Gurgaon | Email: info@divvysolar.in | Web: www.divvysolar.in",
+    }
+};
+
+export const detectBranchOffice = (locationText) => {
+    if (!locationText || typeof locationText !== 'string') return null;
+    const loc = locationText.toLowerCase();
+
+    if (loc.includes('ludhiana') || loc.includes('gobindgarh')) {
+        return 'ludhiana';
+    }
+    const punjabKeywords = [
+        'punjab', 'mohali', 'chandigarh', 'zirakpur', 'kharar', 'panchkula',
+        'derabassi', 'patiala', 'bathinda', 'sangrur', 'malerkotla',
+        'hoshiarpur', 'kapurthala', 'amritsar', 'jalandhar', 'khanna', 'morinda',
+        'samrala', 'khamano', 'focal point', 'barnala', 'faridkot', 'moga', 'rupnagar', 'nabha', 'rajpura'
+    ];
+    if (punjabKeywords.some(kw => loc.includes(kw))) {
+        return 'punjab';
+    }
+
+    const hisarKeywords = [
+        'hisar', 'hissar', 'sirsa', 'fatehabad', 'bhiwani', 'rohtak', 'jind', 'hansi', 'tosham', 'adampur', 'uklana'
+    ];
+    if (hisarKeywords.some(kw => loc.includes(kw))) {
+        return 'hisar';
+    }
+
+    const gurgaonKeywords = [
+        'gurgaon', 'gurugram', 'delhi', 'noida', 'greater noida', 'ghaziabad', 'faridabad', 'manesar', 'rewari',
+        'sonipat', 'sonepat', 'panipat', 'karnal', 'kurukshetra', 'ambala', 'palwal', 'ncr', 'dharuhera', 'bawal'
+    ];
+    if (gurgaonKeywords.some(kw => loc.includes(kw))) {
+        return 'gurgaon';
+    }
+
+    return null;
+};
+
 export default async function QuotationPreviewPage({ params }) {
     const { id } = params;
 
@@ -133,6 +203,9 @@ export default async function QuotationPreviewPage({ params }) {
     const dateStr = new Date(log.createdAt).toLocaleDateString("en-IN", { day: "numeric", month: "long", year: "numeric" });
     const quoteRefStr = quoteRef || `DS/QP/${new Date(log.createdAt).getFullYear()}/${log._id.toString().substring(18).toUpperCase()}`;
     const customTermRows = customTerms ? customTerms.split('\n').filter(t => t.trim()).map((t, idx) => `<li key="${idx}" style="padding:2px 0">${t}</li>`).join('') : '';
+
+    const branchKey = state?.issuingBranch || log.issuingBranch || detectBranchOffice(clientLocation) || 'gurgaon';
+    const activeOffice = DIVVY_BRANCH_OFFICES[branchKey] || DIVVY_BRANCH_OFFICES.gurgaon;
 
     // Rebuild Rows identical to client side
     let rows = [];
@@ -394,8 +467,8 @@ export default async function QuotationPreviewPage({ params }) {
                         </div>
                         <div className="hdr-mid">
                             <h1>DIVVY SOLAR Power &amp; SOLUTIONS Pvt. Ltd</h1>
-                            <p className="addr1">Unit-859, Tower- B1, 8th Floor, Spaze I - Tech Park, Sec - 49, Gurgaon - 122018 (HARYANA)</p>
-                            <p className="addr2">Head Office: Lower Ground, SJ Tower, Sec-13, Hisar 125001 (HARYANA) &nbsp;|&nbsp; Email: info@divvysolar.in &nbsp;|&nbsp; Web: www.divvysolar.in</p>
+                            <p className="addr1">{activeOffice.addr1}</p>
+                            <p className="addr2">{activeOffice.addr2}</p>
                         </div>
                         <div className="hdr-right">
                             <div className="type">{projectTypeLabel}</div>

@@ -43,8 +43,8 @@ const PricingRateSchema = new mongoose.Schema(
         modules: {
             waaree: { type: [ModuleModelSchema], default: [] },
             vikram: { type: [ModuleModelSchema], default: [] },
-            jakson: { type: [ModuleModelSchema], default: [] },
             adani: { type: [ModuleModelSchema], default: [] },
+            jakson: { type: [ModuleModelSchema], default: [] },
             havells: { type: [ModuleModelSchema], default: [] },
             luminous: { type: [ModuleModelSchema], default: [] },
             // System type adder (₹/Wp extra added on top of brand rate)
@@ -73,6 +73,7 @@ const PricingRateSchema = new mongoose.Schema(
         // ─── 5. BOS items — per-unit rates (scale dynamically by capacity) ────
         earthingPitRateGi: { type: Number, default: 0 },         // ₹ per pit (GI Strip)
         earthingPitRateCu: { type: Number, default: 0 },         // ₹ per pit (Copper)
+        earthingPitRateAl: { type: Number, default: 0 },         // ₹ per pit (Aluminium)
         earthingPitRateCuBonded: { type: Number, default: 0 },   // ₹ per pit (Copper Bonded)
         earthingPitsPerKW: { type: Number, default: 0.3 },// pits needed per kW (e.g. 0.3 = 3 pits per 10kW)
 
@@ -102,6 +103,22 @@ const PricingRateSchema = new mongoose.Schema(
         installationRateRcc: { type: Number, default: 0 },   // ₹ per kW
         installationRateGround: { type: Number, default: 0 },// ₹ per kW
         installationRateShed: { type: Number, default: 0 },  // ₹ per kW
+
+        // ─── 8. Financial Markups & Percentage Controls (Finance Team & Admin) ──
+        financialSettings: {
+            // Residential Specific Settings (Configurable by Admin & Finance)
+            residential: {
+                profitMarginPercent: { type: Number, default: 0 },    // Base Company Profit Margin % for Residential Rooftop
+                maxDiscountPercent: { type: Number, default: 0 },      // Max allowable negotiation discount % for sales team
+            },
+            profitMarginPercent: { type: Number, default: 0 },        // Fallback / Base Profit Margin %
+            dealerCommissionPercent: { type: Number, default: 0 },     // Channel partner / dealer commission %
+            maxDiscountPercent: { type: Number, default: 0 },          // Fallback / Max allowable discount %
+            gstPercent: { type: Number, default: 8.9 },                // Standard Solar EPC GST % (8.90%)
+            advancePaymentPercent: { type: Number, default: 0 },       // Payment Milestone: Advance Booking %
+            dispatchPaymentPercent: { type: Number, default: 0 },      // Payment Milestone: Material Dispatch %
+            handoverPaymentPercent: { type: Number, default: 0 },      // Payment Milestone: Post-Commissioning %
+        },
 
         // ─── Active flag ──────────────────────────────────────────────────────
         isActive: { type: Boolean, default: true },
