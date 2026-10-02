@@ -177,7 +177,10 @@ export default function AdminLayout({ children }) {
                         </div>
                     </div>
                     <button
-                        onClick={() => signOut({ callbackUrl: "/admin" })}
+                        onClick={async () => {
+                            await signOut({ redirect: false });
+                            window.location.href = "/admin";
+                        }}
                         className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-150 text-white/50 hover:bg-red-500/10 hover:text-red-500"
                     >
                         <ArrowLeftOnRectangleIcon className="w-5 h-5" />
@@ -237,9 +240,10 @@ export default function AdminLayout({ children }) {
                                 </div>
                             </div>
                             <button
-                                onClick={() => {
+                                onClick={async () => {
                                     setMobileOpen(false);
-                                    signOut({ callbackUrl: "/admin" });
+                                    await signOut({ redirect: false });
+                                    window.location.href = "/admin";
                                 }}
                                 className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-150 text-white/50 hover:bg-red-500/10 hover:text-red-500"
                             >
