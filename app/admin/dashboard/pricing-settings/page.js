@@ -2,9 +2,20 @@
 import { useState, useEffect, useCallback } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
-import { CubeIcon, BoltIcon, WrenchScrewdriverIcon, ShieldCheckIcon, CheckCircleIcon, ExclamationTriangleIcon, PlusIcon, TrashIcon } from "@heroicons/react/24/outline";
+import { 
+  CubeIcon, 
+  BoltIcon, 
+  WrenchScrewdriverIcon, 
+  ShieldCheckIcon, 
+  CheckCircleIcon, 
+  ExclamationTriangleIcon, 
+  PlusIcon, 
+  TrashIcon,
+  CurrencyRupeeIcon,
+  BanknotesIcon
+} from "@heroicons/react/24/outline";
 
-const MODULE_BRANDS = ["waaree","vikram","jakson","adani","havells","luminous"];
+const MODULE_BRANDS = ["waaree", "vikram", "adani", "jakson", "havells", "luminous"];
 const INVERTER_BRANDS = ["havells","luminous","utl","sungrow"];
 const STRUCTURE_TYPES_ADMIN = [
   { v: "ms_fabricated", l: "MS Fabricated" },
@@ -121,7 +132,7 @@ export default function PricingSettingsPage() {
   const [toast,setToast] = useState(null);
 
   useEffect(()=>{
-    if(status==="authenticated" && session?.user?.role!=="admin") router.push("/admin/dashboard");
+    if(status==="authenticated" && session?.user?.role!=="admin" && session?.user?.role!=="finance") router.push("/admin/dashboard");
   },[status,session,router]);
 
   const fetchRates = useCallback(async()=>{
@@ -166,6 +177,8 @@ export default function PricingSettingsPage() {
     finally{setSaving(false);setTimeout(()=>setToast(null),4000);}
   };
 
+  const isAdmin = session?.user?.role === "admin";
+
   if(loading||!rates) return (
     <div className="flex items-center justify-center py-32">
       <div className="relative w-12 h-12">
@@ -195,6 +208,82 @@ export default function PricingSettingsPage() {
           {toast.type==="success"?<CheckCircleIcon className="w-5 h-5"/>:<ExclamationTriangleIcon className="w-5 h-5"/>}
           {toast.message}
         </div>
+      )}
+
+      {/* ── 0. Financial & Percentage Controls (Admin Only) ── */}
+      {isAdmin && (
+        <section className="rounded-2xl bg-[#0b1329] border-2 border-[#FECB00]/40 p-6 space-y-6 shadow-2xl relative overflow-hidden">
+          <div className="absolute top-0 right-0 w-48 h-48 bg-[#FECB00]/5 rounded-full blur-3xl pointer-events-none"></div>
+
+          <div className="flex items-start sm:items-center justify-between flex-wrap gap-4 border-b border-white/10 pb-4">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-[#FECB00]/15 border border-[#FECB00]/30 flex items-center justify-center text-[#FECB00]">
+                <BanknotesIcon className="w-6 h-6" />
+              </div>
+              <div>
+                <div className="flex items-center gap-2">
+                  <h2 className="text-lg font-black text-white">
+                    Residential Pricing &amp; Margin Controls
+                  </h2>
+                  <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-[#FECB00] text-[#070b15]">
+                    Admin Full Power
+                  </span>
+                </div>
+                <p className="text-white/50 text-xs mt-0.5">
+                  Set company profit margins, salesperson discount negotiation limits, and composite GST rate.
+                </p>
+              </div>
+            </div>
+            <div className="px-3 py-1.5 rounded-lg bg-white/5 border border-white/10 text-[11px] text-white/60">
+              Active Segment: <strong className="text-[#FECB00]">Residential Rooftop Solar</strong>
+            </div>
+          </div>
+
+          {/* Key Percentage Controls */}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div className="p-4 rounded-xl bg-white/5 border border-white/10 space-y-1">
+              <NumInput 
+                label="Residential Base Profit Margin" 
+                value={rates.financialSettings?.residential?.profitMarginPercent ?? rates.financialSettings?.profitMarginPercent ?? 0} 
+                onChange={v => {
+                  update("financialSettings.residential.profitMarginPercent", v);
+                  update("financialSettings.profitMarginPercent", v);
+                }} 
+                unit="%" 
+              />
+              <p className="text-[11px] text-emerald-400 font-medium pt-1">
+                + Company profit % applied automatically over pure EPC hardware cost.
+              </p>
+            </div>
+
+            <div className="p-4 rounded-xl bg-white/5 border border-white/10 space-y-1">
+              <NumInput 
+                label="Max Allowed Sales Discount" 
+                value={rates.financialSettings?.residential?.maxDiscountPercent ?? rates.financialSettings?.maxDiscountPercent ?? 0} 
+                onChange={v => {
+                  update("financialSettings.residential.maxDiscountPercent", v);
+                  update("financialSettings.maxDiscountPercent", v);
+                }} 
+                unit="%" 
+              />
+              <p className="text-[11px] text-amber-300 font-medium pt-1">
+                Cap on maximum negotiation discount salesperson can offer to customer.
+              </p>
+            </div>
+
+            <div className="p-4 rounded-xl bg-white/5 border border-white/10 space-y-1">
+              <NumInput 
+                label="Standard Solar GST" 
+                value={rates.financialSettings?.gstPercent ?? 8.9} 
+                onChange={v => update("financialSettings.gstPercent", v)} 
+                unit="%" 
+              />
+              <p className="text-[11px] text-slate-400 font-medium pt-1">
+                Standard composite GST rate on solar power plants (8.90%).
+              </p>
+            </div>
+          </div>
+        </section>
       )}
 
       {/* ── Module Brands ── */}
@@ -280,6 +369,7 @@ export default function PricingSettingsPage() {
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
           <NumInput label="Earthing Pit (GI) (₹/pit)" value={rates.earthingPitRateGi} onChange={v=>update("earthingPitRateGi",v)}/>
           <NumInput label="Earthing Pit (Cu) (₹/pit)" value={rates.earthingPitRateCu} onChange={v=>update("earthingPitRateCu",v)}/>
+          <NumInput label="Earthing Pit (Al) (₹/pit)" value={rates.earthingPitRateAl} onChange={v=>update("earthingPitRateAl",v)}/>
           <NumInput label="Earthing Pit (Cu Bonded) (₹/pit)" value={rates.earthingPitRateCuBonded} onChange={v=>update("earthingPitRateCuBonded",v)}/>
 
           <NumInput label="LA Conventional (₹/unit)" value={rates.laConventionalRate} onChange={v=>update("laConventionalRate",v)}/>
@@ -310,8 +400,8 @@ export default function PricingSettingsPage() {
         <div className="flex items-center gap-3">
           <BoltIcon className="w-6 h-6 text-[#FECB00]"/>
           <div>
-            <h2 className="text-lg font-bold text-white">Advanced AC Cables Matrix (₹/m)</h2>
-            <p className="text-white/40 text-xs mt-0.5">Rates for Armoured/Unarmoured Copper & Aluminium cables (148+ varieties). Scroll to view all.</p>
+            <h2 className="text-lg font-bold text-white">AC Cables Matrix (₹/m)</h2>
+            <p className="text-white/40 text-xs mt-0.5">Rates for Copper &amp; Aluminium cables (2 Core: 4-10 sqmm, 4 Core: 10-35 sqmm, 3.5 Core: 50-600 sqmm).</p>
           </div>
         </div>
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 max-h-[600px] overflow-y-auto pr-2 custom-scrollbar">

@@ -1,11 +1,15 @@
 import { Inter } from 'next/font/google';
+import dynamic from 'next/dynamic';
 import './globals.css';
 import AuthProvider from '@/components/common/AuthProvider';
-import SolarLadderWidget from '@/components/common/SolarLadderWidget';
 import StructuredData from '@/components/common/StructuredData';
 import FacebookPixel from '@/components/common/FacebookPixel';
 import { Suspense } from 'react';
 import PropTypes from 'prop-types';
+
+const SolarChatbot = dynamic(() => import('@/components/common/SolarChatbot'), {
+    ssr: false,
+});
 
 const inter = Inter({
     subsets: ['latin'],
@@ -45,7 +49,7 @@ export default function RootLayout({ children }) {
                     </Suspense>
                     {children}
                 </AuthProvider>
-                <SolarLadderWidget />
+                <SolarChatbot />
             </body>
         </html>
     );

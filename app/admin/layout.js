@@ -18,6 +18,7 @@ import {
     CurrencyRupeeIcon,
     UserGroupIcon,
     ClipboardDocumentListIcon,
+    InboxStackIcon,
 } from "@heroicons/react/24/outline";
 import {
     HomeIcon as HomeSolid,
@@ -26,6 +27,7 @@ import {
     CurrencyRupeeIcon as CurrencySolid,
     UserGroupIcon as UserGroupSolid,
     ClipboardDocumentListIcon as ClipboardSolid,
+    InboxStackIcon as InboxSolid,
 } from "@heroicons/react/24/solid";
 import { signOut } from "next-auth/react";
 
@@ -47,6 +49,11 @@ export default function AdminLayout({ children }) {
                     console.log("Redirecting authenticated user to dashboard");
                     router.push("/admin/dashboard");
                 }
+            } else if (role === "finance") {
+                if (pathname === "/admin" || pathname === "/admin/dashboard" || pathname === "/admin/leads" || pathname === "/admin/quotation-logs" || pathname === "/admin/blogs" || pathname === "/admin/salespersons") {
+                    console.log("Redirecting finance user to pricing settings");
+                    router.push("/admin/dashboard/pricing-settings");
+                }
             } else if (role === "salesperson") {
                 if (pathname === "/admin") {
                     console.log("Salesperson on admin login page: logging out");
@@ -56,7 +63,7 @@ export default function AdminLayout({ children }) {
                     router.push("/sales/pricing");
                 }
             } else if (role) {
-                // If they have a role but it's neither admin nor salesperson, sign them out
+                // If they have a role but it's neither admin, finance nor salesperson, sign them out
                 signOut({ callbackUrl: "/admin" });
             }
             // If role is undefined, we just wait (NextAuth might be hydrating)
@@ -67,7 +74,7 @@ export default function AdminLayout({ children }) {
         return null;
     }
 
-    if (status === "authenticated" && session?.user?.role !== "admin") {
+    if (status === "authenticated" && session?.user?.role !== "admin" && session?.user?.role !== "finance") {
         return null;
     }
 
@@ -93,16 +100,30 @@ export default function AdminLayout({ children }) {
         );
     }
 
-    const navigation = [
+    const isFinanceRole = session?.user?.role === "finance";
+
+    const navigation = isFinanceRole ? [
+        { name: '💰 Pricing & Financials', href: '/admin/dashboard/pricing-settings', icon: CurrencyRupeeIcon, solidIcon: CurrencySolid },
+    ] : [
         { name: 'Dashboard', href: '/admin/dashboard', icon: HomeIcon, solidIcon: HomeSolid },
-        { name: 'Leads', href: '/admin/leads', icon: UsersIcon, solidIcon: UsersSolid },
+        { name: 'Leads', href: '/admin/leads', icon: InboxStackIcon, solidIcon: InboxSolid },
         { name: 'Blogs', href: '/admin/blogs', icon: DocumentTextIcon, solidIcon: DocSolid },
-        { name: 'Pricing Settings', href: '/admin/dashboard/pricing-settings', icon: CurrencyRupeeIcon, solidIcon: CurrencySolid },
-        { name: 'Salespersons', href: '/admin/salespersons', icon: UserGroupIcon, solidIcon: UserGroupSolid },
+        { name: 'Pricing & Financials', href: '/admin/dashboard/pricing-settings', icon: CurrencyRupeeIcon, solidIcon: CurrencySolid },
+        { name: 'Team & Salespersons', href: '/admin/salespersons', icon: UserGroupIcon, solidIcon: UserGroupSolid },
         { name: 'Quotation Logs', href: '/admin/quotation-logs', icon: ClipboardDocumentListIcon, solidIcon: ClipboardSolid },
     ];
 
-    const isActive = (href) => pathname === href || pathname.startsWith(`${href}/`);
+    const isActive = (href) => {
+        const [path, query] = href.split('?');
+        if (query) {
+            // If pathname matches and search params match
+            if (typeof window !== 'undefined') {
+                const currentSearch = window.location.search;
+                if (pathname === path && currentSearch.includes(query)) return true;
+            }
+        }
+        return pathname === path;
+    };
 
     return (
         <div className="min-h-screen bg-[#0f172a] flex" style={{ fontFamily: "Inter" }}>
@@ -234,12 +255,21 @@ export default function AdminLayout({ children }) {
             <div className="flex-1 flex flex-col min-w-0 h-screen overflow-hidden">
 
                 {/* Top Header - Desktop & Mobile */}
-                <header className="flex items-center justify-between px-4 md:px-8 py-4 sticky top-0 z-40 bg-[#0f172a] border-b border-white/10 backdrop-blur-md">
+                <header className="flex items-center justify-between px-4 md:px-8 py-3.5 sticky top-0 z-40 bg-[#0f172a]/90 border-b border-white/10 backdrop-blur-md">
                     <div className="flex items-center gap-3">
                         {/* Mobile Menu Toggle */}
                         <button onClick={() => setMobileOpen(true)} className="md:hidden text-white/50 hover:text-white p-1.5 rounded-lg bg-white/5 transition-colors border border-white/10">
                             <Bars3Icon className="w-5 h-5" />
                         </button>
+                        <span className="hidden sm:inline-block text-xs font-semibold text-white/40 tracking-wider">
+                            DIVVY SOLAR &bull; {session?.user?.role === 'finance' ? 'Finance Portal' : 'Master Admin Console'}
+                        </span>
+                    </div>
+                    <div className="flex items-center gap-3">
+                        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-[#FECB00]/10 text-[#FECB00] border border-[#FECB00]/20">
+                            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                            {session?.user?.role === 'finance' ? 'Finance Controller' : 'Super Admin'}
+                        </span>
                     </div>
                 </header>
 
