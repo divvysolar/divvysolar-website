@@ -38,7 +38,7 @@ export async function POST(request) {
             return NextResponse.json({ success: false, message: 'Unauthorized' }, { status: 401 });
         }
 
-        const { name, email, password, role = 'salesperson' } = await request.json();
+        const { name, email, password, role = 'salesperson', phone = '' } = await request.json();
 
         if (!name || !email || !password) {
             return NextResponse.json(
@@ -74,6 +74,7 @@ export async function POST(request) {
             email: email.toLowerCase().trim(),
             password: hashedPassword,
             role: assignedRole,
+            phone: phone ? phone.trim() : '',
         });
 
         // Return without password

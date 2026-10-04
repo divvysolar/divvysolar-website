@@ -66,14 +66,14 @@ export default function SalespersonsPage() {
 
     // Add modal state
     const [showAdd, setShowAdd] = useState(false);
-    const [addForm, setAddForm] = useState({ name: "", email: "", password: "", role: "salesperson" });
+    const [addForm, setAddForm] = useState({ name: "", email: "", phone: "", password: "", role: "salesperson" });
     const [addLoading, setAddLoading] = useState(false);
     const [addError, setAddError] = useState("");
 
     // Edit modal state
     const [showEdit, setShowEdit] = useState(false);
     const [editTarget, setEditTarget] = useState(null);
-    const [editForm, setEditForm] = useState({ name: "", password: "", role: "salesperson" });
+    const [editForm, setEditForm] = useState({ name: "", phone: "", password: "", role: "salesperson" });
     const [editLoading, setEditLoading] = useState(false);
     const [editError, setEditError] = useState("");
 
@@ -116,7 +116,7 @@ export default function SalespersonsPage() {
             const data = await res.json();
             if (data.success) {
                 setShowAdd(false);
-                setAddForm({ name: "", email: "", password: "", role: "salesperson" });
+                setAddForm({ name: "", email: "", phone: "", password: "", role: "salesperson" });
                 await fetchSalespersons();
                 showAlert("success", `Account for "${addForm.name}" created successfully.`);
             } else {
@@ -132,7 +132,7 @@ export default function SalespersonsPage() {
     // ── Edit Team Member ────────────────────────────────────────────────────
     const openEdit = (person) => {
         setEditTarget(person);
-        setEditForm({ name: person.name, password: "", role: person.role || "salesperson" });
+        setEditForm({ name: person.name, phone: person.phone || "", password: "", role: person.role || "salesperson" });
         setEditError("");
         setShowEdit(true);
     };
@@ -143,6 +143,7 @@ export default function SalespersonsPage() {
         setEditLoading(true);
         const body = {};
         if (editForm.name.trim()) body.name = editForm.name.trim();
+        if (editForm.phone !== undefined) body.phone = editForm.phone.trim();
         if (editForm.password) body.password = editForm.password;
         if (editForm.role) body.role = editForm.role;
 
@@ -415,10 +416,15 @@ export default function SalespersonsPage() {
                                                 </span>
                                             </td>
 
-                                            {/* Email */}
+                                            {/* Email & Phone */}
                                             <td className="px-6 py-4 whitespace-nowrap">
-                                                <div className="flex items-center gap-2">
+                                                <div className="flex flex-col gap-0.5">
                                                     <span className="text-white/80 text-xs sm:text-sm font-mono">{person.email}</span>
+                                                    {person.phone ? (
+                                                        <span className="text-emerald-400/90 text-xs font-medium">📞 {person.phone}</span>
+                                                    ) : (
+                                                        <span className="text-white/30 text-[11px]">No phone set</span>
+                                                    )}
                                                 </div>
                                             </td>
 
@@ -512,6 +518,16 @@ export default function SalespersonsPage() {
                         />
                     </div>
                     <div>
+                        <label className={labelCls}>Mobile Number (Printed on Proposals)</label>
+                        <input
+                            type="text"
+                            className={inputCls}
+                            placeholder="e.g. +91 98765 43210"
+                            value={addForm.phone}
+                            onChange={e => setAddForm(f => ({ ...f, phone: e.target.value }))}
+                        />
+                    </div>
+                    <div>
                         <label className={labelCls}>Email Address (Login ID) *</label>
                         <input
                             type="email"
@@ -586,6 +602,16 @@ export default function SalespersonsPage() {
                             className={inputCls}
                             value={editForm.name}
                             onChange={e => setEditForm(f => ({ ...f, name: e.target.value }))}
+                        />
+                    </div>
+                    <div>
+                        <label className={labelCls}>Mobile Number (Printed on Proposals)</label>
+                        <input
+                            type="text"
+                            className={inputCls}
+                            placeholder="e.g. +91 98765 43210"
+                            value={editForm.phone}
+                            onChange={e => setEditForm(f => ({ ...f, phone: e.target.value }))}
                         />
                     </div>
                     <div>

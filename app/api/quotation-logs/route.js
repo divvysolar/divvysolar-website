@@ -27,6 +27,8 @@ export async function POST(request) {
         console.log("pdfData length in request:", body.pdfData ? body.pdfData.length : "undefined/empty");
 
         const {
+            salespersonName,
+            salespersonPhone,
             clientName,
             clientPhone,
             clientLocation,
@@ -44,8 +46,9 @@ export async function POST(request) {
 
         const log = await QuotationLog.create({
             salespersonId: session.user.id,
-            salespersonName: session.user.name || 'Unknown',
+            salespersonName: (salespersonName || session.user.name || 'Unknown').trim(),
             salespersonEmail: session.user.email || '',
+            salespersonPhone: (salespersonPhone || session.user.phone || '').trim(),
             clientName: clientName || '',
             clientPhone: clientPhone || '',
             clientLocation: clientLocation || '',

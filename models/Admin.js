@@ -27,6 +27,10 @@ const AdminSchema = new mongoose.Schema(
             enum: ['admin', 'finance', 'salesperson'],
             default: 'admin',
         },
+        phone: {
+            type: String,
+            default: '',
+        },
     },
     { timestamps: true }
 );
