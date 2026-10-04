@@ -295,6 +295,8 @@ export default function PricingCalculatorPage() {
   const [clientName, setClientName] = useState("");
   const [clientPhone, setClientPhone] = useState("");
   const [clientLocation, setClientLocation] = useState("");
+  const [salespersonName, setSalespersonName] = useState("");
+  const [salespersonPhone, setSalespersonPhone] = useState("");
   const [issuingBranch, setIssuingBranch] = useState("gurgaon");
   const [quoteRef, setQuoteRef] = useState("");
   const [systemKW, setSystemKW] = useState("");
@@ -304,13 +306,19 @@ export default function PricingCalculatorPage() {
   const [connectedLoad, setConnectedLoad] = useState("");
   const [dgSync, setDgSync] = useState(false);
 
-  // Auto-detect branch based on logged in salesperson profile if applicable
+  // Auto-detect branch & salesperson profile from session
   useEffect(() => {
-    if (session?.user?.email || session?.user?.name) {
-      const userStr = `${session?.user?.name || ''} ${session?.user?.email || ''}`.toLowerCase();
+    if (session?.user) {
+      const userStr = `${session.user.name || ''} ${session.user.email || ''}`.toLowerCase();
       const detected = detectBranchOffice(userStr);
       if (detected) {
         setIssuingBranch(detected);
+      }
+      if (session.user.name && !salespersonName) {
+        setSalespersonName(session.user.name);
+      }
+      if (session.user.phone && !salespersonPhone) {
+        setSalespersonPhone(session.user.phone);
       }
     }
   }, [session]);
@@ -850,6 +858,7 @@ export default function PricingCalculatorPage() {
               <div class="type">${projectTypeLabel}</div>
               <p><strong>Quote Ref:</strong> ${quoteRefStr}</p>
               <p><strong>Date:</strong> ${dateStr}</p>
+              <p><strong>Prepared By:</strong> ${salespersonName || "Divvy Solar Representative"}${salespersonPhone ? ` (${salespersonPhone})` : ""}</p>
             </div>
           </div>
           <div class="info-grid">
@@ -858,6 +867,7 @@ export default function PricingCalculatorPage() {
               <p><strong>Client / Org:</strong> ${clientName || "N/A"}</p>
               <p><strong>Contact:</strong> ${clientPhone || "N/A"}</p>
               <p><strong>Site Location:</strong> ${clientLocation || "N/A"}</p>
+              <p><strong>Quotation Prepared By:</strong> ${salespersonName || "Divvy Solar Representative"}${salespersonPhone ? ` | Mob: ${salespersonPhone}` : ""}</p>
               <p><strong>Connected Grid Load:</strong> ${connectedLoad ? connectedLoad + " kW" : "N/A"}</p>
               <p><strong>Type of Roof:</strong> ${ROOF_TYPES.find(r => r.v === roofType)?.l || "N/A"}</p>
               <p><strong>DG Synchronization:</strong> ${dgSync ? "Required" : "Not Required"}</p>
@@ -904,8 +914,8 @@ export default function PricingCalculatorPage() {
               <h4>Payment Milestones Schedule</h4>
               <ul class="payment-list">
                 <li><span>1. Advance Booking Amount (${calc.advancePercent}%):</span><strong>${fmtINR(calc.advanceAmount)}</strong></li>
-                <li><span>2. Material Dispatch Stage (${calc.dispatchPercent}%):</span><strong>${fmtINR(calc.dispatchAmount)}</strong></li>
-                <li><span>3. Post-Commissioning Handover (${calc.handoverPercent}%):</span><strong>${fmtINR(calc.handoverAmount)}</strong></li>
+                <li><span>2. Before Material Dispatch (${calc.dispatchPercent}%):</span><strong>${fmtINR(calc.dispatchAmount)}</strong></li>
+                <li><span>3. On the Date of Commissioning (${calc.handoverPercent}%):</span><strong>${fmtINR(calc.handoverAmount)}</strong></li>
               </ul>
             </div>
             <div>
@@ -920,7 +930,13 @@ export default function PricingCalculatorPage() {
             </div>
           </div>
           <div class="footer">
-            <div class="sig"><div class="sig-line">Authorized Signatory<br/><strong>Divvy Solar Representative</strong></div></div>
+            <div class="sig">
+              <div class="sig-line">
+                Authorized Signatory<br/>
+                <strong>${salespersonName || "Divvy Solar Representative"}</strong>
+                ${salespersonPhone ? `<div style="font-size:9px;color:#64748b;margin-top:2px">Mob: ${salespersonPhone}</div>` : ""}
+              </div>
+            </div>
             <div class="sig"><div class="sig-line">Accepted and Agreed<br/><strong>Client Representative</strong></div></div>
           </div>
         </div>
@@ -987,6 +1003,8 @@ export default function PricingCalculatorPage() {
         clientName: clientName || '',
         clientPhone: clientPhone || '',
         clientLocation: clientLocation || '',
+        salespersonName: salespersonName || session?.user?.name || '',
+        salespersonPhone: salespersonPhone || session?.user?.phone || '',
         issuingBranch: issuingBranch || 'gurgaon',
         branchAddress: activeOffice.addr1,
         branchSecondary: activeOffice.addr2,
@@ -1031,6 +1049,8 @@ export default function PricingCalculatorPage() {
           credentials: 'include',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
+            salespersonName: salespersonName || session?.user?.name || '',
+            salespersonPhone: salespersonPhone || session?.user?.phone || '',
             clientName: clientName || '',
             clientPhone: clientPhone || '',
             clientLocation: clientLocation || '',
@@ -1242,6 +1262,20 @@ export default function PricingCalculatorPage() {
                   />
                 </div>
               </div>
+              <Inp 
+                label="Quotation Prepared By (Salesperson Name)" 
+                id="salesperson-name" 
+                value={salespersonName} 
+                onChange={setSalespersonName} 
+                placeholder="e.g. Vineet Kumar" 
+              />
+              <Inp 
+                label="Salesperson Mobile # (Printed on Proposal)" 
+                id="salesperson-phone" 
+                value={salespersonPhone} 
+                onChange={setSalespersonPhone} 
+                placeholder="e.g. +91 98765 43210" 
+              />
             </div>
 
             {/* Issuing Branch / Office Synchronization */}
@@ -1784,7 +1818,7 @@ export default function PricingCalculatorPage() {
                   unit="%"
                 />
                 <Inp
-                  label="2. Material Dispatch"
+                  label="2. Before Material Dispatch"
                   id="disp-percent"
                   value={dispatchPercent}
                   onChange={v => setDispatchPercent(v)}
@@ -1794,7 +1828,7 @@ export default function PricingCalculatorPage() {
                   unit="%"
                 />
                 <Inp
-                  label="3. Commissioning Handover"
+                  label="3. On the Date of Commissioning"
                   id="hand-percent"
                   value={handoverPercent}
                   onChange={v => setHandoverPercent(v)}
@@ -1816,7 +1850,7 @@ export default function PricingCalculatorPage() {
                 </span>
                 {calc && (
                   <span className="text-[#FECB00] text-[11px] font-semibold">
-                    Adv: {formatINR(calc.advanceAmount)} | Disp: {formatINR(calc.dispatchAmount)} | Handover: {formatINR(calc.handoverAmount)}
+                    Adv: {formatINR(calc.advanceAmount)} | Disp: {formatINR(calc.dispatchAmount)} | Comm: {formatINR(calc.handoverAmount)}
                   </span>
                 )}
               </div>
@@ -1988,8 +2022,8 @@ export default function PricingCalculatorPage() {
                   </p>
                   {[
                     { l: "Advance (Booking)", p: calc.advancePercent, v: calc.advanceAmount },
-                    { l: "Material Dispatch", p: calc.dispatchPercent, v: calc.dispatchAmount },
-                    { l: "After Commissioning", p: calc.handoverPercent, v: calc.handoverAmount }
+                    { l: "Before Material Dispatch", p: calc.dispatchPercent, v: calc.dispatchAmount },
+                    { l: "On the Date of Commissioning", p: calc.handoverPercent, v: calc.handoverAmount }
                   ].map(s => (
                     <div key={s.l} className="flex justify-between text-xs">
                       <span className="text-white/60">{s.l} ({s.p}%)</span>
@@ -2032,6 +2066,7 @@ export default function PricingCalculatorPage() {
               </h2>
               <p className="text-[9px] text-slate-600 mt-1"><strong>Quote Ref:</strong> {quoteRef || `DS/QP/${new Date().getFullYear()}/---`}</p>
               <p className="text-[9px] text-slate-600"><strong>Date:</strong> {new Date().toLocaleDateString("en-IN", { day: "numeric", month: "long", year: "numeric" })}</p>
+              <p className="text-[9px] text-slate-600"><strong>Prepared By:</strong> {salespersonName || "Divvy Solar Representative"}{salespersonPhone ? ` (${salespersonPhone})` : ""}</p>
             </div>
           </div>
 
@@ -2043,6 +2078,7 @@ export default function PricingCalculatorPage() {
               <p className="text-xs text-slate-700"><strong>Client / Org:</strong> {clientName || "N/A"}</p>
               <p className="text-xs text-slate-700"><strong>Contact:</strong> {clientPhone || "N/A"}</p>
               <p className="text-xs text-slate-700"><strong>Site Location:</strong> {clientLocation || "N/A"}</p>
+              <p className="text-xs text-slate-700"><strong>Quotation Prepared By:</strong> {salespersonName || "Divvy Solar Representative"}{salespersonPhone ? ` | Mob: ${salespersonPhone}` : ""}</p>
               <p className="text-xs text-slate-700"><strong>Connected Grid Load:</strong> {connectedLoad ? `${connectedLoad} kW` : "N/A"}</p>
               <p className="text-xs text-slate-700"><strong>Type of Roof:</strong> {ROOF_TYPES.find(r => r.v === roofType)?.l || "N/A"}</p>
               <p className="text-xs text-slate-700"><strong>DG Synchronization:</strong> {dgSync ? "Required" : "Not Required"}</p>
@@ -2440,11 +2476,11 @@ export default function PricingCalculatorPage() {
                   <span className="font-bold">{formatINR(calc.advanceAmount)}</span>
                 </li>
                 <li className="flex justify-between">
-                  <span>2. Material Dispatch Stage ({calc.dispatchPercent}%):</span>
+                  <span>2. Before Material Dispatch ({calc.dispatchPercent}%):</span>
                   <span className="font-bold">{formatINR(calc.dispatchAmount)}</span>
                 </li>
                 <li className="flex justify-between">
-                  <span>3. Post-Commissioning Handover ({calc.handoverPercent}%):</span>
+                  <span>3. On the Date of Commissioning ({calc.handoverPercent}%):</span>
                   <span className="font-bold">{formatINR(calc.handoverAmount)}</span>
                 </li>
               </ul>
@@ -2468,7 +2504,8 @@ export default function PricingCalculatorPage() {
           <div className="flex justify-between items-center pt-8 border-t border-slate-200 text-xs text-slate-500 avoid-break">
             <div className="w-1/3 text-center border-t border-slate-300 pt-2 font-semibold text-slate-700">
               Authorized Signatory <br />
-              <strong>Divvy Solar Representative</strong>
+              <strong>{salespersonName || "Divvy Solar Representative"}</strong>
+              {salespersonPhone && <div className="text-[10px] text-slate-500 font-normal mt-0.5">Mob: {salespersonPhone}</div>}
             </div>
             <div className="w-1/3 text-center border-t border-slate-300 pt-2 font-semibold text-slate-700">
               Accepted and Agreed <br />

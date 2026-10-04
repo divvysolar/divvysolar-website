@@ -16,7 +16,7 @@ export async function PATCH(request, { params }) {
         }
 
         const { id } = params;
-        const { name, password, role } = await request.json();
+        const { name, password, role, phone } = await request.json();
 
         await connectToDatabase();
 
@@ -27,6 +27,10 @@ export async function PATCH(request, { params }) {
 
         if (name && name.trim()) {
             salesperson.name = name.trim();
+        }
+
+        if (phone !== undefined) {
+            salesperson.phone = phone ? phone.trim() : '';
         }
 
         if (role && (role === 'salesperson' || role === 'finance')) {

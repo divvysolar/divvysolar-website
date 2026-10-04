@@ -235,7 +235,10 @@ export default function QuotationLogsPage() {
                                 </div>
                                 <div className="min-w-0">
                                     <p className="text-white text-sm font-medium truncate">{log.salespersonName || "—"}</p>
-                                    <p className="text-white/30 text-xs truncate">{log.salespersonEmail || ""}</p>
+                                    <p className="text-white/30 text-xs truncate">
+                                        {log.salespersonEmail || ""}
+                                        {log.salespersonPhone && <span className="ml-1.5 text-emerald-400 font-mono">({log.salespersonPhone})</span>}
+                                    </p>
                                 </div>
                             </div>
 

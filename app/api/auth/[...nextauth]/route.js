@@ -53,6 +53,7 @@ export const authOptions = {
                     id: admin._id.toString(), 
                     name: admin.name, 
                     email: admin.email,
+                    phone: admin.phone || '',
                     role: role,
                 };
             }
@@ -67,6 +68,7 @@ export const authOptions = {
             if (user) {
                 token.id = user.id;
                 token.role = user.role;
+                token.phone = user.phone || '';
             }
             return token;
         },
@@ -77,6 +79,7 @@ export const authOptions = {
                 }
                 session.user.id = token.id;
                 session.user.role = token.role;
+                session.user.phone = token.phone || '';
             }
             return session;
         }
