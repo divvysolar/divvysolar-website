@@ -195,9 +195,19 @@ export default async function QuotationPreviewPage({ params }) {
         incEng,
         incMon,
         incTrans,
+        advancePercent: stateAdvP,
+        dispatchPercent: stateDispP,
+        handoverPercent: stateHandP,
         calc,
         rates
     } = state;
+
+    const advP = stateAdvP ?? calc?.advancePercent ?? 10;
+    const dispP = stateDispP ?? calc?.dispatchPercent ?? 85;
+    const handP = stateHandP ?? calc?.handoverPercent ?? 5;
+    const advAmt = calc?.advanceAmount || (calc?.grandTotal ? calc.grandTotal * (advP / 100) : 0);
+    const dispAmt = calc?.dispatchAmount || (calc?.grandTotal ? calc.grandTotal * (dispP / 100) : 0);
+    const handAmt = calc?.handoverAmount || (calc?.grandTotal ? calc.grandTotal * (handP / 100) : 0);
 
     const projectTypeLabel = projectCategory === "residential" ? "RESIDENTIAL OFFER" : projectCategory === "industrial" ? "INDUSTRIAL PROPOSAL" : "UTILITY-SCALE PROPOSAL";
     const dateStr = new Date(log.createdAt).toLocaleDateString("en-IN", { day: "numeric", month: "long", year: "numeric" });
@@ -474,6 +484,7 @@ export default async function QuotationPreviewPage({ params }) {
                             <div className="type">{projectTypeLabel}</div>
                             <p><strong>Quote Ref:</strong> {quoteRefStr}</p>
                             <p><strong>Date:</strong> {dateStr}</p>
+                            <p><strong>Prepared By:</strong> {log?.salespersonName || "Divvy Solar Rep"}{log?.salespersonPhone ? ` (${log.salespersonPhone})` : ""}</p>
                         </div>
                     </div>
 
@@ -484,6 +495,7 @@ export default async function QuotationPreviewPage({ params }) {
                             <p><strong>Client / Org:</strong> {clientName || "N/A"}</p>
                             <p><strong>Contact:</strong> {clientPhone || "N/A"}</p>
                             <p><strong>Site Location:</strong> {clientLocation || "N/A"}</p>
+                            <p><strong>Quotation Prepared By:</strong> {log?.salespersonName || "Divvy Solar Representative"}{log?.salespersonPhone ? ` | Mob: ${log.salespersonPhone}` : ""}</p>
                             <p><strong>Connected Grid Load:</strong> {connectedLoad ? connectedLoad + " kW" : "N/A"}</p>
                             <p><strong>Type of Roof:</strong> {ROOF_TYPES.find(r => r.v === roofType)?.l || "N/A"}</p>
                             <p><strong>DG Synchronization:</strong> {dgSync ? "Required" : "Not Required"}</p>
@@ -555,28 +567,34 @@ export default async function QuotationPreviewPage({ params }) {
                             <h4>Payment Milestones Schedule</h4>
                             <ul className="payment-list">
                                 <li>
-                                    <span>1. Advance Booking Amount (10%):</span>
-                                    <strong>{formatINR(calc?.grandTotal * 0.1)}</strong>
+                                    <span>1. Before Material Dispatch ({advP}%):</span>
+                                    <strong>{formatINR(advAmt)}</strong>
                                 </li>
                                 <li>
-                                    <span>2. Material Dispatch Stage (85%):</span>
-                                    <strong>{formatINR(calc?.grandTotal * 0.85)}</strong>
+                                    <span>2. Material Dispatch ({dispP}%):</span>
+                                    <strong>{formatINR(dispAmt)}</strong>
                                 </li>
                                 <li>
-                                    <span>3. Post-Commissioning Handover (5%):</span>
-                                    <strong>{formatINR(calc?.grandTotal * 0.05)}</strong>
+                                    <span>3. On the Date of Commissioning ({handP}%):</span>
+                                    <strong>{formatINR(handAmt)}</strong>
                                 </li>
                             </ul>
                         </div>
                         <div>
-                            <h4>Project Execution Terms</h4>
-                            <ul className="terms-list" dangerouslySetInnerHTML={{ __html: `
+                            <h4>Terms &amp; Conditions</h4>
+                            <ul className="terms-list">
+                                <li>Payment Mode: <strong>Milestone Payments (Bank Transfer / RTGS / Cheque)</strong></li>
                                 <li>Estimated Delivery: 4 to 6 weeks from structural layout approval and receipt of advance.</li>
                                 <li>Grid integration approvals (Net Metering) timeline varies according to State DISCOM.</li>
                                 <li>Quotation validity: 15 days from the date of issuance.</li>
                                 <li>Warranty: 25 years performance warranty on solar modules, 5 years on grid-tie inverters.</li>
-                                ${customTermRows}
-                            `}} />
+                            </ul>
+                            {customTerms && customTerms.trim() && (
+                                <>
+                                    <h4 style={{ marginTop: '12px', color: '#1e3a8a' }}>Exact Client Requirements</h4>
+                                    <ul className="terms-list" style={{ color: '#0f172a', fontWeight: '600' }} dangerouslySetInnerHTML={{ __html: customTermRows }} />
+                                </>
+                            )}
                         </div>
                     </div>
 
@@ -585,7 +603,8 @@ export default async function QuotationPreviewPage({ params }) {
                         <div className="sig">
                             <div className="sig-line">
                                 Authorized Signatory<br/>
-                                <strong>Divvy Solar Representative</strong>
+                                <strong>{log?.salespersonName || "Divvy Solar Representative"}</strong>
+                                {log?.salespersonPhone && <div style={{ fontSize: '9px', color: '#64748b', marginTop: '2px' }}>Mob: {log.salespersonPhone}</div>}
                             </div>
                         </div>
                         <div className="sig">
