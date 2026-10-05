@@ -567,11 +567,11 @@ export default async function QuotationPreviewPage({ params }) {
                             <h4>Payment Milestones Schedule</h4>
                             <ul className="payment-list">
                                 <li>
-                                    <span>1. Advance Booking Amount ({advP}%):</span>
+                                    <span>1. Before Material Dispatch ({advP}%):</span>
                                     <strong>{formatINR(advAmt)}</strong>
                                 </li>
                                 <li>
-                                    <span>2. Before Material Dispatch ({dispP}%):</span>
+                                    <span>2. Material Dispatch ({dispP}%):</span>
                                     <strong>{formatINR(dispAmt)}</strong>
                                 </li>
                                 <li>
@@ -581,14 +581,20 @@ export default async function QuotationPreviewPage({ params }) {
                             </ul>
                         </div>
                         <div>
-                            <h4>Project Execution Terms</h4>
-                            <ul className="terms-list" dangerouslySetInnerHTML={{ __html: `
+                            <h4>Terms &amp; Conditions</h4>
+                            <ul className="terms-list">
+                                <li>Payment Mode: <strong>Milestone Payments (Bank Transfer / RTGS / Cheque)</strong></li>
                                 <li>Estimated Delivery: 4 to 6 weeks from structural layout approval and receipt of advance.</li>
                                 <li>Grid integration approvals (Net Metering) timeline varies according to State DISCOM.</li>
                                 <li>Quotation validity: 15 days from the date of issuance.</li>
                                 <li>Warranty: 25 years performance warranty on solar modules, 5 years on grid-tie inverters.</li>
-                                ${customTermRows}
-                            `}} />
+                            </ul>
+                            {customTerms && customTerms.trim() && (
+                                <>
+                                    <h4 style={{ marginTop: '12px', color: '#1e3a8a' }}>Exact Client Requirements</h4>
+                                    <ul className="terms-list" style={{ color: '#0f172a', fontWeight: '600' }} dangerouslySetInnerHTML={{ __html: customTermRows }} />
+                                </>
+                            )}
                         </div>
                     </div>
 

@@ -3,7 +3,8 @@ import mongoose from 'mongoose';
 /* ── Sub-schema: A single panel / inverter model ── */
 const ModuleModelSchema = new mongoose.Schema(
     {
-        modelName: { type: String, required: true }, // e.g. "Waaree 540Wp Mono-Perc"
+        modelName: { type: String, required: true }, // e.g. "Waaree 540Wp Mono-Perc" or "TopCon Non DCR"
+        technology: { type: String, default: '' },   // e.g. "TopCon DCR", "TopCon Non DCR", "Mono PERC", "Bifacial"
         wattage: { type: Number, default: 0 },       // e.g. 540 (Wp per panel)
         ratePerWp: { type: Number, required: true }, // e.g. 30 (₹ per Watt)
         inStock: { type: Boolean, default: true },   // toggleable by admin
@@ -118,6 +119,12 @@ const PricingRateSchema = new mongoose.Schema(
             advancePaymentPercent: { type: Number, default: 0 },       // Payment Milestone: Advance Booking %
             dispatchPaymentPercent: { type: Number, default: 0 },      // Payment Milestone: Material Dispatch %
             handoverPaymentPercent: { type: Number, default: 0 },      // Payment Milestone: Post-Commissioning %
+        },
+
+        // ─── 9. Standard Company Terms & Conditions (Configured by Admin) ──
+        standardTerms: {
+            type: String,
+            default: 'Payment Mode: Milestone Payments (Bank Transfer / RTGS / Cheque)\nEstimated Delivery: 4 to 6 weeks from structural layout approval and receipt of advance.\nGrid integration approvals (Net Metering) timeline varies according to State DISCOM.\nQuotation validity: 15 days from the date of issuance.\nWarranty: 25 years performance warranty on solar modules, 5 years on grid-tie inverters.',
         },
 
         // ─── Active flag ──────────────────────────────────────────────────────

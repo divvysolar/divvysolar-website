@@ -12,7 +12,8 @@ import {
   PlusIcon, 
   TrashIcon,
   CurrencyRupeeIcon,
-  BanknotesIcon
+  BanknotesIcon,
+  DocumentTextIcon
 } from "@heroicons/react/24/outline";
 
 const MODULE_BRANDS = ["waaree", "vikram", "adani", "jakson", "havells", "luminous"];
@@ -78,18 +79,130 @@ const TextInput = ({label,value,onChange,placeholder=""}) => (
   </div>
 );
 
-/* ── Model list manager ── */
+/* ── Solar Module Model list manager with Wattage & Rate ── */
+function ModuleModelManager({ models = [], onAdd, onRemove, onToggle, onUpdateName, onUpdateWattage, onUpdateRate }) {
+  const [name, setName] = useState("");
+  const [wattage, setWattage] = useState("");
+  const [rate, setRate] = useState("");
+
+  return (
+    <div className="space-y-3">
+      <div className="space-y-2">
+        {models.map((m, i) => (
+          <div key={m._id || i} className="flex items-center gap-2 bg-white/3 rounded-xl px-3 py-2 flex-wrap sm:flex-nowrap">
+            <button
+              type="button"
+              onClick={() => onToggle(i)}
+              className={`w-4 h-4 rounded-sm border-2 flex-shrink-0 transition-all ${m.inStock ? "bg-[#FECB00] border-[#FECB00]" : "bg-transparent border-white/30"}`}
+              title={m.inStock ? "In Stock — click to mark Out of Stock" : "Out of Stock — click to mark In Stock"}
+            >
+              {m.inStock && (
+                <svg className="w-2.5 h-2.5 text-[#0a1122] mx-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                </svg>
+              )}
+            </button>
+            <input
+              value={m.modelName || ""}
+              onChange={e => onUpdateName(i, e.target.value)}
+              className="flex-1 min-w-[140px] bg-transparent text-white text-sm outline-none"
+              placeholder="Model/Type (e.g. TopCon DCR)"
+            />
+            <div className="flex items-center gap-1 bg-white/5 px-2 py-1 rounded-lg">
+              <input
+                type="number"
+                value={m.wattage ?? ""}
+                onChange={e => onUpdateWattage(i, Number(e.target.value))}
+                onFocus={e => e.target.select()}
+                className="w-16 bg-transparent text-white text-sm outline-none text-right"
+                placeholder="550"
+              />
+              <span className="text-white/40 text-xs font-semibold">Wp</span>
+            </div>
+            <div className="flex items-center gap-1 bg-white/5 px-2 py-1 rounded-lg">
+              <span className="text-white/40 text-xs">₹</span>
+              <input
+                type="number"
+                step="0.1"
+                value={m.ratePerWp ?? ""}
+                onChange={e => onUpdateRate(i, Number(e.target.value))}
+                onFocus={e => e.target.select()}
+                className="w-20 bg-transparent text-white text-sm outline-none text-right"
+                placeholder="15.5"
+              />
+              <span className="text-white/40 text-xs font-semibold">/Wp</span>
+            </div>
+            <button
+              type="button"
+              onClick={() => onRemove(i)}
+              className="text-red-400/60 hover:text-red-400 transition-colors flex-shrink-0 p-1"
+            >
+              <TrashIcon className="w-4 h-4" />
+            </button>
+          </div>
+        ))}
+      </div>
+      <div className="flex gap-2 flex-wrap sm:flex-nowrap">
+        <input
+          value={name}
+          onChange={e => setName(e.target.value)}
+          placeholder="Model/Type (e.g. TopCon DCR)"
+          className="flex-1 min-w-[140px] px-3 py-2 bg-white/5 border border-white/10 rounded-xl text-white text-sm focus:outline-none focus:ring-2 focus:ring-[#FECB00]/50 focus:border-[#FECB00] transition-all"
+        />
+        <input
+          type="number"
+          value={wattage}
+          onChange={e => setWattage(e.target.value)}
+          placeholder="Wattage (Wp)"
+          onFocus={e => e.target.select()}
+          className="w-28 px-3 py-2 bg-white/5 border border-white/10 rounded-xl text-white text-sm focus:outline-none focus:ring-2 focus:ring-[#FECB00]/50 focus:border-[#FECB00] transition-all"
+        />
+        <input
+          type="number"
+          step="0.1"
+          value={rate}
+          onChange={e => setRate(e.target.value)}
+          placeholder="Rate (₹/Wp)"
+          onFocus={e => e.target.select()}
+          className="w-28 px-3 py-2 bg-white/5 border border-white/10 rounded-xl text-white text-sm focus:outline-none focus:ring-2 focus:ring-[#FECB00]/50 focus:border-[#FECB00] transition-all"
+        />
+        <button
+          type="button"
+          onClick={() => {
+            if (name && rate) {
+              onAdd({
+                modelName: name,
+                wattage: Number(wattage) || 550,
+                ratePerWp: Number(rate),
+                inStock: true
+              });
+              setName("");
+              setWattage("");
+              setRate("");
+            }
+          }}
+          className="px-4 py-2 rounded-xl font-bold text-sm flex items-center gap-1 transition-all flex-shrink-0"
+          style={{ background: "linear-gradient(135deg,#FECB00,#EBB800)", color: "#0a1122" }}
+        >
+          <PlusIcon className="w-4 h-4" /> Add
+        </button>
+      </div>
+    </div>
+  );
+}
+
+/* ── Generic Inverter / Other Model list manager ── */
 function ModelManager({title,models=[],onAdd,onRemove,onToggle,onUpdateName,onUpdateRate,rateField,rateLabel}) {
   const [name,setName] = useState("");
   const [rate,setRate] = useState("");
 
   return (
     <div className="space-y-3">
-      <h3 className="text-sm font-bold text-white/70">{title}</h3>
+      {title && <h3 className="text-sm font-bold text-white/70">{title}</h3>}
       <div className="space-y-2">
         {models.map((m,i)=>(
           <div key={m._id||i} className="flex items-center gap-2 bg-white/3 rounded-xl px-3 py-2">
-            <button onClick={()=>onToggle(i)}
+            <button type="button" onClick={()=>onToggle(i)}
               className={`w-4 h-4 rounded-sm border-2 flex-shrink-0 transition-all ${m.inStock?"bg-[#FECB00] border-[#FECB00]":"bg-transparent border-white/30"}`}
               title={m.inStock?"In Stock — click to mark Out of Stock":"Out of Stock — click to mark In Stock"}>
               {m.inStock && <svg className="w-2.5 h-2.5 text-[#0a1122] mx-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7"/></svg>}
@@ -101,19 +214,19 @@ function ModelManager({title,models=[],onAdd,onRemove,onToggle,onUpdateName,onUp
               onFocus={e => e.target.select()}
               className="w-24 bg-transparent text-white text-sm outline-none text-right"/>
             <span className="text-white/30 text-xs">{rateLabel}</span>
-            <button onClick={()=>onRemove(i)} className="text-red-400/60 hover:text-red-400 transition-colors flex-shrink-0">
+            <button type="button" onClick={()=>onRemove(i)} className="text-red-400/60 hover:text-red-400 transition-colors flex-shrink-0">
               <TrashIcon className="w-4 h-4"/>
             </button>
           </div>
         ))}
       </div>
       <div className="flex gap-2">
-        <input value={name} onChange={e=>setName(e.target.value)} placeholder="Model name (e.g. Waaree 540Wp Mono)"
+        <input value={name} onChange={e=>setName(e.target.value)} placeholder="Model name (e.g. Havells 10kW)"
           className="flex-1 px-3 py-2 bg-white/5 border border-white/10 rounded-xl text-white text-sm focus:outline-none focus:ring-2 focus:ring-[#FECB00]/50 focus:border-[#FECB00] transition-all"/>
         <input type="number" value={rate} onChange={e=>setRate(e.target.value)} placeholder={`Rate (${rateLabel})`}
           onFocus={e => e.target.select()}
           className="w-32 px-3 py-2 bg-white/5 border border-white/10 rounded-xl text-white text-sm focus:outline-none focus:ring-2 focus:ring-[#FECB00]/50 focus:border-[#FECB00] transition-all"/>
-        <button onClick={()=>{if(name&&rate){onAdd({modelName:name,[rateField]:Number(rate),inStock:true});setName("");setRate("");}}}
+        <button type="button" onClick={()=>{if(name&&rate){onAdd({modelName:name,[rateField]:Number(rate),inStock:true});setName("");setRate("");}}}
           className="px-4 py-2 rounded-xl font-bold text-sm flex items-center gap-1 transition-all"
           style={{background:"linear-gradient(135deg,#FECB00,#EBB800)",color:"#0a1122"}}>
           <PlusIcon className="w-4 h-4"/> Add
@@ -157,6 +270,7 @@ export default function PricingSettingsPage() {
   const removeModuleModel = (brand,i) => setRates(p=>({...p,modules:{...p.modules,[brand]:(p.modules?.[brand]||[]).filter((_,idx)=>idx!==i)}}));
   const toggleModuleStock = (brand,i) => setRates(p=>{const arr=[...(p.modules?.[brand]||[])];arr[i]={...arr[i],inStock:!arr[i].inStock};return {...p,modules:{...p.modules,[brand]:arr}};});
   const updateModuleName = (brand,i,v) => setRates(p=>{const arr=[...(p.modules?.[brand]||[])];arr[i]={...arr[i],modelName:v};return {...p,modules:{...p.modules,[brand]:arr}};});
+  const updateModuleWattage = (brand,i,v) => setRates(p=>{const arr=[...(p.modules?.[brand]||[])];arr[i]={...arr[i],wattage:v};return {...p,modules:{...p.modules,[brand]:arr}};});
   const updateModuleRate = (brand,i,v) => setRates(p=>{const arr=[...(p.modules?.[brand]||[])];arr[i]={...arr[i],ratePerWp:v};return {...p,modules:{...p.modules,[brand]:arr}};});
 
   // Inverter model helpers
@@ -299,14 +413,14 @@ export default function PricingSettingsPage() {
         {MODULE_BRANDS.map(brand=>(
           <div key={brand} className="p-4 rounded-xl bg-white/3 border border-white/5 space-y-3">
             <h3 className="text-sm font-black text-white">{cap(brand)}</h3>
-            <ModelManager
-              title="" models={rates.modules?.[brand]||[]}
+            <ModuleModelManager
+              models={rates.modules?.[brand]||[]}
               onAdd={m=>addModuleModel(brand,m)}
               onRemove={i=>removeModuleModel(brand,i)}
               onToggle={i=>toggleModuleStock(brand,i)}
               onUpdateName={(i,v)=>updateModuleName(brand,i,v)}
+              onUpdateWattage={(i,v)=>updateModuleWattage(brand,i,v)}
               onUpdateRate={(i,v)=>updateModuleRate(brand,i,v)}
-              rateField="ratePerWp" rateLabel="₹/Wp"
             />
           </div>
         ))}
@@ -408,6 +522,26 @@ export default function PricingSettingsPage() {
           {rates.acCables?.map((c, i) => (
             <NumInput key={c._id || i} label={c.label} value={c.ratePerMeter} onChange={v=>setRates(p=>{const n=[...(p.acCables||[])];n[i]={...n[i],ratePerMeter:v};return{...p,acCables:n}})}/>
           ))}
+        </div>
+      </section>
+
+      {/* ── 9. Standard Company Terms & Conditions (Fixed on Proposals) ── */}
+      <section className="rounded-2xl bg-white/5 border border-white/10 p-6 space-y-4">
+        <div className="flex items-center gap-3">
+          <DocumentTextIcon className="w-6 h-6 text-[#FECB00]"/>
+          <div>
+            <h2 className="text-lg font-bold text-white">Standard Company Terms &amp; Conditions</h2>
+            <p className="text-white/40 text-xs mt-0.5">Fixed standard terms that will automatically print on all customer proposals. (One term per line).</p>
+          </div>
+        </div>
+        <div>
+          <textarea
+            rows={6}
+            value={rates.standardTerms ?? ""}
+            onChange={e => update("standardTerms", e.target.value)}
+            placeholder="e.g.&#10;Payment Mode: Milestone Payments (Bank Transfer / RTGS / Cheque)&#10;Estimated Delivery: 4 to 6 weeks from structural layout approval.&#10;Grid integration approvals timeline varies according to State DISCOM.&#10;Quotation validity: 15 days from the date of issuance.&#10;Warranty: 25 years performance warranty on solar modules, 5 years on inverters."
+            className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white text-sm focus:outline-none focus:ring-2 focus:ring-[#FECB00]/50 focus:border-[#FECB00] transition-all font-mono leading-relaxed resize-y"
+          />
         </div>
       </section>
 
