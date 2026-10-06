@@ -360,7 +360,8 @@ export default function PricingCalculatorPage() {
   const modulesKW = modules.reduce((sum, m) => {
     const avail = rates?.modules?.[m.brand] || [];
     const sel = avail.find(x => x._id === m.model);
-    return sum + ((Number(m.qty) || 0) * (sel?.wattage || 0) / 1000);
+    const wp = m.customWattage !== undefined && m.customWattage !== "" ? Number(m.customWattage) : (sel?.wattage || 0);
+    return sum + ((Number(m.qty) || 0) * wp / 1000);
   }, 0);
   const effectiveSystemKW = Number(systemKW) > 0 ? Number(systemKW) : modulesKW;
 
@@ -550,7 +551,8 @@ export default function PricingCalculatorPage() {
     const modKW = modules.reduce((sum, m) => {
       const avail = rates?.modules?.[m.brand] || [];
       const sel = avail.find(x => x._id === m.model);
-      return sum + ((Number(m.qty) || 0) * (sel?.wattage || 0) / 1000);
+      const wp = m.customWattage !== undefined && m.customWattage !== "" ? Number(m.customWattage) : (sel?.wattage || 0);
+      return sum + ((Number(m.qty) || 0) * wp / 1000);
     }, 0);
     const plantKW = Number(systemKW) > 0 ? Number(systemKW) : modKW;
     if (!rates || !plantKW || plantKW <= 0) return null;
@@ -591,11 +593,12 @@ export default function PricingCalculatorPage() {
         const adder = systemType === "hybrid" ? (rates.modules?.typeAdder?.hybrid || 0) : (rates.modules?.typeAdder?.ongrid || 0);
         const rawRatePerWp = (selMod.ratePerWp || 0) + adder;
         const ratePerWp = rawRatePerWp * markupMultiplier;
-        const itemWp = qty * (selMod.wattage || 0);
+        const effectiveWp = m.customWattage !== undefined && m.customWattage !== "" ? Number(m.customWattage) : (selMod.wattage || 0);
+        const itemWp = qty * effectiveWp;
         const kw = itemWp / 1000;
         const cost = ratePerWp * itemWp;
         moduleCost += cost;
-        selectedModuleDetails.push({ ...selMod, brand: m.brand, kw, itemWp, ratePerWp, cost, panels: qty, qty });
+        selectedModuleDetails.push({ ...selMod, brand: m.brand, kw, itemWp, ratePerWp, cost, panels: qty, qty, wattage: effectiveWp });
       }
     });
 
@@ -1400,8 +1403,8 @@ export default function PricingCalculatorPage() {
                   model: m
                 }));
 
-                const selWattage = selModObj ? getModuleWattage(selModObj) : 0;
-                const modCapacityKW = selModObj && mod.qty ? ((Number(mod.qty) * selWattage) / 1000).toFixed(2) : null;
+                const selWattage = mod.customWattage !== undefined && mod.customWattage !== "" ? Number(mod.customWattage) : (selModObj ? getModuleWattage(selModObj) : 0);
+                const modCapacityKW = mod.qty && selWattage > 0 ? ((Number(mod.qty) * selWattage) / 1000).toFixed(2) : null;
 
                 return (
                   <div key={index} className="p-4 bg-white/5 border border-white/10 rounded-xl space-y-3 relative">
@@ -1435,6 +1438,7 @@ export default function PricingCalculatorPage() {
                             brand: v,
                             tech: first ? getModuleTech(first) : "",
                             model: first ? first._id : "",
+                            customWattage: undefined, // reset so new model's default wattage auto-fills
                           };
                           setModules(nm);
                         }}
@@ -1468,21 +1472,22 @@ export default function PricingCalculatorPage() {
                         ))}
                       </Sel>
 
-                      {/* 3. Wattage (Wp) */}
-                      <Sel
+                      {/* 3. Wattage (Wp) — Editable number input, auto-fills from model */}
+                      <Inp
                         label="Wattage (Wp)"
                         id={`mod-wattage-${index}`}
-                        value={mod.model}
-                        disabled={!mod.brand || distinctWattages.length === 0}
-                        onChange={v => updateModule(index, "model", v)}
-                      >
-                        <option value="" className="bg-[#0f172a]">Select Wattage</option>
-                        {distinctWattages.map(item => (
-                          <option key={item.id} value={item.id} className="bg-[#0f172a]">
-                            {item.wattage} Wp
-                          </option>
-                        ))}
-                      </Sel>
+                        value={mod.customWattage !== undefined ? mod.customWattage : (selModObj ? getModuleWattage(selModObj) : "")}
+                        type="number"
+                        min={1}
+                        step="1"
+                        placeholder="e.g. 550"
+                        unit="Wp"
+                        onChange={v => {
+                          const nm = [...modules];
+                          nm[index] = { ...nm[index], customWattage: v === "" ? "" : Number(v) };
+                          setModules(nm);
+                        }}
+                      />
 
                       {/* 4. Quantity (Panels) */}
                       <Inp
@@ -1502,7 +1507,7 @@ export default function PricingCalculatorPage() {
                       <div className="flex items-center justify-between pt-1 text-xs border-t border-white/5 flex-wrap gap-2">
                         <span className="text-[#FECB00] font-semibold flex items-center gap-1.5">
                           <span className="w-1.5 h-1.5 rounded-full bg-[#FECB00]" />
-                          {cap(mod.brand)} · {getModuleTech(selModObj)} ({getModuleWattage(selModObj)}Wp)
+                          {cap(mod.brand)} · {getModuleTech(selModObj)} ({selWattage}Wp)
                         </span>
                         {modCapacityKW && (
                           <span className="text-white/60 font-medium">
