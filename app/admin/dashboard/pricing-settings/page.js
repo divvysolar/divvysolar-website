@@ -79,10 +79,9 @@ const TextInput = ({label,value,onChange,placeholder=""}) => (
   </div>
 );
 
-/* ── Solar Module Model list manager with Wattage & Rate ── */
-function ModuleModelManager({ models = [], onAdd, onRemove, onToggle, onUpdateName, onUpdateWattage, onUpdateRate }) {
+/* ── Solar Module Model list manager with Rate ── */
+function ModuleModelManager({ models = [], onAdd, onRemove, onToggle, onUpdateName, onUpdateRate }) {
   const [name, setName] = useState("");
-  const [wattage, setWattage] = useState("");
   const [rate, setRate] = useState("");
 
   return (
@@ -108,17 +107,6 @@ function ModuleModelManager({ models = [], onAdd, onRemove, onToggle, onUpdateNa
               className="flex-1 min-w-[140px] bg-transparent text-white text-sm outline-none"
               placeholder="Model/Type (e.g. TopCon DCR)"
             />
-            <div className="flex items-center gap-1 bg-white/5 px-2 py-1 rounded-lg">
-              <input
-                type="number"
-                value={m.wattage ?? ""}
-                onChange={e => onUpdateWattage(i, Number(e.target.value))}
-                onFocus={e => e.target.select()}
-                className="w-16 bg-transparent text-white text-sm outline-none text-right"
-                placeholder="550"
-              />
-              <span className="text-white/40 text-xs font-semibold">Wp</span>
-            </div>
             <div className="flex items-center gap-1 bg-white/5 px-2 py-1 rounded-lg">
               <span className="text-white/40 text-xs">₹</span>
               <input
@@ -151,14 +139,6 @@ function ModuleModelManager({ models = [], onAdd, onRemove, onToggle, onUpdateNa
         />
         <input
           type="number"
-          value={wattage}
-          onChange={e => setWattage(e.target.value)}
-          placeholder="Wattage (Wp)"
-          onFocus={e => e.target.select()}
-          className="w-28 px-3 py-2 bg-white/5 border border-white/10 rounded-xl text-white text-sm focus:outline-none focus:ring-2 focus:ring-[#FECB00]/50 focus:border-[#FECB00] transition-all"
-        />
-        <input
-          type="number"
           step="0.1"
           value={rate}
           onChange={e => setRate(e.target.value)}
@@ -172,12 +152,11 @@ function ModuleModelManager({ models = [], onAdd, onRemove, onToggle, onUpdateNa
             if (name && rate) {
               onAdd({
                 modelName: name,
-                wattage: Number(wattage) || 550,
+                wattage: 550,
                 ratePerWp: Number(rate),
                 inStock: true
               });
               setName("");
-              setWattage("");
               setRate("");
             }
           }}
@@ -419,7 +398,6 @@ export default function PricingSettingsPage() {
               onRemove={i=>removeModuleModel(brand,i)}
               onToggle={i=>toggleModuleStock(brand,i)}
               onUpdateName={(i,v)=>updateModuleName(brand,i,v)}
-              onUpdateWattage={(i,v)=>updateModuleWattage(brand,i,v)}
               onUpdateRate={(i,v)=>updateModuleRate(brand,i,v)}
             />
           </div>
