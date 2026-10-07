@@ -3,6 +3,7 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/app/api/auth/[...nextauth]/route';
 import connectToDatabase from '@/lib/mongodb';
 import PricingRate from '@/models/PricingRate';
+import mongoose from 'mongoose';
 
 export const dynamic = 'force-dynamic';
 
@@ -19,7 +20,8 @@ export async function GET() {
 
         await connectToDatabase();
 
-        let rates = await PricingRate.findOne({ isActive: true }).lean();
+        const collection = mongoose.connection.db.collection('pricingrates');
+        let rates = await collection.findOne({ isActive: true });
 
         // If no rate card exists yet, create a default one
         if (!rates) {
@@ -65,11 +67,13 @@ export async function PUT(request) {
             }
         }
 
-        let rates = await PricingRate.findOneAndUpdate(
+        const collection = mongoose.connection.db.collection('pricingrates');
+        await collection.updateOne(
             { isActive: true },
             { $set: body },
-            { new: true, upsert: true, runValidators: true }
-        ).lean();
+            { upsert: true }
+        );
+        let rates = await collection.findOne({ isActive: true });
 
         return NextResponse.json({ success: true, data: rates });
     } catch (error) {
