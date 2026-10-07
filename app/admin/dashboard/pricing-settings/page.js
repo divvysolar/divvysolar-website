@@ -17,7 +17,7 @@ import {
 } from "@heroicons/react/24/outline";
 
 const MODULE_BRANDS = ["waaree", "vikram", "adani", "jakson", "havells", "luminous"];
-const INVERTER_BRANDS = ["havells","luminous","utl","sungrow"];
+const INVERTER_BRANDS = ["havells","luminous","utl","sungrow","invergy"];
 const STRUCTURE_TYPES_ADMIN = [
   { v: "ms_fabricated", l: "MS Fabricated" },
   { v: "gi", l: "GI Structure" },
@@ -28,7 +28,7 @@ const STRUCTURE_TYPES_ADMIN = [
   { v: "ground_hot_dip", l: "Ground - Hot-dip GI" },
   { v: "ground_galvalume", l: "Ground - Galvalume" },
 ];
-const cap = s => s.charAt(0).toUpperCase()+s.slice(1);
+const cap = s => (s && typeof s === 'string') ? (s.charAt(0).toUpperCase() + s.slice(1)) : (s || '');
 
 const NumInput = ({label,value,onChange,unit="₹"}) => {
   const [localVal, setLocalVal] = useState((value ?? "").toString());
@@ -79,10 +79,9 @@ const TextInput = ({label,value,onChange,placeholder=""}) => (
   </div>
 );
 
-/* ── Solar Module Model list manager with Wattage & Rate ── */
-function ModuleModelManager({ models = [], onAdd, onRemove, onToggle, onUpdateName, onUpdateWattage, onUpdateRate }) {
+/* ── Solar Module Model list manager with Rate ── */
+function ModuleModelManager({ models = [], onAdd, onRemove, onToggle, onUpdateName, onUpdateRate }) {
   const [name, setName] = useState("");
-  const [wattage, setWattage] = useState("");
   const [rate, setRate] = useState("");
 
   return (
@@ -108,17 +107,6 @@ function ModuleModelManager({ models = [], onAdd, onRemove, onToggle, onUpdateNa
               className="flex-1 min-w-[140px] bg-transparent text-white text-sm outline-none"
               placeholder="Model/Type (e.g. TopCon DCR)"
             />
-            <div className="flex items-center gap-1 bg-white/5 px-2 py-1 rounded-lg">
-              <input
-                type="number"
-                value={m.wattage ?? ""}
-                onChange={e => onUpdateWattage(i, Number(e.target.value))}
-                onFocus={e => e.target.select()}
-                className="w-16 bg-transparent text-white text-sm outline-none text-right"
-                placeholder="550"
-              />
-              <span className="text-white/40 text-xs font-semibold">Wp</span>
-            </div>
             <div className="flex items-center gap-1 bg-white/5 px-2 py-1 rounded-lg">
               <span className="text-white/40 text-xs">₹</span>
               <input
@@ -151,14 +139,6 @@ function ModuleModelManager({ models = [], onAdd, onRemove, onToggle, onUpdateNa
         />
         <input
           type="number"
-          value={wattage}
-          onChange={e => setWattage(e.target.value)}
-          placeholder="Wattage (Wp)"
-          onFocus={e => e.target.select()}
-          className="w-28 px-3 py-2 bg-white/5 border border-white/10 rounded-xl text-white text-sm focus:outline-none focus:ring-2 focus:ring-[#FECB00]/50 focus:border-[#FECB00] transition-all"
-        />
-        <input
-          type="number"
           step="0.1"
           value={rate}
           onChange={e => setRate(e.target.value)}
@@ -172,12 +152,11 @@ function ModuleModelManager({ models = [], onAdd, onRemove, onToggle, onUpdateNa
             if (name && rate) {
               onAdd({
                 modelName: name,
-                wattage: Number(wattage) || 550,
+                wattage: 550,
                 ratePerWp: Number(rate),
                 inStock: true
               });
               setName("");
-              setWattage("");
               setRate("");
             }
           }}
@@ -243,6 +222,8 @@ export default function PricingSettingsPage() {
   const [loading,setLoading] = useState(true);
   const [saving,setSaving] = useState(false);
   const [toast,setToast] = useState(null);
+  const [newModuleBrand, setNewModuleBrand] = useState("");
+  const [newInverterBrand, setNewInverterBrand] = useState("");
 
   useEffect(()=>{
     if(status==="authenticated" && session?.user?.role!=="admin" && session?.user?.role!=="finance") router.push("/admin/dashboard");
@@ -265,15 +246,56 @@ export default function PricingSettingsPage() {
     return c;
   });
 
-  // Module model helpers
+  // Module brand & model helpers
+  const addModuleBrand = (brandName) => {
+    const clean = brandName.trim().toLowerCase().replace(/\s+/g, "_");
+    if (!clean) return;
+    setRates(p => ({
+      ...p,
+      modules: {
+        ...(p.modules || {}),
+        [clean]: p.modules?.[clean] || []
+      }
+    }));
+  };
+
+  const deleteModuleBrand = (brandName) => {
+    if (!window.confirm(`Are you sure you want to remove the brand "${cap(brandName)}"?`)) return;
+    setRates(p => {
+      const updated = { ...(p.modules || {}) };
+      delete updated[brandName];
+      return { ...p, modules: updated };
+    });
+  };
+
   const addModuleModel = (brand,m) => setRates(p=>({...p,modules:{...p.modules,[brand]:[...(p.modules?.[brand]||[]),m]}}));
   const removeModuleModel = (brand,i) => setRates(p=>({...p,modules:{...p.modules,[brand]:(p.modules?.[brand]||[]).filter((_,idx)=>idx!==i)}}));
   const toggleModuleStock = (brand,i) => setRates(p=>{const arr=[...(p.modules?.[brand]||[])];arr[i]={...arr[i],inStock:!arr[i].inStock};return {...p,modules:{...p.modules,[brand]:arr}};});
   const updateModuleName = (brand,i,v) => setRates(p=>{const arr=[...(p.modules?.[brand]||[])];arr[i]={...arr[i],modelName:v};return {...p,modules:{...p.modules,[brand]:arr}};});
-  const updateModuleWattage = (brand,i,v) => setRates(p=>{const arr=[...(p.modules?.[brand]||[])];arr[i]={...arr[i],wattage:v};return {...p,modules:{...p.modules,[brand]:arr}};});
   const updateModuleRate = (brand,i,v) => setRates(p=>{const arr=[...(p.modules?.[brand]||[])];arr[i]={...arr[i],ratePerWp:v};return {...p,modules:{...p.modules,[brand]:arr}};});
 
-  // Inverter model helpers
+  // Inverter brand & model helpers
+  const addInverterBrand = (brandName) => {
+    const clean = brandName.trim().toLowerCase().replace(/\s+/g, "_");
+    if (!clean) return;
+    setRates(p => ({
+      ...p,
+      inverters: {
+        ...(p.inverters || {}),
+        [clean]: p.inverters?.[clean] || []
+      }
+    }));
+  };
+
+  const deleteInverterBrand = (brandName) => {
+    if (!window.confirm(`Are you sure you want to remove the brand "${cap(brandName)}"?`)) return;
+    setRates(p => {
+      const updated = { ...(p.inverters || {}) };
+      delete updated[brandName];
+      return { ...p, inverters: updated };
+    });
+  };
+
   const addInverterModel = (brand,m) => setRates(p=>({...p,inverters:{...p.inverters,[brand]:[...(p.inverters?.[brand]||[]),m]}}));
   const removeInverterModel = (brand,i) => setRates(p=>({...p,inverters:{...p.inverters,[brand]:(p.inverters?.[brand]||[]).filter((_,idx)=>idx!==i)}}));
   const toggleInverterStock = (brand,i) => setRates(p=>{const arr=[...(p.inverters?.[brand]||[])];arr[i]={...arr[i],inStock:!arr[i].inStock};return {...p,inverters:{...p.inverters,[brand]:arr}};});
@@ -301,6 +323,16 @@ export default function PricingSettingsPage() {
       </div>
     </div>
   );
+
+  const allModuleBrands = Array.from(new Set([
+    "waaree", "vikram", "adani", "jakson", "havells", "luminous", "eastman",
+    ...Object.keys(rates.modules || {}).filter(k => k !== 'typeAdder' && !k.startsWith('$'))
+  ]));
+
+  const allInverterBrands = Array.from(new Set([
+    "havells", "luminous", "utl", "sungrow", "invergy", "eastman",
+    ...Object.keys(rates.inverters || {}).filter(k => !k.startsWith('$'))
+  ]));
 
   return (
     <div className="space-y-8">
@@ -402,47 +434,120 @@ export default function PricingSettingsPage() {
 
       {/* ── Module Brands ── */}
       <section className="rounded-2xl bg-white/5 border border-white/10 p-6 space-y-6">
-        <div className="flex items-center gap-3">
-          <CubeIcon className="w-6 h-6 text-[#FECB00]"/>
-          <div>
-            <h2 className="text-lg font-bold text-white">Solar Module Models (₹/Wp)</h2>
-            <p className="text-white/40 text-xs mt-0.5">Yellow checkbox = In Stock (visible to salesperson). Untick = Out of Stock (hidden).</p>
+        <div className="flex items-center justify-between flex-wrap gap-4">
+          <div className="flex items-center gap-3">
+            <CubeIcon className="w-6 h-6 text-[#FECB00]"/>
+            <div>
+              <h2 className="text-lg font-bold text-white">Solar Module Models (₹/Wp)</h2>
+              <p className="text-white/40 text-xs mt-0.5">Yellow checkbox = In Stock (visible to salesperson). Untick = Out of Stock (hidden).</p>
+            </div>
+          </div>
+          <div className="flex gap-2 items-center">
+            <input
+              value={newModuleBrand}
+              onChange={e => setNewModuleBrand(e.target.value)}
+              placeholder="New Brand (e.g. Eastman)"
+              className="px-3 py-1.5 bg-white/5 border border-white/10 rounded-xl text-white text-xs focus:outline-none focus:ring-2 focus:ring-[#FECB00]/50 w-44"
+              onKeyDown={e => {
+                if (e.key === "Enter" && newModuleBrand.trim()) {
+                  addModuleBrand(newModuleBrand);
+                  setNewModuleBrand("");
+                }
+              }}
+            />
+            <button
+              type="button"
+              onClick={() => {
+                if (newModuleBrand.trim()) {
+                  addModuleBrand(newModuleBrand);
+                  setNewModuleBrand("");
+                }
+              }}
+              className="px-3 py-1.5 rounded-xl font-bold text-xs flex items-center gap-1 transition-all"
+              style={{ background: "linear-gradient(135deg,#FECB00,#EBB800)", color: "#0a1122" }}
+            >
+              <PlusIcon className="w-3.5 h-3.5" /> Add Brand
+            </button>
           </div>
         </div>
 
-        {MODULE_BRANDS.map(brand=>(
+        {allModuleBrands.map(brand=>(
           <div key={brand} className="p-4 rounded-xl bg-white/3 border border-white/5 space-y-3">
-            <h3 className="text-sm font-black text-white">{cap(brand)}</h3>
+            <div className="flex items-center justify-between">
+              <h3 className="text-sm font-black text-white">{cap(brand)}</h3>
+              <button
+                type="button"
+                onClick={() => deleteModuleBrand(brand)}
+                className="text-xs text-red-400/50 hover:text-red-400 flex items-center gap-1 transition-colors p-1"
+                title={`Remove ${cap(brand)} brand`}
+              >
+                <TrashIcon className="w-3.5 h-3.5" /> Remove Brand
+              </button>
+            </div>
             <ModuleModelManager
               models={rates.modules?.[brand]||[]}
               onAdd={m=>addModuleModel(brand,m)}
               onRemove={i=>removeModuleModel(brand,i)}
               onToggle={i=>toggleModuleStock(brand,i)}
               onUpdateName={(i,v)=>updateModuleName(brand,i,v)}
-              onUpdateWattage={(i,v)=>updateModuleWattage(brand,i,v)}
               onUpdateRate={(i,v)=>updateModuleRate(brand,i,v)}
             />
           </div>
         ))}
-        {/* Deactivated brands notice */}
-        <div className="flex items-center gap-2 p-3 rounded-xl bg-red-500/5 border border-red-500/10">
-          <ExclamationTriangleIcon className="w-4 h-4 text-red-400 flex-shrink-0"/>
-          <p className="text-red-400/70 text-xs"><strong>Eastman & Invergy</strong> — No Work. Permanently excluded from all salesperson dropdowns.</p>
-        </div>
       </section>
 
       {/* ── Inverter Brands ── */}
       <section className="rounded-2xl bg-white/5 border border-white/10 p-6 space-y-6">
-        <div className="flex items-center gap-3">
-          <BoltIcon className="w-6 h-6 text-[#FECB00]"/>
-          <div>
-            <h2 className="text-lg font-bold text-white">Inverter Models (₹/Unit)</h2>
-            <p className="text-white/40 text-xs mt-0.5">Toggle stock status per model.</p>
+        <div className="flex items-center justify-between flex-wrap gap-4">
+          <div className="flex items-center gap-3">
+            <BoltIcon className="w-6 h-6 text-[#FECB00]"/>
+            <div>
+              <h2 className="text-lg font-bold text-white">Inverter Models (₹/Unit)</h2>
+              <p className="text-white/40 text-xs mt-0.5">Toggle stock status per model.</p>
+            </div>
+          </div>
+          <div className="flex gap-2 items-center">
+            <input
+              value={newInverterBrand}
+              onChange={e => setNewInverterBrand(e.target.value)}
+              placeholder="New Brand (e.g. Eastman)"
+              className="px-3 py-1.5 bg-white/5 border border-white/10 rounded-xl text-white text-xs focus:outline-none focus:ring-2 focus:ring-[#FECB00]/50 w-44"
+              onKeyDown={e => {
+                if (e.key === "Enter" && newInverterBrand.trim()) {
+                  addInverterBrand(newInverterBrand);
+                  setNewInverterBrand("");
+                }
+              }}
+            />
+            <button
+              type="button"
+              onClick={() => {
+                if (newInverterBrand.trim()) {
+                  addInverterBrand(newInverterBrand);
+                  setNewInverterBrand("");
+                }
+              }}
+              className="px-3 py-1.5 rounded-xl font-bold text-xs flex items-center gap-1 transition-all"
+              style={{ background: "linear-gradient(135deg,#FECB00,#EBB800)", color: "#0a1122" }}
+            >
+              <PlusIcon className="w-3.5 h-3.5" /> Add Brand
+            </button>
           </div>
         </div>
-        {INVERTER_BRANDS.map(brand=>(
+
+        {allInverterBrands.map(brand=>(
           <div key={brand} className="p-4 rounded-xl bg-white/3 border border-white/5 space-y-3">
-            <h3 className="text-sm font-black text-white">{cap(brand)}</h3>
+            <div className="flex items-center justify-between">
+              <h3 className="text-sm font-black text-white">{cap(brand)}</h3>
+              <button
+                type="button"
+                onClick={() => deleteInverterBrand(brand)}
+                className="text-xs text-red-400/50 hover:text-red-400 flex items-center gap-1 transition-colors p-1"
+                title={`Remove ${cap(brand)} brand`}
+              >
+                <TrashIcon className="w-3.5 h-3.5" /> Remove Brand
+              </button>
+            </div>
             <ModelManager
               title="" models={rates.inverters?.[brand]||[]}
               onAdd={m=>addInverterModel(brand,m)}
@@ -481,10 +586,14 @@ export default function PricingSettingsPage() {
           </div>
         </div>
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
-          <NumInput label="Earthing Pit (GI) (₹/pit)" value={rates.earthingPitRateGi} onChange={v=>update("earthingPitRateGi",v)}/>
-          <NumInput label="Earthing Pit (Cu) (₹/pit)" value={rates.earthingPitRateCu} onChange={v=>update("earthingPitRateCu",v)}/>
-          <NumInput label="Earthing Pit (Al) (₹/pit)" value={rates.earthingPitRateAl} onChange={v=>update("earthingPitRateAl",v)}/>
-          <NumInput label="Earthing Pit (Cu Bonded) (₹/pit)" value={rates.earthingPitRateCuBonded} onChange={v=>update("earthingPitRateCuBonded",v)}/>
+          <NumInput label="Earthing Pit (Cu) (₹/pit)" value={rates.earthingPitRateCu ?? 3500} onChange={v=>update("earthingPitRateCu",v)}/>
+          <NumInput label="Earthing GI Strip (₹/m)" value={rates.earthingGiStripRate ?? 65} onChange={v=>update("earthingGiStripRate",v)}/>
+          <NumInput label="Earthing Cu Wire 4 sqmm (₹/m)" value={rates.earthingCu4Rate ?? 45} onChange={v=>update("earthingCu4Rate",v)}/>
+          <NumInput label="Earthing Cu Wire 6 sqmm (₹/m)" value={rates.earthingCu6Rate ?? 65} onChange={v=>update("earthingCu6Rate",v)}/>
+          <NumInput label="Earthing Cu Wire 10 sqmm (₹/m)" value={rates.earthingCu10Rate ?? 105} onChange={v=>update("earthingCu10Rate",v)}/>
+          <NumInput label="Earthing Cu Wire 16 sqmm (₹/m)" value={rates.earthingCu16Rate ?? 165} onChange={v=>update("earthingCu16Rate",v)}/>
+          <NumInput label="Earthing Cu Wire 25 sqmm (₹/m)" value={rates.earthingCu25Rate ?? 260} onChange={v=>update("earthingCu25Rate",v)}/>
+          <NumInput label="Earthing Cu Wire 35 sqmm (₹/m)" value={rates.earthingCu35Rate ?? 360} onChange={v=>update("earthingCu35Rate",v)}/>
 
           <NumInput label="LA Conventional (₹/unit)" value={rates.laConventionalRate} onChange={v=>update("laConventionalRate",v)}/>
           <NumInput label="LA ESE (₹/unit)" value={rates.laEseRate} onChange={v=>update("laEseRate",v)}/>
@@ -515,11 +624,11 @@ export default function PricingSettingsPage() {
           <BoltIcon className="w-6 h-6 text-[#FECB00]"/>
           <div>
             <h2 className="text-lg font-bold text-white">AC Cables Matrix (₹/m)</h2>
-            <p className="text-white/40 text-xs mt-0.5">Rates for Copper &amp; Aluminium cables (2 Core: 4-10 sqmm, 4 Core: 10-35 sqmm, 3.5 Core: 50-600 sqmm).</p>
+            <p className="text-white/40 text-xs mt-0.5">Rates for Aluminium AC cables (2 Core &amp; 4 Core Armoured AC cables).</p>
           </div>
         </div>
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 max-h-[600px] overflow-y-auto pr-2 custom-scrollbar">
-          {rates.acCables?.map((c, i) => (
+          {rates.acCables?.filter(c => c.conductor === 'aluminium' || c.conductor !== 'copper').map((c, i) => (
             <NumInput key={c._id || i} label={c.label} value={c.ratePerMeter} onChange={v=>setRates(p=>{const n=[...(p.acCables||[])];n[i]={...n[i],ratePerMeter:v};return{...p,acCables:n}})}/>
           ))}
         </div>

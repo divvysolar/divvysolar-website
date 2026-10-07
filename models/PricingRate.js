@@ -39,29 +39,11 @@ const CableMatrixSchema = new mongoose.Schema(
 const PricingRateSchema = new mongoose.Schema(
     {
         // ─── 1. Solar Module Brands & Models ─────────────────────────────────
-        // Eastman & Invergy are PERMANENTLY excluded — not present in this schema.
-        // inStock per model toggles visibility on salesperson UI.
-        modules: {
-            waaree: { type: [ModuleModelSchema], default: [] },
-            vikram: { type: [ModuleModelSchema], default: [] },
-            adani: { type: [ModuleModelSchema], default: [] },
-            jakson: { type: [ModuleModelSchema], default: [] },
-            havells: { type: [ModuleModelSchema], default: [] },
-            luminous: { type: [ModuleModelSchema], default: [] },
-            // System type adder (₹/Wp extra added on top of brand rate)
-            typeAdder: {
-                ongrid: { type: Number, default: 0 },
-                hybrid: { type: Number, default: 0 },
-            },
-        },
+        // Dynamic brands & models. inStock per model toggles visibility on salesperson UI.
+        modules: { type: mongoose.Schema.Types.Mixed, default: {} },
 
         // ─── 2. Inverter Brands & Models ─────────────────────────────────────
-        inverters: {
-            havells: { type: [InverterModelSchema], default: [] },
-            luminous: { type: [InverterModelSchema], default: [] },
-            utl: { type: [InverterModelSchema], default: [] },
-            sungrow: { type: [InverterModelSchema], default: [] },
-        },
+        inverters: { type: mongoose.Schema.Types.Mixed, default: {} },
 
         // ─── 3. Structure — Capacity Brackets (₹/kW) ──────────────────────────
         // Rates change by system capacity. Admin defines each bracket range.
@@ -72,11 +54,15 @@ const PricingRateSchema = new mongoose.Schema(
         dcCables: { type: [CableMatrixSchema], default: [] }, // DC cable types (tinned copper 4/6mm²)
 
         // ─── 5. BOS items — per-unit rates (scale dynamically by capacity) ────
-        earthingPitRateGi: { type: Number, default: 0 },         // ₹ per pit (GI Strip)
-        earthingPitRateCu: { type: Number, default: 0 },         // ₹ per pit (Copper)
-        earthingPitRateAl: { type: Number, default: 0 },         // ₹ per pit (Aluminium)
-        earthingPitRateCuBonded: { type: Number, default: 0 },   // ₹ per pit (Copper Bonded)
-        earthingPitsPerKW: { type: Number, default: 0.3 },// pits needed per kW (e.g. 0.3 = 3 pits per 10kW)
+        earthingPitRateCu: { type: Number, default: 3500 },      // ₹ per pit (Copper Chemical Pit)
+        earthingPitsPerKW: { type: Number, default: 0.3 },       // pits needed per kW (e.g. 0.3 = 3 pits per 10kW)
+        earthingGiStripRate: { type: Number, default: 65 },       // ₹ per meter (GI Strip)
+        earthingCu4Rate: { type: Number, default: 45 },           // ₹ per meter (Copper 4 sqmm)
+        earthingCu6Rate: { type: Number, default: 65 },           // ₹ per meter (Copper 6 sqmm)
+        earthingCu10Rate: { type: Number, default: 105 },         // ₹ per meter (Copper 10 sqmm)
+        earthingCu16Rate: { type: Number, default: 165 },         // ₹ per meter (Copper 16 sqmm)
+        earthingCu25Rate: { type: Number, default: 260 },         // ₹ per meter (Copper 25 sqmm)
+        earthingCu35Rate: { type: Number, default: 360 },         // ₹ per meter (Copper 35 sqmm)
 
         laConventionalRate: { type: Number, default: 0 }, // ₹ per LA unit
         laEseRate: { type: Number, default: 0 },          // ₹ per ESE LA unit
@@ -130,8 +116,8 @@ const PricingRateSchema = new mongoose.Schema(
         // ─── Active flag ──────────────────────────────────────────────────────
         isActive: { type: Boolean, default: true },
     },
-    { timestamps: true }
+    { timestamps: true, strict: false }
 );
 
-export default mongoose.models.PricingRate ||
-    mongoose.model('PricingRate', PricingRateSchema);
+delete mongoose.models.PricingRate;
+export default mongoose.model('PricingRate', PricingRateSchema);

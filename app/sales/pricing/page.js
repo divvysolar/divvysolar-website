@@ -92,8 +92,8 @@ export const detectBranchOffice = (locationText) => {
   return null;
 };
 
-const ACTIVE_MODULE_BRANDS = ["waaree", "vikram", "adani", "jakson", "havells", "luminous"];
-const ACTIVE_INVERTER_BRANDS = ["havells", "luminous", "utl", "sungrow"];
+const ACTIVE_MODULE_BRANDS = ["waaree", "vikram", "adani", "jakson", "havells", "luminous", "eastman"];
+const ACTIVE_INVERTER_BRANDS = ["havells", "luminous", "utl", "sungrow", "invergy", "eastman"];
 const STRUCTURE_CATEGORIES = [
   { v: "ms", l: "MS Fabricated" },
   { v: "gi", l: "GI Structure" },
@@ -146,10 +146,8 @@ const ACDB_OPTS = [
 ];
 const WALKWAY_OPTS = [{ v: "gi", l: "GI Walkway" }, { v: "frp", l: "FRP Walkway" }];
 const EARTHING_OPTS = [
-  { v: "gi_stripe", l: "GI Strip Earthing" },
-  { v: "copper_wire", l: "Copper Single Core Wire" },
-  { v: "aluminium_wire", l: "Aluminium Single Core Wire" },
-  { v: "cu_bonded", l: "Copper Bonded Earthing" }
+  { v: "copper_wire", l: "Single Core Copper Wire" },
+  { v: "gi_stripe", l: "GI Strip Earthing" }
 ];
 
 const CABLE_BRANDS = [
@@ -163,11 +161,9 @@ const CABLE_BRANDS = [
 ];
 
 const EARTHING_WIRE_SIZES = {
-  copper_wire: ["6", "10", "16", "25", "35", "50"],
-  aluminium_wire: ["16", "25", "35", "50", "70"]
+  copper_wire: ["4", "6", "10", "16", "25", "35"]
 };
-const cap = s => s.charAt(0).toUpperCase() + s.slice(1);
-
+const cap = s => (s && typeof s === 'string') ? (s.charAt(0).toUpperCase() + s.slice(1)) : (s || '');
 
 const formatINR = n => new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR", maximumFractionDigits: 0 }).format(n || 0);
 
@@ -231,17 +227,18 @@ const getModuleWattage = (m) => {
 };
 
 const DynamicCableSelector = ({ label, cables, selectedId, onChange, brand = "polycab", onBrandChange }) => {
-  const selCable = cables?.find(c => c._id === selectedId) || cables?.[0];
-  if (!cables || cables.length === 0) return null;
+  const filteredCables = cables?.filter(c => c.conductor !== 'copper') || [];
+  const selCable = filteredCables.find(c => c._id === selectedId) || filteredCables[0];
+  if (!filteredCables || filteredCables.length === 0) return null;
 
-  const conductors = Array.from(new Set(cables.map(c => c.conductor)));
-  const selConductor = selCable?.conductor || conductors[0] || 'copper';
+  const conductors = Array.from(new Set(filteredCables.map(c => c.conductor)));
+  const selConductor = selCable?.conductor || conductors[0] || 'aluminium';
 
   const coreOrder = { "2": 1, "4": 2, "3.5": 3 };
-  const availableCores = Array.from(new Set(cables.filter(c => c.conductor === selConductor).map(c => c.cores))).sort((a, b) => (coreOrder[a] || 99) - (coreOrder[b] || 99));
+  const availableCores = Array.from(new Set(filteredCables.filter(c => c.conductor === selConductor).map(c => c.cores))).sort((a, b) => (coreOrder[a] || 99) - (coreOrder[b] || 99));
   const selCores = selCable && selCable.conductor === selConductor ? selCable.cores : availableCores[0];
 
-  const availableSizes = cables
+  const availableSizes = filteredCables
     .filter(c => c.conductor === selConductor && c.cores === selCores)
     .map(c => c.sizeSqMm)
     .sort((a, b) => a - b);
@@ -250,17 +247,17 @@ const DynamicCableSelector = ({ label, cables, selectedId, onChange, brand = "po
     : availableSizes[0];
 
   const updateSelection = (cond, cores, size) => {
-    const match = cables.find(x => x.conductor === cond && x.cores === cores && x.sizeSqMm === Number(size));
+    const match = filteredCables.find(x => x.conductor === cond && x.cores === cores && x.sizeSqMm === Number(size));
     if (match) {
       onChange(match._id);
       return;
     }
-    const fallbackCores = cables.find(x => x.conductor === cond && x.cores === cores);
+    const fallbackCores = filteredCables.find(x => x.conductor === cond && x.cores === cores);
     if (fallbackCores) {
       onChange(fallbackCores._id);
       return;
     }
-    const fallbackCond = cables.find(x => x.conductor === cond);
+    const fallbackCond = filteredCables.find(x => x.conductor === cond);
     if (fallbackCond) {
       onChange(fallbackCond._id);
     }
@@ -357,14 +354,6 @@ export default function PricingCalculatorPage() {
   // Solar modules (Multi-module array support)
   const [modules, setModules] = useState([{ brand: "", model: "", qty: "" }]);
 
-  const modulesKW = modules.reduce((sum, m) => {
-    const avail = rates?.modules?.[m.brand] || [];
-    const sel = avail.find(x => x._id === m.model);
-    const wp = m.customWattage !== undefined && m.customWattage !== "" ? Number(m.customWattage) : (sel?.wattage || 0);
-    return sum + ((Number(m.qty) || 0) * wp / 1000);
-  }, 0);
-  const effectiveSystemKW = Number(systemKW) > 0 ? Number(systemKW) : modulesKW;
-
   // Inverter
   const [inverters, setInverters] = useState([{ brand: "", model: "", qty: "" }]);
 
@@ -388,10 +377,10 @@ export default function PricingCalculatorPage() {
   const [acdbToMainCableId, setAcdbToMainCableId] = useState("");
   const [acdbToMainCableM, setAcdbToMainCableM] = useState("");
 
-  // BOS Checkboxes & Overrides
   const [earthing, setEarthing] = useState(false);
-  const [earthingType, setEarthingType] = useState("gi_stripe");
+  const [earthingType, setEarthingType] = useState("copper_wire");
   const [earthingWireSize, setEarthingWireSize] = useState("10");
+  const [earthingWireM, setEarthingWireM] = useState("");
   const [isOverridePits, setIsOverridePits] = useState(false);
   const [customPits, setCustomPits] = useState(0);
 
@@ -485,18 +474,43 @@ export default function PricingCalculatorPage() {
   }, [rates, invToAcdbCableId, acdbToMainCableId]);
 
 
-  // Auto-filter out brands with no active models in stock
-  const visibleModuleBrands = rates ? ACTIVE_MODULE_BRANDS.filter(brand => {
+  // Auto-filter out brands with no active models in stock (supports dynamically added brands from Admin)
+  const allModuleBrandKeys = rates?.modules 
+    ? Array.from(new Set([...ACTIVE_MODULE_BRANDS, ...Object.keys(rates.modules).filter(k => k !== 'typeAdder' && !k.startsWith('$'))]))
+    : ACTIVE_MODULE_BRANDS;
+  const filteredModuleBrands = rates ? allModuleBrandKeys.filter(brand => {
     const models = rates.modules?.[brand] || [];
-    return models.some(m => m.inStock !== false);
-  }) : [];
+    return Array.isArray(models) && models.length > 0 && models.some(m => m.inStock !== false);
+  }) : ACTIVE_MODULE_BRANDS;
+  const visibleModuleBrands = filteredModuleBrands.length > 0 ? filteredModuleBrands : ACTIVE_MODULE_BRANDS;
 
-  const visibleInverterBrands = rates ? ACTIVE_INVERTER_BRANDS.filter(brand => {
+  const allInverterBrandKeys = rates?.inverters 
+    ? Array.from(new Set([...ACTIVE_INVERTER_BRANDS, ...Object.keys(rates.inverters).filter(k => !k.startsWith('$'))]))
+    : ACTIVE_INVERTER_BRANDS;
+  const filteredInverterBrands = rates ? allInverterBrandKeys.filter(brand => {
     const models = rates.inverters?.[brand] || [];
-    return models.some(m => m.inStock !== false);
-  }) : [];
+    return Array.isArray(models) && models.length > 0 && models.some(m => m.inStock !== false);
+  }) : ACTIVE_INVERTER_BRANDS;
+  const visibleInverterBrands = filteredInverterBrands.length > 0 ? filteredInverterBrands : ACTIVE_INVERTER_BRANDS;
 
-
+  const totalModKW = modules.reduce((sum, m) => {
+    const avail = rates?.modules?.[m.brand] || [];
+    const sel = avail.find(x => (x._id && x._id === m.model) || x.modelName === m.model);
+    const wp = m.customWattage !== undefined && m.customWattage !== "" ? Number(m.customWattage) : (sel?.wattage || 0);
+    return sum + ((Number(m.qty) || 0) * wp / 1000);
+  }, 0);
+  const totalInvKW = inverters.reduce((sum, inv) => {
+    const avail = rates?.inverters?.[inv.brand] || [];
+    const sel = avail.find(x => (x._id && x._id === inv.model) || x.modelName === inv.model);
+    let capKw = sel?.capacity || 0;
+    if (!capKw && sel?.modelName) {
+      const match = sel.modelName.match(/(\d+(?:\.\d+)?)\s*kw\b/i);
+      if (match) capKw = Number(match[1]);
+    }
+    return sum + ((Number(inv.qty) || 1) * capKw);
+  }, 0);
+  const totalStructKW = structures.reduce((sum, st) => sum + (Number(st.kw) || 0), 0);
+  const effectiveSystemKW = Number(systemKW) > 0 ? Number(systemKW) : (totalModKW > 0 ? totalModKW : (totalInvKW > 0 ? totalInvKW : totalStructKW));
 
   const defaultPits = earthing ? 3 : 0;
   const defaultLA = laType !== "none" ? Math.max(1, Math.ceil(effectiveSystemKW * (rates?.laPerKW || 0.1))) : 0;
@@ -516,12 +530,14 @@ export default function PricingCalculatorPage() {
 
   const handleEarthingChange = (val) => {
     setEarthing(val);
-    if (!val) setIsOverridePits(false);
+    if (!val) {
+      setIsOverridePits(false);
+      setEarthingWireM("");
+    }
   };
   const handleEarthingTypeChange = (val) => {
     setEarthingType(val);
     if (val === "copper_wire") setEarthingWireSize("10");
-    else if (val === "aluminium_wire") setEarthingWireSize("16");
   };
   const handleLAChange = (val) => {
     setLaType(val);
@@ -548,14 +564,14 @@ export default function PricingCalculatorPage() {
   };
 
   const calc = (() => {
-    const modKW = modules.reduce((sum, m) => {
-      const avail = rates?.modules?.[m.brand] || [];
-      const sel = avail.find(x => x._id === m.model);
-      const wp = m.customWattage !== undefined && m.customWattage !== "" ? Number(m.customWattage) : (sel?.wattage || 0);
-      return sum + ((Number(m.qty) || 0) * wp / 1000);
-    }, 0);
-    const plantKW = Number(systemKW) > 0 ? Number(systemKW) : modKW;
-    if (!rates || !plantKW || plantKW <= 0) return null;
+    const modKW = totalModKW;
+    const invKW = totalInvKW;
+    const structKW = totalStructKW;
+    const plantKW = effectiveSystemKW;
+    
+    // Allow calculation if plantKW > 0 OR if any component is configured
+    const hasAnySelection = plantKW > 0 || inverters.some(i => i.model && (Number(i.qty) > 0 || i.qty)) || modules.some(m => m.model && Number(m.qty) > 0) || structures.some(s => Number(s.kw) > 0);
+    if (!rates || !hasAnySelection) return null;
     const wp = plantKW * 1000;
 
     // Financial Percentage Settings (configured by Super Admin & Finance Team)
@@ -587,7 +603,7 @@ export default function PricingCalculatorPage() {
     const selectedModuleDetails = [];
     modules.forEach(m => {
       const availModels = m.brand && rates.modules?.[m.brand] ? rates.modules[m.brand] : [];
-      const selMod = availModels.find(item => item._id === m.model);
+      const selMod = availModels.find(item => (item._id && item._id === m.model) || item.modelName === m.model);
       const qty = Number(m.qty) || 0;
       if (selMod && qty > 0) {
         const adder = systemType === "hybrid" ? (rates.modules?.typeAdder?.hybrid || 0) : (rates.modules?.typeAdder?.ongrid || 0);
@@ -606,10 +622,9 @@ export default function PricingCalculatorPage() {
     const selectedInverterDetails = [];
     inverters.forEach(inv => {
       const availModels = inv.brand && rates.inverters?.[inv.brand] ? rates.inverters[inv.brand] : [];
-      const selInv = availModels.find(m => m._id === inv.model);
+      const selInv = availModels.find(m => (m._id && m._id === inv.model) || m.modelName === inv.model);
       if (selInv) {
-        const capacity = selInv.capacity || 0;
-        const qty = inv.qty || 1;
+        const qty = Number(inv.qty) || 1;
         const rawRate = selInv.ratePerKW || 0;
         const rate = rawRate * markupMultiplier;
         const cost = rate * qty;
@@ -659,22 +674,33 @@ export default function PricingCalculatorPage() {
     const acCost = invToAcdbCost + acdbToMainCost;
 
     const pitsCount = earthing ? customPits : 0;
-    let rawEarthingRate = 0;
-    if (earthingType === "gi_stripe") rawEarthingRate = rates.earthingPitRateGi || 0;
-    else if (earthingType === "copper_wire" || earthingType === "copper") rawEarthingRate = rates.earthingPitRateCu || 0;
-    else if (earthingType === "aluminium_wire" || earthingType === "aluminium") rawEarthingRate = rates.earthingPitRateAl || 0;
-    else if (earthingType === "cu_bonded") rawEarthingRate = rates.earthingPitRateCuBonded || 0;
+    const rawPitRate = rates.earthingPitRateCu || 3500;
+    const pitRate = rawPitRate * markupMultiplier;
+    const pitsCost = pitsCount * pitRate;
 
-    const earthingRate = rawEarthingRate * markupMultiplier;
+    let rawEarthingWireRate = 0;
+    if (earthingType === "gi_stripe") {
+      rawEarthingWireRate = rates.earthingGiStripRate || 65;
+    } else {
+      const cuRates = {
+        "4": rates.earthingCu4Rate || 45,
+        "6": rates.earthingCu6Rate || 65,
+        "10": rates.earthingCu10Rate || 105,
+        "16": rates.earthingCu16Rate || 165,
+        "25": rates.earthingCu25Rate || 260,
+        "35": rates.earthingCu35Rate || 360,
+      };
+      rawEarthingWireRate = cuRates[earthingWireSize] || 105;
+    }
+    const earthingWireRate = rawEarthingWireRate * markupMultiplier;
+    const earthingWireMeters = (earthing && Number(earthingWireM) > 0) ? Number(earthingWireM) : 0;
+    const earthingWireCost = earthingWireMeters * earthingWireRate;
+
     const earthingLabel = earthingType === "copper_wire" 
-      ? `Copper Single Core Wire (${earthingWireSize} sqmm)` 
-      : earthingType === "aluminium_wire"
-      ? `Aluminium Single Core Wire (${earthingWireSize} sqmm)`
-      : earthingType === "cu_bonded"
-      ? "Copper Bonded Earthing"
+      ? `Single Core Copper Wire (${earthingWireSize} sqmm)` 
       : "GI Strip Earthing";
 
-    const earthingCost = pitsCount * earthingRate;
+    const earthingCost = pitsCost + earthingWireCost;
 
     const laCount = laType !== "none" ? customLA : 0;
     const rawLaUnitRate = laType === "conventional" ? (rates.laConventionalRate || 0) : (rates.laEseRate || 0);
@@ -754,7 +780,8 @@ export default function PricingCalculatorPage() {
       baseTotal, gstRate, gstPercent, gst, grandTotal, perWp, effectiveKW: plantKW,
       advancePercent: advP, dispatchPercent: dispP, handoverPercent: handP, advanceAmount, dispatchAmount, handoverAmount,
       maxDiscountPercent,
-      pitsCount, laCount, selectedModuleDetails, selectedInverterDetails, selectedDcCablesDetails, selInvToAcdbCable, selAcdbToMainCable, selectedStructures, invToAcdbCost, acdbToMainCost, acdbCost, dcdbCost, mc4BranchCost, mc4Pairs, mc4BranchQty, earthingRate, earthingLabel,
+      pitsCount, pitsCost, pitRate, earthingWireCost, earthingWireRate, earthingWireMeters,
+      laCount, selectedModuleDetails, selectedInverterDetails, selectedDcCablesDetails, selInvToAcdbCable, selAcdbToMainCable, selectedStructures, invToAcdbCost, acdbToMainCost, acdbCost, dcdbCost, mc4BranchCost, mc4Pairs, mc4BranchQty, earthingLabel,
       invToAcdbRate, acdbToMainRate, acdbRate, dcdbRate, mc4Rate, branchRate, laUnitRate, walkRate, safetyLineRate,
       invToAcdbCableBrand, acdbToMainCableBrand
     };
@@ -804,7 +831,8 @@ export default function PricingCalculatorPage() {
       }
       if (invToAcdbCableM > 0) rows += `<tr>${snoCell()}${cell(`<strong>AC Cable - Inv to ACDB (${invAcdbBrandLabel}):</strong> ${calc.selInvToAcdbCable?.label || "N/A"}<br/><span style="font-size:10px;color:#64748b">Multicore flexible AC cabling run</span>`)}${cell(invToAcdbCableM, "center")}${cell("m", "center")}${cell("&#8377;" + (calc.invToAcdbRate || 0).toFixed(2), "right")}${cell(fmtINR(calc.invToAcdbCost), "right")}</tr>`;
       if (acdbToMainCableM > 0) rows += `<tr>${snoCell()}${cell(`<strong>AC Cable - ACDB to Main (${acdbMainBrandLabel}):</strong> ${calc.selAcdbToMainCable?.label || "N/A"}<br/><span style="font-size:10px;color:#64748b">AC distribution cable run</span>`)}${cell(acdbToMainCableM, "center")}${cell("m", "center")}${cell("&#8377;" + (calc.acdbToMainRate || 0).toFixed(2), "right")}${cell(fmtINR(calc.acdbToMainCost), "right")}</tr>`;
-      if (calc.pitsCount > 0) rows += `<tr>${snoCell()}${cell(`<strong>Chemical Earthing Pits:</strong> ${calc.earthingLabel}<br/><span style="font-size:10px;color:#64748b">Low-resistance maintenance-free earthing</span>`)}${cell(calc.pitsCount, "center")}${cell("pits", "center")}${cell("&#8377;" + (calc.earthingRate || 0).toFixed(2), "right")}${cell(fmtINR(calc.earthingCost), "right")}</tr>`;
+      if (calc.pitsCount > 0) rows += `<tr>${snoCell()}${cell(`<strong>Chemical Earthing Pits:</strong> Copper Chemical Pits<br/><span style="font-size:10px;color:#64748b">Low-resistance maintenance-free earthing</span>`)}${cell(calc.pitsCount, "center")}${cell("pits", "center")}${cell("&#8377;" + (calc.pitRate || 0).toFixed(2), "right")}${cell(fmtINR(calc.pitsCost), "right")}</tr>`;
+      if (calc.earthingWireMeters > 0) rows += `<tr>${snoCell()}${cell(`<strong>Earthing Conductor / Wire:</strong> ${calc.earthingLabel}<br/><span style="font-size:10px;color:#64748b">Dedicated equipment safety grounding run</span>`)}${cell(calc.earthingWireMeters, "center")}${cell("m", "center")}${cell("&#8377;" + (calc.earthingWireRate || 0).toFixed(2), "right")}${cell(fmtINR(calc.earthingWireCost), "right")}</tr>`;
       if (calc.laCount > 0) rows += `<tr>${snoCell()}${cell(`<strong>Lightning Protection:</strong> ${laType === "ese" ? "ESE Active" : "Conventional"}<br/><span style="font-size:10px;color:#64748b">Safety shield against high-voltage lightning surges</span>`)}${cell(calc.laCount, "center")}${cell("units", "center")}${cell("&#8377;" + (calc.laUnitRate || 0).toFixed(2), "right")}${cell(fmtINR(calc.laCost), "right")}</tr>`;
       if (walkway && Number(walkwayM) > 0) rows += `<tr>${snoCell()}${cell(`<strong>Roof Walkway:</strong> ${walkwayType === "gi" ? "GI Walkway" : "FRP Walkway"}<br/><span style="font-size:10px;color:#64748b">Safe pathway on roof for O&amp;M visits</span>`)}${cell(walkwayM, "center")}${cell("m", "center")}${cell("&#8377;" + (calc.walkRate || 0).toFixed(2), "right")}${cell(fmtINR(calc.walkCost), "right")}</tr>`;
       if (customSafety > 0) rows += `<tr>${snoCell()}${cell("<strong>Safety Lifeline</strong><br/><span style='font-size:10px;color:#64748b'>Anchor lifeline system for cleaning personnel</span>")}${cell(customSafety, "center")}${cell("m", "center")}${cell("&#8377;" + (calc.safetyLineRate || 0).toFixed(2), "right")}${cell(fmtINR(calc.safetyCost), "right")}</tr>`;
@@ -1388,7 +1416,7 @@ export default function PricingCalculatorPage() {
                 // Distinct technology options for chosen brand
                 const distinctTechs = Array.from(new Set(availModels.map(m => getModuleTech(m)))).filter(Boolean);
                 
-                const selModObj = availModels.find(m => m._id === mod.model);
+                const selModObj = availModels.find(m => (m._id && m._id === mod.model) || m.modelName === mod.model);
                 const currentTech = selModObj ? getModuleTech(selModObj) : (mod.tech || (distinctTechs[0] || ""));
                 
                 // Models available for currentTech
@@ -1397,7 +1425,7 @@ export default function PricingCalculatorPage() {
                   : availModels;
 
                 const distinctWattages = (filteredModels.length > 0 ? filteredModels : availModels).map(m => ({
-                  id: m._id,
+                  id: m._id || m.modelName,
                   wattage: getModuleWattage(m),
                   modelName: m.modelName,
                   model: m
@@ -1437,7 +1465,7 @@ export default function PricingCalculatorPage() {
                             ...nm[index],
                             brand: v,
                             tech: first ? getModuleTech(first) : "",
-                            model: first ? first._id : "",
+                            model: first ? (first._id || first.modelName) : "",
                             customWattage: undefined, // reset so new model's default wattage auto-fills
                           };
                           setModules(nm);
@@ -1461,7 +1489,7 @@ export default function PricingCalculatorPage() {
                           nm[index] = {
                             ...nm[index],
                             tech: v,
-                            model: matchedForTech ? matchedForTech._id : "",
+                            model: matchedForTech ? (matchedForTech._id || matchedForTech.modelName) : "",
                           };
                           setModules(nm);
                         }}
@@ -1557,7 +1585,7 @@ export default function PricingCalculatorPage() {
                       <Sel label="Model" id={`inv-model-${index}`} value={inv.model} disabled={!inv.brand}
                         onChange={v => { const ni = [...inverters]; ni[index] = { ...ni[index], model: v }; setInverters(ni); }}>
                         <option value="" className="bg-[#0f172a]">Select Model</option>
-                        {availModels.map(m => <option key={m._id} value={m._id} className="bg-[#0f172a]">{m.modelName} ({m.capacity}kW)</option>)}
+                        {availModels.map(m => <option key={m._id || m.modelName} value={m._id || m.modelName} className="bg-[#0f172a]">{m.modelName} {m.capacity ? `(${m.capacity}kW)` : ""}</option>)}
                       </Sel>
                       <Inp label="Qty" id={`inv-qty-${index}`} value={inv.qty} type="number" min={1} placeholder="e.g. 1"
                         onChange={v => { const ni = [...inverters]; ni[index] = { ...ni[index], qty: v === "" ? "" : Number(v) }; setInverters(ni); }} />
@@ -1759,29 +1787,40 @@ export default function PricingCalculatorPage() {
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-5">
-              {/* Earthing Pits */}
+              {/* Earthing Pits & Conductor */}
               <div className="p-4 rounded-xl bg-white/3 border border-white/5 space-y-3">
                 <Chk label="Earthing" id="earthing-check" checked={earthing} onChange={handleEarthingChange} />
                 {earthing && (
-                  <div className="pt-2 space-y-2">
-                    <Sel label="Earthing Type" id="earthing-type" value={earthingType} onChange={handleEarthingTypeChange}>
+                  <div className="pt-2 space-y-2.5">
+                    <Sel label="Earthing Conductor Type" id="earthing-type" value={earthingType} onChange={handleEarthingTypeChange}>
                       {EARTHING_OPTS.map(o => <option key={o.v} value={o.v} className="bg-[#0f172a]">{o.l}</option>)}
                     </Sel>
 
-                    {(earthingType === "copper_wire" || earthingType === "aluminium_wire") && (
+                    {earthingType === "copper_wire" && (
                       <Sel 
-                        label="Wire Size (sqmm)" 
+                        label="Copper Wire Size (sqmm)" 
                         id="earthing-wire-size" 
                         value={earthingWireSize} 
                         onChange={setEarthingWireSize}
                       >
-                        {(EARTHING_WIRE_SIZES[earthingType] || []).map(sz => (
+                        {(EARTHING_WIRE_SIZES.copper_wire || []).map(sz => (
                           <option key={sz} value={sz} className="bg-[#0f172a]">{sz} sqmm</option>
                         ))}
                       </Sel>
                     )}
 
-                    <Inp label="No. of Earthing Pits" id="pits-qty" value={customPits}
+                    <Inp 
+                      label="Earthing Wire Run Length" 
+                      id="earthing-wire-m" 
+                      value={earthingWireM} 
+                      onChange={setEarthingWireM} 
+                      type="number" 
+                      min={0} 
+                      unit="m" 
+                      placeholder="e.g. 50" 
+                    />
+
+                    <Inp label="No. of Chemical Earthing Pits" id="pits-qty" value={customPits}
                       onChange={(v) => { setIsOverridePits(true); setCustomPits(v); }}
                       type="number" min={0} />
                     {isOverridePits && (
@@ -2057,7 +2096,8 @@ export default function PricingCalculatorPage() {
                     })) || []),
                     { l: `AC Cabling: Inv to ACDB (${CABLE_BRANDS.find(b => b.v === invToAcdbCableBrand)?.l || cap(invToAcdbCableBrand)} · ${calc.selInvToAcdbCable?.label || "None"}, ${invToAcdbCableM}m)`, v: calc.invToAcdbCost },
                     { l: `AC Cabling: ACDB to Main (${CABLE_BRANDS.find(b => b.v === acdbToMainCableBrand)?.l || cap(acdbToMainCableBrand)} · ${calc.selAcdbToMainCable?.label || "None"}, ${acdbToMainCableM}m)`, v: calc.acdbToMainCost },
-                    { l: `Earthing (${calc.pitsCount} pits - ${calc.earthingLabel || "Chemical Earthing"})`, v: calc.earthingCost },
+                    ...(calc.pitsCost > 0 ? [{ l: `Chemical Earthing (${calc.pitsCount} pits)`, v: calc.pitsCost }] : []),
+                    ...(calc.earthingWireCost > 0 ? [{ l: `Earthing Wire (${calc.earthingLabel}, ${calc.earthingWireMeters}m)`, v: calc.earthingWireCost }] : []),
                     { l: `Lightning Arrestor (${calc.laCount} units, ${cap(laType)})`, v: calc.laCost },
                     { l: `Walkway (${walkwayM}m, ${walkwayType === "gi" ? "GI" : "FRP"})`, v: calc.walkCost },
                     { l: `Safety Line (${customSafety}m)`, v: calc.safetyCost },
@@ -2382,13 +2422,26 @@ export default function PricingCalculatorPage() {
                       <tr className="hover:bg-slate-50">
                         <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-center">{sno++}</td>
                         <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300">
-                          <strong>Chemical Earthing Pits:</strong> {calc.earthingLabel}<br />
+                          <strong>Chemical Earthing Pits:</strong> Copper Chemical Pits<br />
                           <span className="text-[10px] text-slate-500">Low-resistance maintenance-free earthing connection</span>
                         </td>
                         <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-center">{calc.pitsCount}</td>
                         <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-center">pits</td>
-                        <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-right">₹{(calc.earthingRate || 0).toFixed(2)}</td>
-                        <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-right">{formatINR(calc.earthingCost)}</td>
+                        <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-right">₹{(calc.pitRate || 0).toFixed(2)}</td>
+                        <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-right">{formatINR(calc.pitsCost)}</td>
+                      </tr>
+                    )}
+                    {calc.earthingWireMeters > 0 && (
+                      <tr className="hover:bg-slate-50">
+                        <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-center">{sno++}</td>
+                        <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300">
+                          <strong>Earthing Conductor / Wire:</strong> {calc.earthingLabel}<br />
+                          <span className="text-[10px] text-slate-500">Dedicated equipment safety grounding run</span>
+                        </td>
+                        <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-center">{calc.earthingWireMeters}</td>
+                        <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-center">m</td>
+                        <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-right">₹{(calc.earthingWireRate || 0).toFixed(2)}</td>
+                        <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-right">{formatINR(calc.earthingWireCost)}</td>
                       </tr>
                     )}
                     {calc.laCount > 0 && (
