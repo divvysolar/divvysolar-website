@@ -224,6 +224,7 @@ export default function PricingSettingsPage() {
   const [toast,setToast] = useState(null);
   const [newModuleBrand, setNewModuleBrand] = useState("");
   const [newInverterBrand, setNewInverterBrand] = useState("");
+  const [newBatteryBrand, setNewBatteryBrand] = useState("");
 
   useEffect(()=>{
     if(status==="authenticated" && session?.user?.role!=="admin" && session?.user?.role!=="finance") router.push("/admin/dashboard");
@@ -302,6 +303,34 @@ export default function PricingSettingsPage() {
   const updateInverterName = (brand,i,v) => setRates(p=>{const arr=[...(p.inverters?.[brand]||[])];arr[i]={...arr[i],modelName:v};return {...p,inverters:{...p.inverters,[brand]:arr}};});
   const updateInverterRate = (brand,i,v) => setRates(p=>{const arr=[...(p.inverters?.[brand]||[])];arr[i]={...arr[i],ratePerKW:v};return {...p,inverters:{...p.inverters,[brand]:arr}};});
 
+  // Battery brand & model helpers (for Hybrid & Off-grid)
+  const addBatteryBrand = (brandName) => {
+    const clean = brandName.trim().toLowerCase().replace(/\s+/g, "_");
+    if (!clean) return;
+    setRates(p => ({
+      ...p,
+      batteries: {
+        ...(p.batteries || {}),
+        [clean]: p.batteries?.[clean] || []
+      }
+    }));
+  };
+
+  const deleteBatteryBrand = (brandName) => {
+    if (!window.confirm(`Are you sure you want to remove the battery brand "${cap(brandName)}"?`)) return;
+    setRates(p => {
+      const updated = { ...(p.batteries || {}) };
+      delete updated[brandName];
+      return { ...p, batteries: updated };
+    });
+  };
+
+  const addBatteryModel = (brand,m) => setRates(p=>({...p,batteries:{...p.batteries,[brand]:[...(p.batteries?.[brand]||[]),m]}}));
+  const removeBatteryModel = (brand,i) => setRates(p=>({...p,batteries:{...p.batteries,[brand]:(p.batteries?.[brand]||[]).filter((_,idx)=>idx!==i)}}));
+  const toggleBatteryStock = (brand,i) => setRates(p=>{const arr=[...(p.batteries?.[brand]||[])];arr[i]={...arr[i],inStock:!arr[i].inStock};return {...p,batteries:{...p.batteries,[brand]:arr}};});
+  const updateBatteryName = (brand,i,v) => setRates(p=>{const arr=[...(p.batteries?.[brand]||[])];arr[i]={...arr[i],modelName:v};return {...p,batteries:{...p.batteries,[brand]:arr}};});
+  const updateBatteryRate = (brand,i,v) => setRates(p=>{const arr=[...(p.batteries?.[brand]||[])];arr[i]={...arr[i],ratePerUnit:v};return {...p,batteries:{...p.batteries,[brand]:arr}};});
+
   const handleSave = async()=>{
     setSaving(true);
     try {
@@ -332,6 +361,11 @@ export default function PricingSettingsPage() {
   const allInverterBrands = Array.from(new Set([
     "havells", "luminous", "utl", "sungrow", "invergy", "eastman",
     ...Object.keys(rates.inverters || {}).filter(k => !k.startsWith('$'))
+  ]));
+
+  const allBatteryBrands = Array.from(new Set([
+    "eastman", "exide", "luminous", "livguard", "amaron", "dyness",
+    ...Object.keys(rates.batteries || {}).filter(k => !k.startsWith('$'))
   ]));
 
   return (
@@ -380,52 +414,84 @@ export default function PricingSettingsPage() {
                 </p>
               </div>
             </div>
-            <div className="px-3 py-1.5 rounded-lg bg-white/5 border border-white/10 text-[11px] text-white/60">
-              Active Segment: <strong className="text-[#FECB00]">Residential Rooftop Solar</strong>
+            <div className="flex items-center gap-2 flex-wrap">
+              <span className="px-3 py-1 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-[11px] text-emerald-400 font-semibold">
+                Residential: {rates.financialSettings?.residential?.profitMarginPercent ?? rates.financialSettings?.profitMarginPercent ?? 17}%
+              </span>
+              <span className="px-3 py-1 rounded-lg bg-blue-500/10 border border-blue-500/20 text-[11px] text-blue-400 font-semibold">
+                Industrial (100 kW+): {rates.financialSettings?.industrial?.profitMarginPercent ?? 8}%
+              </span>
             </div>
           </div>
 
           {/* Key Percentage Controls */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <div className="p-4 rounded-xl bg-white/5 border border-white/10 space-y-1">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+            {/* Residential Controls */}
+            <div className="p-4 rounded-xl bg-emerald-500/5 border border-emerald-500/20 space-y-3">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-bold uppercase tracking-wider text-emerald-400">Residential Solar</span>
+                <span className="text-[10px] text-emerald-400/70 bg-emerald-400/10 px-2 py-0.5 rounded">Rooftop</span>
+              </div>
               <NumInput 
-                label="Residential Base Profit Margin" 
-                value={rates.financialSettings?.residential?.profitMarginPercent ?? rates.financialSettings?.profitMarginPercent ?? 0} 
+                label="Residential Profit Margin" 
+                value={rates.financialSettings?.residential?.profitMarginPercent ?? rates.financialSettings?.profitMarginPercent ?? 17} 
                 onChange={v => {
                   update("financialSettings.residential.profitMarginPercent", v);
                   update("financialSettings.profitMarginPercent", v);
                 }} 
                 unit="%" 
               />
-              <p className="text-[11px] text-emerald-400 font-medium pt-1">
-                + Company profit % applied automatically over pure EPC hardware cost.
-              </p>
-            </div>
-
-            <div className="p-4 rounded-xl bg-white/5 border border-white/10 space-y-1">
               <NumInput 
-                label="Max Allowed Sales Discount" 
-                value={rates.financialSettings?.residential?.maxDiscountPercent ?? rates.financialSettings?.maxDiscountPercent ?? 0} 
+                label="Max Sales Discount" 
+                value={rates.financialSettings?.residential?.maxDiscountPercent ?? rates.financialSettings?.maxDiscountPercent ?? 5} 
                 onChange={v => {
                   update("financialSettings.residential.maxDiscountPercent", v);
                   update("financialSettings.maxDiscountPercent", v);
                 }} 
                 unit="%" 
               />
-              <p className="text-[11px] text-amber-300 font-medium pt-1">
-                Cap on maximum negotiation discount salesperson can offer to customer.
+              <p className="text-[10.5px] text-emerald-300/80 leading-relaxed">
+                Applied on Residential Rooftop systems and plants under 100 kWp.
               </p>
             </div>
 
-            <div className="p-4 rounded-xl bg-white/5 border border-white/10 space-y-1">
+            {/* Industrial Controls */}
+            <div className="p-4 rounded-xl bg-blue-500/5 border border-blue-500/20 space-y-3">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-bold uppercase tracking-wider text-blue-400">Industrial & Commercial</span>
+                <span className="text-[10px] text-blue-400/70 bg-blue-400/10 px-2 py-0.5 rounded">100 kW+ / C&I</span>
+              </div>
+              <NumInput 
+                label="Industrial Profit Margin" 
+                value={rates.financialSettings?.industrial?.profitMarginPercent ?? 8} 
+                onChange={v => update("financialSettings.industrial.profitMarginPercent", v)} 
+                unit="%" 
+              />
+              <NumInput 
+                label="Max Allowed Discount" 
+                value={rates.financialSettings?.industrial?.maxDiscountPercent ?? 3} 
+                onChange={v => update("financialSettings.industrial.maxDiscountPercent", v)} 
+                unit="%" 
+              />
+              <p className="text-[10.5px] text-blue-300/80 leading-relaxed">
+                Applied on Industrial proposals and large projects 100 kWp & above.
+              </p>
+            </div>
+
+            {/* General GST & Financials */}
+            <div className="p-4 rounded-xl bg-white/5 border border-white/10 space-y-3">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-bold uppercase tracking-wider text-white/70">Tax & Milestones</span>
+                <span className="text-[10px] text-white/40 bg-white/10 px-2 py-0.5 rounded">Statutory</span>
+              </div>
               <NumInput 
                 label="Standard Solar GST" 
                 value={rates.financialSettings?.gstPercent ?? 8.9} 
                 onChange={v => update("financialSettings.gstPercent", v)} 
                 unit="%" 
               />
-              <p className="text-[11px] text-slate-400 font-medium pt-1">
-                Standard composite GST rate on solar power plants (8.90%).
+              <p className="text-[10.5px] text-slate-400 leading-relaxed">
+                Standard composite EPC GST rate on complete solar supply & installation (8.90%).
               </p>
             </div>
           </div>
@@ -561,6 +627,71 @@ export default function PricingSettingsPage() {
         ))}
       </section>
 
+      {/* ── Battery Storage Brands (for Hybrid Solar) ── */}
+      <section className="rounded-2xl bg-white/5 border border-white/10 p-6 space-y-6">
+        <div className="flex items-center justify-between flex-wrap gap-4">
+          <div className="flex items-center gap-3">
+            <div className="w-6 h-6 rounded-md bg-[#FECB00]/20 flex items-center justify-center text-[#FECB00] font-bold text-xs">⚡</div>
+            <div>
+              <h2 className="text-lg font-bold text-white">Battery Storage Models (₹/Unit)</h2>
+              <p className="text-white/40 text-xs mt-0.5">Configured for Hybrid Solar systems (Tubular & Lithium LFP).</p>
+            </div>
+          </div>
+          <div className="flex gap-2 items-center">
+            <input
+              value={newBatteryBrand}
+              onChange={e => setNewBatteryBrand(e.target.value)}
+              placeholder="New Brand (e.g. Dyness)"
+              className="px-3 py-1.5 bg-white/5 border border-white/10 rounded-xl text-white text-xs focus:outline-none focus:ring-2 focus:ring-[#FECB00]/50 w-44"
+              onKeyDown={e => {
+                if (e.key === "Enter" && newBatteryBrand.trim()) {
+                  addBatteryBrand(newBatteryBrand);
+                  setNewBatteryBrand("");
+                }
+              }}
+            />
+            <button
+              type="button"
+              onClick={() => {
+                if (newBatteryBrand.trim()) {
+                  addBatteryBrand(newBatteryBrand);
+                  setNewBatteryBrand("");
+                }
+              }}
+              className="px-3 py-1.5 rounded-xl font-bold text-xs flex items-center gap-1 transition-all"
+              style={{ background: "linear-gradient(135deg,#FECB00,#EBB800)", color: "#0a1122" }}
+            >
+              <PlusIcon className="w-3.5 h-3.5" /> Add Brand
+            </button>
+          </div>
+        </div>
+
+        {allBatteryBrands.map(brand=>(
+          <div key={brand} className="p-4 rounded-xl bg-white/3 border border-white/5 space-y-3">
+            <div className="flex items-center justify-between">
+              <h3 className="text-sm font-black text-white">{cap(brand)}</h3>
+              <button
+                type="button"
+                onClick={() => deleteBatteryBrand(brand)}
+                className="text-xs text-red-400/50 hover:text-red-400 flex items-center gap-1 transition-colors p-1"
+                title={`Remove ${cap(brand)} brand`}
+              >
+                <TrashIcon className="w-3.5 h-3.5" /> Remove Brand
+              </button>
+            </div>
+            <ModelManager
+              title="" models={rates.batteries?.[brand]||[]}
+              onAdd={m=>addBatteryModel(brand,m)}
+              onRemove={i=>removeBatteryModel(brand,i)}
+              onToggle={i=>toggleBatteryStock(brand,i)}
+              onUpdateName={(i,v)=>updateBatteryName(brand,i,v)}
+              onUpdateRate={(i,v)=>updateBatteryRate(brand,i,v)}
+              rateField="ratePerUnit" rateLabel="₹/Unit"
+            />
+          </div>
+        ))}
+      </section>
+
       <section className="rounded-2xl bg-white/5 border border-white/10 p-6 space-y-6">
         <div className="flex items-center gap-3">
           <WrenchScrewdriverIcon className="w-6 h-6 text-[#FECB00]"/>
@@ -633,6 +764,92 @@ export default function PricingSettingsPage() {
           ))}
         </div>
       </section>
+
+      {/* ── 8. Financial Markups & Segment Profit Margins (Admin & Finance) ── */}
+      <section className="rounded-2xl bg-white/5 border border-white/10 p-6 space-y-6">
+        <div className="flex items-center gap-3">
+          <BanknotesIcon className="w-6 h-6 text-[#FECB00]"/>
+          <div>
+            <h2 className="text-lg font-bold text-white">Segment Profit Margins &amp; Financial Controls</h2>
+            <p className="text-white/40 text-xs mt-0.5">Control company profit margins and discount limits independently for Residential vs Industrial projects.</p>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {/* Residential Card */}
+          <div className="p-4 rounded-xl bg-white/3 border border-white/5 space-y-4">
+            <div className="flex items-center justify-between pb-2 border-b border-white/5">
+              <span className="text-sm font-bold text-[#FECB00] uppercase tracking-wider">Residential Solar (&lt; 100 kW)</span>
+              <span className="text-[10px] px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 font-bold">Standard Tier</span>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <NumInput 
+                label="Profit Margin %" 
+                unit="%" 
+                value={rates.financialSettings?.residential?.profitMarginPercent ?? (rates.financialSettings?.profitMarginPercent ?? 17)} 
+                onChange={v => update("financialSettings.residential.profitMarginPercent", v)}
+              />
+              <NumInput 
+                label="Max Sales Discount %" 
+                unit="%" 
+                value={rates.financialSettings?.residential?.maxDiscountPercent ?? (rates.financialSettings?.maxDiscountPercent ?? 5)} 
+                onChange={v => update("financialSettings.residential.maxDiscountPercent", v)}
+              />
+            </div>
+          </div>
+
+          {/* Industrial / C&I Card */}
+          <div className="p-4 rounded-xl bg-white/3 border border-white/5 space-y-4">
+            <div className="flex items-center justify-between pb-2 border-b border-white/5">
+              <span className="text-sm font-bold text-[#FECB00] uppercase tracking-wider">Industrial &amp; Commercial (100 kW+ / C&amp;I)</span>
+              <span className="text-[10px] px-2 py-0.5 rounded bg-cyan-500/20 text-cyan-300 font-bold">Volume / C&amp;I Tier</span>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <NumInput 
+                label="Profit Margin %" 
+                unit="%" 
+                value={rates.financialSettings?.industrial?.profitMarginPercent ?? 8} 
+                onChange={v => update("financialSettings.industrial.profitMarginPercent", v)}
+              />
+              <NumInput 
+                label="Max Sales Discount %" 
+                unit="%" 
+                value={rates.financialSettings?.industrial?.maxDiscountPercent ?? 3} 
+                onChange={v => update("financialSettings.industrial.maxDiscountPercent", v)}
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* Global GST & Payment Milestones */}
+        <div className="pt-2 border-t border-white/5 grid grid-cols-2 sm:grid-cols-4 gap-4">
+          <NumInput 
+            label="Standard Solar GST %" 
+            unit="%" 
+            value={rates.financialSettings?.gstPercent ?? 8.9} 
+            onChange={v => update("financialSettings.gstPercent", v)}
+          />
+          <NumInput 
+            label="Advance Booking %" 
+            unit="%" 
+            value={rates.financialSettings?.advancePaymentPercent ?? 10} 
+            onChange={v => update("financialSettings.advancePaymentPercent", v)}
+          />
+          <NumInput 
+            label="Material Dispatch %" 
+            unit="%" 
+            value={rates.financialSettings?.dispatchPaymentPercent ?? 85} 
+            onChange={v => update("financialSettings.dispatchPaymentPercent", v)}
+          />
+          <NumInput 
+            label="Handover / Comm. %" 
+            unit="%" 
+            value={rates.financialSettings?.handoverPaymentPercent ?? 5} 
+            onChange={v => update("financialSettings.handoverPaymentPercent", v)}
+          />
+        </div>
+      </section>
+
 
       {/* ── 9. Standard Company Terms & Conditions (Fixed on Proposals) ── */}
       <section className="rounded-2xl bg-white/5 border border-white/10 p-6 space-y-4">

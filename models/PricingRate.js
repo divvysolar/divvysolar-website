@@ -45,6 +45,9 @@ const PricingRateSchema = new mongoose.Schema(
         // ─── 2. Inverter Brands & Models ─────────────────────────────────────
         inverters: { type: mongoose.Schema.Types.Mixed, default: {} },
 
+        // ─── 2b. Battery Storage Brands & Models (for Hybrid / Off-Grid) ───────
+        batteries: { type: mongoose.Schema.Types.Mixed, default: {} },
+
         // ─── 3. Structure — Capacity Brackets (₹/kW) ──────────────────────────
         // Rates change by system capacity. Admin defines each bracket range.
         structure: { type: mongoose.Schema.Types.Mixed, default: {} },
@@ -95,16 +98,21 @@ const PricingRateSchema = new mongoose.Schema(
         financialSettings: {
             // Residential Specific Settings (Configurable by Admin & Finance)
             residential: {
-                profitMarginPercent: { type: Number, default: 0 },    // Base Company Profit Margin % for Residential Rooftop
-                maxDiscountPercent: { type: Number, default: 0 },      // Max allowable negotiation discount % for sales team
+                profitMarginPercent: { type: Number, default: 17 },   // Base Company Profit Margin % for Residential Rooftop
+                maxDiscountPercent: { type: Number, default: 5 },     // Max allowable negotiation discount % for sales team
             },
-            profitMarginPercent: { type: Number, default: 0 },        // Fallback / Base Profit Margin %
-            dealerCommissionPercent: { type: Number, default: 0 },     // Channel partner / dealer commission %
-            maxDiscountPercent: { type: Number, default: 0 },          // Fallback / Max allowable discount %
-            gstPercent: { type: Number, default: 8.9 },                // Standard Solar EPC GST % (8.90%)
-            advancePaymentPercent: { type: Number, default: 0 },       // Payment Milestone: Advance Booking %
-            dispatchPaymentPercent: { type: Number, default: 0 },      // Payment Milestone: Material Dispatch %
-            handoverPaymentPercent: { type: Number, default: 0 },      // Payment Milestone: Post-Commissioning %
+            // Industrial / C&I (100 kW+) Specific Settings
+            industrial: {
+                profitMarginPercent: { type: Number, default: 8 },    // Base Company Profit Margin % for Industrial C&I / 100kW+
+                maxDiscountPercent: { type: Number, default: 3 },     // Max allowable negotiation discount % for industrial
+            },
+            profitMarginPercent: { type: Number, default: 17 },       // Fallback / Base Profit Margin %
+            dealerCommissionPercent: { type: Number, default: 0 },    // Channel partner / dealer commission %
+            maxDiscountPercent: { type: Number, default: 5 },         // Fallback / Max allowable discount %
+            gstPercent: { type: Number, default: 8.9 },               // Standard Solar EPC GST % (8.90%)
+            advancePaymentPercent: { type: Number, default: 10 },     // Payment Milestone: Advance Booking %
+            dispatchPaymentPercent: { type: Number, default: 85 },    // Payment Milestone: Material Dispatch %
+            handoverPaymentPercent: { type: Number, default: 5 },     // Payment Milestone: Post-Commissioning %
         },
 
         // ─── 9. Standard Company Terms & Conditions (Configured by Admin) ──

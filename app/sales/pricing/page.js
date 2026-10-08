@@ -94,6 +94,7 @@ export const detectBranchOffice = (locationText) => {
 
 const ACTIVE_MODULE_BRANDS = ["waaree", "vikram", "adani", "jakson", "havells", "luminous", "eastman"];
 const ACTIVE_INVERTER_BRANDS = ["havells", "luminous", "utl", "sungrow", "invergy", "eastman"];
+const ACTIVE_BATTERY_BRANDS = ["eastman", "exide", "luminous", "livguard", "amaron", "dyness"];
 const STRUCTURE_CATEGORIES = [
   { v: "ms", l: "MS Fabricated" },
   { v: "gi", l: "GI Structure" },
@@ -127,9 +128,8 @@ const STRUCTURE_TYPES = ALL_STRUCTURE_TYPES;
 
 const ROOF_TYPES = [{ v: "rcc", l: "Rooftop RCC" }, { v: "profile", l: "Shed (Profile Sheet)" }, { v: "ground", l: "Ground Mounted" }];
 const PROJECT_CATEGORIES = [
-  { v: "residential", l: "Residential Rooftop Solar (GST @ 8.90%)" },
-  { v: "industrial", l: "Industrial / C&I Solar (GST @ 8.90%)" },
-  { v: "utility", l: "Utility-Scale Solar (GST @ 8.90%)" },
+  { v: "residential", l: "Residential Rooftop Solar" },
+  { v: "industrial", l: "Industrial & Commercial Solar (C&I / 100kW+)" },
 ];
 const LA_OPTS = [
   { v: "none", l: "None" },
@@ -166,6 +166,25 @@ const EARTHING_WIRE_SIZES = {
 const cap = s => (s && typeof s === 'string') ? (s.charAt(0).toUpperCase() + s.slice(1)) : (s || '');
 
 const formatINR = n => new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR", maximumFractionDigits: 0 }).format(n || 0);
+
+export const inWords = (num) => {
+  if (!num || isNaN(num)) return "Zero Rupees";
+  const a = ['', 'One ', 'Two ', 'Three ', 'Four ', 'Five ', 'Six ', 'Seven ', 'Eight ', 'Nine ', 'Ten ', 'Eleven ', 'Twelve ', 'Thirteen ', 'Fourteen ', 'Fifteen ', 'Sixteen ', 'Seventeen ', 'Eighteen ', 'Nineteen '];
+  const b = ['', '', 'Twenty', 'Thirty', 'Forty', 'Fifty', 'Sixty', 'Seventy', 'Eighty', 'Ninety'];
+
+  const rounded = Math.round(Number(num));
+  if (rounded === 0) return "Zero Rupees";
+  const numStr = ('000000000' + rounded).slice(-9);
+  const n = numStr.match(/^(\d{2})(\d{2})(\d{2})(\d{1})(\d{2})$/);
+  if (!n) return `${rounded} Rupees`;
+  let str = '';
+  str += (Number(n[1]) !== 0) ? (a[Number(n[1])] || (b[Number(n[1][0])] + ' ' + a[Number(n[1][1])])) + 'Crore ' : '';
+  str += (Number(n[2]) !== 0) ? (a[Number(n[2])] || (b[Number(n[2][0])] + ' ' + a[Number(n[2][1])])) + 'Lakh ' : '';
+  str += (Number(n[3]) !== 0) ? (a[Number(n[3])] || (b[Number(n[3][0])] + ' ' + a[Number(n[3][1])])) + 'Thousand ' : '';
+  str += (Number(n[4]) !== 0) ? (a[Number(n[4])] || (b[Number(n[4][0])] + ' ' + a[Number(n[4][1])])) + 'Hundred ' : '';
+  str += (Number(n[5]) !== 0) ? ((str !== '') ? 'and ' : '') + (a[Number(n[5])] || (b[Number(n[5][0])] + ' ' + a[Number(n[5][1])])) : '';
+  return (str.trim() + ' Rupees').replace(/\s+/g, ' ');
+};
 
 const Sel = ({ label, id, value, onChange, children }) => (
   <div className="flex flex-col gap-1.5">
@@ -357,6 +376,9 @@ export default function PricingCalculatorPage() {
   // Inverter
   const [inverters, setInverters] = useState([{ brand: "", model: "", qty: "" }]);
 
+  // Battery Storage (for Hybrid / Off-Grid)
+  const [batteries, setBatteries] = useState([{ brand: "", model: "", qty: "" }]);
+
   // Structure
   const [structures, setStructures] = useState([{ id: Date.now(), type: "gi", kw: "" }]);
 
@@ -414,6 +436,7 @@ export default function PricingCalculatorPage() {
   const [incTrans, setIncTrans] = useState(true);
 
   const [incNuts, setIncNuts] = useState(false);
+  const [hideItemizedPricing, setHideItemizedPricing] = useState(false);
 
   const [discom, setDiscom] = useState(false);
   const [discomType, setDiscomType] = useState("lt_three");
@@ -493,6 +516,15 @@ export default function PricingCalculatorPage() {
   }) : ACTIVE_INVERTER_BRANDS;
   const visibleInverterBrands = filteredInverterBrands.length > 0 ? filteredInverterBrands : ACTIVE_INVERTER_BRANDS;
 
+  const allBatteryBrandKeys = rates?.batteries 
+    ? Array.from(new Set([...ACTIVE_BATTERY_BRANDS, ...Object.keys(rates.batteries).filter(k => !k.startsWith('$'))]))
+    : ACTIVE_BATTERY_BRANDS;
+  const filteredBatteryBrands = rates ? allBatteryBrandKeys.filter(brand => {
+    const models = rates.batteries?.[brand] || [];
+    return Array.isArray(models) && models.length > 0 && models.some(m => m.inStock !== false);
+  }) : ACTIVE_BATTERY_BRANDS;
+  const visibleBatteryBrands = filteredBatteryBrands.length > 0 ? filteredBatteryBrands : ACTIVE_BATTERY_BRANDS;
+
   const totalModKW = modules.reduce((sum, m) => {
     const avail = rates?.modules?.[m.brand] || [];
     const sel = avail.find(x => (x._id && x._id === m.model) || x.modelName === m.model);
@@ -570,13 +602,19 @@ export default function PricingCalculatorPage() {
     const plantKW = effectiveSystemKW;
     
     // Allow calculation if plantKW > 0 OR if any component is configured
-    const hasAnySelection = plantKW > 0 || inverters.some(i => i.model && (Number(i.qty) > 0 || i.qty)) || modules.some(m => m.model && Number(m.qty) > 0) || structures.some(s => Number(s.kw) > 0);
+    const hasAnySelection = plantKW > 0 || 
+      inverters.some(i => i.model && (Number(i.qty) > 0 || i.qty)) || 
+      modules.some(m => m.model && Number(m.qty) > 0) || 
+      structures.some(s => Number(s.kw) > 0) ||
+      batteries.some(b => b.model && (Number(b.qty) > 0 || b.qty));
     if (!rates || !hasAnySelection) return null;
     const wp = plantKW * 1000;
 
     // Financial Percentage Settings (configured by Super Admin & Finance Team)
     const fin = rates.financialSettings || {
-      profitMarginPercent: 12,
+      residential: { profitMarginPercent: 17, maxDiscountPercent: 5 },
+      industrial: { profitMarginPercent: 8, maxDiscountPercent: 3 },
+      profitMarginPercent: 17,
       dealerCommissionPercent: 0,
       maxDiscountPercent: 5,
       gstPercent: 8.9,
@@ -585,16 +623,16 @@ export default function PricingCalculatorPage() {
       handoverPaymentPercent: 5,
     };
 
-    // Category-specific financial settings
-    const catSettings = projectCategory === "residential" 
-      ? fin.residential 
-      : projectCategory === "industrial" 
-        ? fin.industrial 
-        : fin.utility;
+    // Category-specific financial settings:
+    // Industrial applies if category is "industrial" OR plant capacity >= 100 kW
+    const isIndustrial = projectCategory === "industrial" || plantKW >= 100;
+    const catSettings = isIndustrial 
+      ? (fin.industrial || { profitMarginPercent: 8, maxDiscountPercent: 3 })
+      : (fin.residential || { profitMarginPercent: fin.profitMarginPercent ?? 17, maxDiscountPercent: fin.maxDiscountPercent ?? 5 });
 
-    const profitMarginPercent = catSettings?.profitMarginPercent ?? fin.profitMarginPercent ?? 12;
-    const maxDiscountPercent = catSettings?.maxDiscountPercent ?? fin.maxDiscountPercent ?? 5;
-    const gstPercent = fin.gstPercent ?? 8.9;
+    const profitMarginPercent = Number(catSettings?.profitMarginPercent ?? (isIndustrial ? 8 : (fin.profitMarginPercent ?? 17)));
+    const maxDiscountPercent = Number(catSettings?.maxDiscountPercent ?? (isIndustrial ? 3 : (fin.maxDiscountPercent ?? 5)));
+    const gstPercent = Number(fin.gstPercent ?? 8.9);
 
     // Direct baked-in markup multiplier (strictly uses profit margin)
     const markupMultiplier = 1 + (profitMarginPercent / 100);
@@ -632,6 +670,23 @@ export default function PricingCalculatorPage() {
         selectedInverterDetails.push({ ...selInv, qty, cost, rate, brand: inv.brand });
       }
     });
+
+    let batteryCost = 0;
+    const selectedBatteryDetails = [];
+    if (systemType === "hybrid" || batteries.some(b => b.brand && b.model && Number(b.qty) > 0)) {
+      batteries.forEach(bat => {
+        const availModels = bat.brand && rates.batteries?.[bat.brand] ? rates.batteries[bat.brand] : [];
+        const selBat = availModels.find(m => (m._id && m._id === bat.model) || m.modelName === bat.model);
+        if (selBat) {
+          const qty = Number(bat.qty) || 1;
+          const rawRate = selBat.ratePerUnit || selBat.rate || 0;
+          const rate = rawRate * markupMultiplier;
+          const cost = rate * qty;
+          batteryCost += cost;
+          selectedBatteryDetails.push({ ...selBat, qty, cost, rate, brand: bat.brand });
+        }
+      });
+    }
 
     const selectedStructures = structures.map(st => {
       const rawRate = rates.structure?.[st.type]?.ratePerKw || 0;
@@ -750,7 +805,7 @@ export default function PricingCalculatorPage() {
     const installCost = installRate * plantKW;
 
     // Total markedUpBase is now mathematically the exact sum of all marked-up components
-    const markedUpBase = moduleCost + invCost + structCost + dcCost + acCost + earthingCost + laCost + walkCost + safetyCost + mc4Cost + mc4BranchCost + acdbCost + dcdbCost + discomCost + installCost;
+    const markedUpBase = moduleCost + invCost + batteryCost + structCost + dcCost + acCost + earthingCost + laCost + walkCost + safetyCost + mc4Cost + mc4BranchCost + acdbCost + dcdbCost + discomCost + installCost;
 
     const rawHardwareCost = markedUpBase / markupMultiplier;
     const marginAmount = markedUpBase - rawHardwareCost;
@@ -774,14 +829,14 @@ export default function PricingCalculatorPage() {
     const handoverAmount = grandTotal * (handP / 100);
 
     return {
-      moduleCost, invCost, structCost, dcCost, acCost, earthingCost, laCost,
+      moduleCost, invCost, batteryCost, structCost, dcCost, acCost, earthingCost, laCost,
       walkCost, safetyCost, discomCost, installCost, mc4Cost, installRate,
       rawHardwareCost, marginAmount, markedUpBase, effectiveDiscountPercent, discountAmount,
       baseTotal, gstRate, gstPercent, gst, grandTotal, perWp, effectiveKW: plantKW,
       advancePercent: advP, dispatchPercent: dispP, handoverPercent: handP, advanceAmount, dispatchAmount, handoverAmount,
-      maxDiscountPercent,
+      maxDiscountPercent, isIndustrial, appliedProfitMarginPercent: profitMarginPercent, appliedMaxDiscountPercent: maxDiscountPercent,
       pitsCount, pitsCost, pitRate, earthingWireCost, earthingWireRate, earthingWireMeters,
-      laCount, selectedModuleDetails, selectedInverterDetails, selectedDcCablesDetails, selInvToAcdbCable, selAcdbToMainCable, selectedStructures, invToAcdbCost, acdbToMainCost, acdbCost, dcdbCost, mc4BranchCost, mc4Pairs, mc4BranchQty, earthingLabel,
+      laCount, selectedModuleDetails, selectedInverterDetails, selectedBatteryDetails, selectedDcCablesDetails, selInvToAcdbCable, selAcdbToMainCable, selectedStructures, invToAcdbCost, acdbToMainCost, acdbCost, dcdbCost, mc4BranchCost, mc4Pairs, mc4BranchQty, earthingLabel,
       invToAcdbRate, acdbToMainRate, acdbRate, dcdbRate, mc4Rate, branchRate, laUnitRate, walkRate, safetyLineRate,
       invToAcdbCableBrand, acdbToMainCableBrand
     };
@@ -794,7 +849,7 @@ export default function PricingCalculatorPage() {
     const invAcdbBrandLabel = CABLE_BRANDS.find(b => b.v === invToAcdbCableBrand)?.l || cap(invToAcdbCableBrand);
     const acdbMainBrandLabel = CABLE_BRANDS.find(b => b.v === acdbToMainCableBrand)?.l || cap(acdbToMainCableBrand);
 
-    const buildRows = () => {
+    const buildItemizedRows = () => {
       let rows = "";
       let sno = 1;
       const snoCell = () => `<td style="border:1px solid #cbd5e1;padding:8px 12px;font-size:11px;text-align:center;color:#334155;vertical-align:top">${sno++}</td>`;
@@ -810,6 +865,10 @@ export default function PricingCalculatorPage() {
 
       calc.selectedInverterDetails?.forEach(inv => {
         rows += `<tr>${snoCell()}${cell(`<strong>Solar Grid-Tie Inverter:</strong> ${inv.modelName}<br/><span style="font-size:10px;color:#64748b">Multi-MPPT High-efficiency inverter system</span>`)}${cell(inv.qty, "center")}${cell("Nos", "center")}${cell("&#8377;" + (inv.cost / (inv.qty || 1)).toFixed(2), "right")}${cell(fmtINR(inv.cost), "right")}</tr>`;
+      });
+
+      calc.selectedBatteryDetails?.forEach(bat => {
+        rows += `<tr>${snoCell()}${cell(`<strong>Battery Storage System (${cap(bat.brand)}):</strong> ${bat.modelName}<br/><span style="font-size:10px;color:#64748b">Deep-cycle energy storage bank</span>`)}${cell(bat.qty, "center")}${cell("Nos", "center")}${cell("&#8377;" + (bat.cost / (bat.qty || 1)).toFixed(2), "right")}${cell(fmtINR(bat.cost), "right")}</tr>`;
       });
 
       if (calc.acdbCost > 0) rows += `<tr>${snoCell()}${cell("<strong>ACDB Combiner / Panel</strong><br/><span style='font-size:10px;color:#64748b'>L&amp;T / Elmex / Schneider / Reputed Make</span>")}${cell(effectiveSystemKW, "center")}${cell("kW", "center")}${cell("&#8377;" + (calc.acdbRate || 0).toFixed(2), "right")}${cell(fmtINR(calc.acdbCost), "right")}</tr>`;
@@ -848,6 +907,132 @@ export default function PricingCalculatorPage() {
       return rows;
     };
 
+    const buildTurnkeyRows = () => {
+      let rows = "";
+      let sno = 1;
+      const snoCell = () => `<td style="border:1px solid #cbd5e1;padding:7px 10px;font-size:10.5px;text-align:center;color:#334155;vertical-align:top;font-weight:600">${sno++}</td>`;
+      const cell = (content, align = "left") => `<td style="border:1px solid #cbd5e1;padding:7px 10px;font-size:10.5px;text-align:${align};color:#334155;vertical-align:top">${content}</td>`;
+
+      // 1. Modules
+      if (calc.selectedModuleDetails?.length > 0) {
+        calc.selectedModuleDetails.forEach(mod => {
+          rows += `<tr>${snoCell()}${cell("<strong>Solar PV Modules</strong>")}${cell(`Tier-1 High Efficiency PV Modules (${mod.wattage}Wp, ${mod.tech || 'Mono PERC/TopCon'})`)}${cell(`${cap(mod.brand)} / Reputed Tier-1`)}${cell("Nos", "center")}${cell(mod.panels || mod.qty, "center")}</tr>`;
+        });
+      } else {
+        rows += `<tr>${snoCell()}${cell("<strong>Solar PV Modules</strong>")}${cell("Tier-1 High Efficiency Solar PV Modules")}${cell("Tier-1 Make")}${cell("Wp", "center")}${cell((effectiveSystemKW || 0) * 1000, "center")}</tr>`;
+      }
+
+      // 2. Inverters
+      calc.selectedInverterDetails?.forEach(inv => {
+        rows += `<tr>${snoCell()}${cell("<strong>Solar Inverter</strong>")}${cell(`Grid-Tie / Hybrid Multi-MPPT Inverter System (${inv.modelName})`)}${cell(`${cap(inv.brand)} / Tier-1`)}${cell("Nos", "center")}${cell(inv.qty, "center")}</tr>`;
+      });
+
+      // 3. Batteries (if hybrid)
+      calc.selectedBatteryDetails?.forEach(bat => {
+        rows += `<tr>${snoCell()}${cell("<strong>Battery Storage Bank</strong>")}${cell(`Deep-Cycle Solar Battery Bank (${bat.modelName})`)}${cell(cap(bat.brand))}${cell("Nos", "center")}${cell(bat.qty, "center")}</tr>`;
+      });
+
+      // 4. ACDB
+      if (calc.acdbCost > 0) {
+        rows += `<tr>${snoCell()}${cell("<strong>AC Distribution Box (ACDB)</strong>")}${cell("ACDB Combiner with MCB/MCCB, Surge Protection Device (SPD) & Fuses")}${cell("L&amp;T / Schneider / Elmex / Reputed")}${cell("Set", "center")}${cell("1", "center")}</tr>`;
+      }
+
+      // 5. DCDB
+      if (calc.dcdbCost > 0) {
+        rows += `<tr>${snoCell()}${cell("<strong>DC Distribution Box (DCDB)</strong>")}${cell("DC Combiner Box with Class-1 DC Fuses & High surge arrestor SPD")}${cell("Reputed Make")}${cell("Set", "center")}${cell("1", "center")}</tr>`;
+      }
+
+      // 6. Mounting Structure
+      calc.selectedStructures?.forEach(st => {
+        const stLabel = ALL_STRUCTURE_TYPES.find(opt => opt.v === st.type)?.l || st.type || "N/A";
+        rows += `<tr>${snoCell()}${cell("<strong>Module Mounting Structure</strong>")}${cell(`${stLabel} (Engineered for wind resistance up to 150 kmph)`)}${cell("Standard Structural Grade")}${cell("kWp", "center")}${cell(st.kw, "center")}</tr>`;
+      });
+
+      // 7. Structure Fasteners
+      rows += `<tr>${snoCell()}${cell("<strong>Structure Hardware &amp; Fasteners</strong>")}${cell("SS 304 / High tensile anti-corrosion nut bolts, clamps &amp; brackets")}${cell("Reputed Make")}${cell("Set", "center")}${cell("1", "center")}</tr>`;
+
+      // 8. DC Cables
+      if (calc.selectedDcCablesDetails?.length > 0) {
+        calc.selectedDcCablesDetails.forEach(item => {
+          if (item.meters > 0) {
+            rows += `<tr>${snoCell()}${cell("<strong>DC Solar Cable</strong>")}${cell(`${item.cableLabel} (Single-core flexible tinned copper solar cable)`)}${cell(item.brandLabel || "Polycab / Siechem")}${cell("Mtr", "center")}${cell(item.meters, "center")}</tr>`;
+          }
+        });
+      }
+
+      // 9. AC Cables (Inv to ACDB)
+      if (invToAcdbCableM > 0) {
+        rows += `<tr>${snoCell()}${cell("<strong>AC Solar Cable (Inv to ACDB)</strong>")}${cell(calc.selInvToAcdbCable?.label || "Multicore flexible AC cabling run")}${cell(invAcdbBrandLabel)}${cell("Mtr", "center")}${cell(invToAcdbCableM, "center")}</tr>`;
+      }
+
+      // 10. AC Cables (ACDB to Main)
+      if (acdbToMainCableM > 0) {
+        rows += `<tr>${snoCell()}${cell("<strong>AC Solar Cable (ACDB to Main)</strong>")}${cell(calc.selAcdbToMainCable?.label || "Multicore distribution AC cable")}${cell(acdbMainBrandLabel)}${cell("Mtr", "center")}${cell(acdbToMainCableM, "center")}</tr>`;
+      }
+
+      // 11. Chemical Earthing Pits
+      if (calc.pitsCount > 0) {
+        rows += `<tr>${snoCell()}${cell("<strong>Chemical Earthing Pits</strong>")}${cell("Maintenance-free chemical copper earthing electrode with compound")}${cell("Reputed Make")}${cell("Pits", "center")}${cell(calc.pitsCount, "center")}</tr>`;
+      }
+
+      // 12. Earthing Conductor
+      if (calc.earthingWireMeters > 0) {
+        rows += `<tr>${snoCell()}${cell("<strong>Earthing Conductor</strong>")}${cell(`${calc.earthingLabel} (Dedicated equipment &amp; plant safety grounding)`)}${cell("Reputed Make")}${cell("Mtr", "center")}${cell(calc.earthingWireMeters, "center")}</tr>`;
+      }
+
+      // 13. Lightning Protection
+      if (calc.laCount > 0) {
+        rows += `<tr>${snoCell()}${cell("<strong>Lightning Protection System</strong>")}${cell(laType === "ese" ? "ESE Active Early Streamer Emission Lightning Arrestor" : "Conventional Spike Lightning Arrestor")}${cell("Reputed Make")}${cell("Nos", "center")}${cell(calc.laCount, "center")}</tr>`;
+      }
+
+      // 14. Walkway
+      if (walkway && Number(walkwayM) > 0) {
+        rows += `<tr>${snoCell()}${cell("<strong>Roof Walkway</strong>")}${cell(walkwayType === "gi" ? "GI Steel Grating Walkway" : "FRP Anti-corrosion Walkway")}${cell("Standard Make")}${cell("Mtr", "center")}${cell(walkwayM, "center")}</tr>`;
+      }
+
+      // 15. Safety Lifeline
+      if (customSafety > 0) {
+        rows += `<tr>${snoCell()}${cell("<strong>Safety Lifeline System</strong>")}${cell("Stainless steel lifeline wire rope with roof anchor brackets")}${cell("Standard Make")}${cell("Mtr", "center")}${cell(customSafety, "center")}</tr>`;
+      }
+
+      // 16. MC4 Connectors
+      if (calc.mc4Cost > 0 || calc.mc4BranchCost > 0) {
+        const totalMc4 = (Number(calc.mc4Pairs) || 0) + (Number(calc.mc4BranchQty) || 0);
+        rows += `<tr>${snoCell()}${cell("<strong>MC4 &amp; Branch Connectors</strong>")}${cell("IP67 / IP68 UV resistant waterproof module string connectors")}${cell("Multi-Contact / Reputed")}${cell("Set", "center")}${cell(totalMc4 > 0 ? totalMc4 : "1", "center")}</tr>`;
+      }
+
+      // 17. BOS Accessories
+      if (incBos) {
+        rows += `<tr>${snoCell()}${cell("<strong>BOS Accessories &amp; Wiring</strong>")}${cell("Cable ties, cable trays, PVC conduit pipes, copper lugs, glands &amp; safety labels")}${cell("Reputed / Tier-1")}${cell("Lot", "center")}${cell("1", "center")}</tr>`;
+      }
+
+      // 18. Installation & Commissioning
+      const installTypeLabel = roofType === "rcc" ? "Rooftop RCC" : roofType === "profile" ? "Shed" : roofType === "ground" ? "Ground-Mounted" : "Standard";
+      rows += `<tr>${snoCell()}${cell("<strong>Installation, Testing &amp; Commissioning</strong>")}${cell(`Complete mechanical erection, electrical integration, string testing &amp; commissioning (${installTypeLabel})`)}${cell("Divvy Solar Technical Team")}${cell("Job", "center")}${cell("1", "center")}</tr>`;
+
+      // 19. Engineering & Supervision
+      if (incEng) {
+        rows += `<tr>${snoCell()}${cell("<strong>Engineering &amp; System Design</strong>")}${cell("3D shadow analysis, string sizing, electrical SLD &amp; supervision")}${cell("Divvy Solar Design Engineering")}${cell("Job", "center")}${cell("1", "center")}</tr>`;
+      }
+
+      // 20. Remote Monitoring
+      if (incMon) {
+        rows += `<tr>${snoCell()}${cell("<strong>Remote Monitoring System</strong>")}${cell("IoT Data logger device with cloud mobile application &amp; web portal")}${cell("Inverter OEM / Divvy Solar")}${cell("Set", "center")}${cell("1", "center")}</tr>`;
+      }
+
+      // 21. Transportation & Freight
+      if (incTrans) {
+        rows += `<tr>${snoCell()}${cell("<strong>Transportation &amp; Freight</strong>")}${cell("Safe transit, transit insurance, loading, transportation to site &amp; unloading")}${cell("Divvy Solar Logistics")}${cell("Job", "center")}${cell("1", "center")}</tr>`;
+      }
+
+      // 22. DISCOM Net Metering
+      if (discom) {
+        rows += `<tr>${snoCell()}${cell("<strong>DISCOM Liaising &amp; Net Metering</strong>")}${cell("Net-metering application processing, grid feasibility and DISCOM coordination")}${cell("Divvy Solar Regulatory")}${cell("Job", "center")}${cell("1", "center")}</tr>`;
+      }
+
+      return rows;
+    };
+
     try {
       const activeQuoteRef = (quoteRef && quoteRef.trim()) || `DS/QP/${new Date().getFullYear()}/0001`;
       const projectTypeLabel = projectCategory === "residential"
@@ -861,7 +1046,6 @@ export default function PricingCalculatorPage() {
       const standardTermRows = rawStdTerms.split('\n').filter(t => t.trim()).map(t => `<li style="padding:2px 0">${t}</li>`).join('');
       const customTermRows = customTerms ? customTerms.split('\n').filter(t => t.trim()).map(t => `<li style="padding:2px 0">${t}</li>`).join('') : '';
       const logoUrl = window.location.origin + "/divvy_photo.png";
-      const rows = buildRows();
 
       const css = `
         * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -901,6 +1085,72 @@ export default function PricingCalculatorPage() {
       `;
 
       const activeOffice = DIVVY_BRANCH_OFFICES[issuingBranch] || DIVVY_BRANCH_OFFICES.gurgaon;
+
+      const mainTableHtml = !hideItemizedPricing ? `
+        <table>
+          <thead>
+            <tr>
+              <th style="width:40px;text-align:center">S.No</th>
+              <th style="text-align:left">Particulars / Components</th>
+              <th style="width:80px;text-align:center">Qty / Size</th>
+              <th style="width:50px;text-align:center">Unit</th>
+              <th style="width:100px;text-align:right">Unit Rate</th>
+              <th style="width:120px;text-align:right">Total (INR)</th>
+            </tr>
+          </thead>
+          <tbody>${buildItemizedRows()}</tbody>
+        </table>
+        <div class="totals-wrap">
+          <div class="totals">
+            <div class="totals-row"><span>Base Plant Cost:</span><span><strong>${fmtINR(calc.markedUpBase)}</strong></span></div>
+            ${calc.discountAmount > 0 ? `<div class="totals-row" style="color:#16a34a"><span>Special Negotiation Discount (${calc.effectiveDiscountPercent}%):</span><span>- ${fmtINR(calc.discountAmount)}</span></div>` : ''}
+            <div class="totals-row"><span>Subtotal (Taxable):</span><span>${fmtINR(calc.baseTotal)}</span></div>
+            <div class="totals-row"><span>GST (${calc.gstPercent}%):</span><span>${fmtINR(calc.gst)}</span></div>
+            <div class="totals-grand"><span>Grand Total (Net Value):</span><span>${fmtINR(calc.grandTotal)}</span></div>
+            <p class="totals-note">Average cost per watt: &#8377;${calc.perWp.toFixed(2)}/Wp (incl. GST)</p>
+          </div>
+        </div>
+      ` : `
+        <table>
+          <thead>
+            <tr>
+              <th style="width:36px;text-align:center">S.No</th>
+              <th style="width:160px;text-align:left">Material</th>
+              <th style="text-align:left">Technical Specifications</th>
+              <th style="width:130px;text-align:left">Make / Brand</th>
+              <th style="width:45px;text-align:center">Units</th>
+              <th style="width:45px;text-align:center">Qty</th>
+            </tr>
+          </thead>
+          <tbody>${buildTurnkeyRows()}</tbody>
+        </table>
+        <table style="width:100%;border-collapse:collapse;margin-top:16px;margin-bottom:10px">
+          <thead>
+            <tr style="background:#1e3a8a;color:#fff">
+              <th style="width:40px;text-align:center;padding:8px 10px;font-size:10px;border:1px solid #1e3a8a">S.No</th>
+              <th style="text-align:left;padding:8px 10px;font-size:10px;border:1px solid #1e3a8a">Purchase Order For</th>
+              <th style="width:120px;text-align:right;padding:8px 10px;font-size:10px;border:1px solid #1e3a8a">Taxable Value</th>
+              <th style="width:110px;text-align:right;padding:8px 10px;font-size:10px;border:1px solid #1e3a8a">GST @ ${calc.gstPercent}%</th>
+              <th style="width:130px;text-align:right;padding:8px 10px;font-size:10px;border:1px solid #1e3a8a">Total Amount</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td style="border:1px solid #cbd5e1;padding:10px;font-size:11px;text-align:center;color:#334155;font-weight:bold">1</td>
+              <td style="border:1px solid #cbd5e1;padding:10px;font-size:11px;text-align:left;color:#0f172a;font-weight:600">
+                Complete Supply, Installation, Testing &amp; Commissioning of ${effectiveSystemKW || 0} kWp Solar PV System @ &#8377;${Math.round(calc.perWp * 1000).toLocaleString('en-IN')}/- Per kWp
+                ${calc.discountAmount > 0 ? `<div style="font-size:9.5px;color:#16a34a;font-weight:normal;margin-top:2px">Special discount of ${calc.effectiveDiscountPercent}% applied</div>` : ''}
+              </td>
+              <td style="border:1px solid #cbd5e1;padding:10px;font-size:11px;text-align:right;color:#334155;font-weight:bold">${fmtINR(calc.baseTotal)}</td>
+              <td style="border:1px solid #cbd5e1;padding:10px;font-size:11px;text-align:right;color:#334155;font-weight:bold">${fmtINR(calc.gst)}</td>
+              <td style="border:1px solid #cbd5e1;padding:10px;font-size:12px;text-align:right;color:#1e3a8a;font-weight:900">${fmtINR(calc.grandTotal)}</td>
+            </tr>
+          </tbody>
+        </table>
+        <div style="background:#fefcf0;border:1.5px solid #eab308;padding:8px 14px;border-radius:6px;margin-bottom:20px;font-size:10px;font-weight:800;color:#1e3a8a;text-align:center;letter-spacing:0.3px">
+          (${inWords(Math.round(calc.grandTotal)).toUpperCase()} ONLY INCLUSIVE GST)
+        </div>
+      `;
 
       const html = `<!DOCTYPE html><html><head><meta charset="UTF-8"><style>${css}</style></head><body>
         <div class="page">
@@ -943,29 +1193,7 @@ export default function PricingCalculatorPage() {
               ${calc.pitsCount > 0 ? `<p><strong>Earthing System:</strong> ${calc.pitsCount} Pits of ${calc.earthingLabel}</p>` : ""}
             </div>
           </div>
-          <table>
-            <thead>
-              <tr>
-                <th style="width:40px;text-align:center">S.No</th>
-                <th style="text-align:left">Particulars / Components</th>
-                <th style="width:80px;text-align:center">Qty / Size</th>
-                <th style="width:50px;text-align:center">Unit</th>
-                <th style="width:100px;text-align:right">Unit Rate</th>
-                <th style="width:120px;text-align:right">Total (INR)</th>
-              </tr>
-            </thead>
-            <tbody>${rows}</tbody>
-          </table>
-          <div class="totals-wrap">
-            <div class="totals">
-              <div class="totals-row"><span>Base Plant Cost:</span><span><strong>${fmtINR(calc.markedUpBase)}</strong></span></div>
-              ${calc.discountAmount > 0 ? `<div class="totals-row" style="color:#16a34a"><span>Special Negotiation Discount (${calc.effectiveDiscountPercent}%):</span><span>- ${fmtINR(calc.discountAmount)}</span></div>` : ''}
-              <div class="totals-row"><span>Subtotal (Taxable):</span><span>${fmtINR(calc.baseTotal)}</span></div>
-              <div class="totals-row"><span>GST (${calc.gstPercent}%):</span><span>${fmtINR(calc.gst)}</span></div>
-              <div class="totals-grand"><span>Grand Total (Net Value):</span><span>${fmtINR(calc.grandTotal)}</span></div>
-              <p class="totals-note">Average cost per watt: &#8377;${calc.perWp.toFixed(2)}/Wp (incl. GST)</p>
-            </div>
-          </div>
+          ${mainTableHtml}
           <div class="bottom-grid">
             <div>
               <h4>Payment Milestones Schedule</h4>
@@ -1072,6 +1300,7 @@ export default function PricingCalculatorPage() {
         modules: modules || [],
         systemType: systemType || 'ongrid',
         inverters: inverters || [],
+        batteries: batteries || [],
         structures: structures || [],
         projectCategory: projectCategory || 'residential',
         connectedLoad: connectedLoad || '',
@@ -1094,6 +1323,8 @@ export default function PricingCalculatorPage() {
         incEng: !!incEng,
         incMon: !!incMon,
         incTrans: !!incTrans,
+        incNuts: !!incNuts,
+        hideItemizedPricing: !!hideItemizedPricing,
         advancePercent: Number(advancePercent) || 10,
         dispatchPercent: Number(dispatchPercent) || 85,
         handoverPercent: Number(handoverPercent) || 5,
@@ -1371,8 +1602,8 @@ export default function PricingCalculatorPage() {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <Inp label="System Size (kWp)" id="system-kw" value={systemKW} onChange={setSystemKW} type="number" min={0} step="0.1" placeholder="e.g. 10" />
               <Sel label="System Type" id="sys-type" value={systemType} onChange={setSystemType}>
-                <option value="ongrid" className="bg-[#0f172a]">On-Grid</option>
-                <option value="hybrid" className="bg-[#0f172a]">Hybrid</option>
+                <option value="ongrid" className="bg-[#0f172a]">On-Grid (Grid-Tied)</option>
+                <option value="hybrid" className="bg-[#0f172a]">Hybrid (Grid + Battery Backup)</option>
               </Sel>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
@@ -1596,7 +1827,106 @@ export default function PricingCalculatorPage() {
             </div>
           </section>
 
-          {/* Section 4: Mounting Structure */}
+          {/* Section 3b: Battery Storage (for Hybrid Solar) */}
+          {(systemType === "hybrid" || batteries.some(b => b.brand || b.model)) && (
+            <section className="rounded-2xl bg-white/5 border border-white/10 p-6 space-y-5 animate-fadeIn">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="w-6 h-6 rounded-md bg-[#FECB00]/20 flex items-center justify-center text-[#FECB00] font-bold text-xs">⚡</div>
+                  <div>
+                    <h2 className="text-lg font-bold text-white">4. Battery Storage (Hybrid Backup Bank)</h2>
+                    <p className="text-white/40 text-xs mt-0.5">Select battery brand, model and quantity for hybrid backup.</p>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setBatteries([...batteries, { brand: "", model: "", qty: "" }])}
+                  className="px-3 py-1.5 rounded-lg border border-[#FECB00]/30 text-[#FECB00] text-xs font-bold hover:bg-[#FECB00]/10 transition-colors"
+                >
+                  + Add Battery
+                </button>
+              </div>
+              <div className="space-y-4">
+                {batteries.map((bat, index) => {
+                  const availModels = bat.brand && rates?.batteries?.[bat.brand]
+                    ? rates.batteries[bat.brand].filter(m => m.inStock !== false)
+                    : [];
+                  const selBatObj = availModels.find(m => (m._id && m._id === bat.model) || m.modelName === bat.model);
+                  return (
+                    <div key={index} className="p-4 bg-white/5 border border-white/10 rounded-xl space-y-3 relative">
+                      {batteries.length > 1 && (
+                        <button
+                          type="button"
+                          onClick={() => setBatteries(batteries.filter((_, i) => i !== index))}
+                          className="absolute top-2 right-2 text-white/20 hover:text-red-400 p-1"
+                        >
+                          ×
+                        </button>
+                      )}
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                        <Sel
+                          label="Battery Brand"
+                          id={`bat-brand-${index}`}
+                          value={bat.brand}
+                          onChange={v => {
+                            const nb = [...batteries];
+                            nb[index] = { ...nb[index], brand: v, model: "" };
+                            setBatteries(nb);
+                          }}
+                        >
+                          <option value="" className="bg-[#0f172a]">Select Brand</option>
+                          {visibleBatteryBrands.map(b => (
+                            <option key={b} value={b} className="bg-[#0f172a]">{cap(b)}</option>
+                          ))}
+                        </Sel>
+                        <Sel
+                          label="Battery Model / Capacity"
+                          id={`bat-model-${index}`}
+                          value={bat.model}
+                          disabled={!bat.brand}
+                          onChange={v => {
+                            const nb = [...batteries];
+                            nb[index] = { ...nb[index], model: v };
+                            setBatteries(nb);
+                          }}
+                        >
+                          <option value="" className="bg-[#0f172a]">Select Model</option>
+                          {availModels.map(m => (
+                            <option key={m._id || m.modelName} value={m._id || m.modelName} className="bg-[#0f172a]">
+                              {m.modelName}
+                            </option>
+                          ))}
+                        </Sel>
+                        <Inp
+                          label="Quantity (Nos)"
+                          id={`bat-qty-${index}`}
+                          value={bat.qty}
+                          type="number"
+                          min={1}
+                          placeholder="e.g. 4"
+                          onChange={v => {
+                            const nb = [...batteries];
+                            nb[index] = { ...nb[index], qty: v === "" ? "" : Number(v) };
+                            setBatteries(nb);
+                          }}
+                        />
+                      </div>
+                      {selBatObj && (
+                        <div className="flex items-center justify-between pt-1 text-xs border-t border-white/5">
+                          <span className="text-[#FECB00] font-semibold flex items-center gap-1.5">
+                            <span className="w-1.5 h-1.5 rounded-full bg-[#FECB00]" />
+                            {cap(bat.brand)} · {selBatObj.modelName}
+                          </span>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            </section>
+          )}
+
+          {/* Section 5: Mounting Structure */}
           <section className="rounded-2xl bg-white/5 border border-white/10 p-6 space-y-5">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
@@ -1910,6 +2240,19 @@ export default function PricingCalculatorPage() {
                   <Chk label="Transportation & Freight" id="inc-trans" checked={incTrans} onChange={setIncTrans} />
                   <Chk label="Only Nut Bolts" id="inc-nuts" checked={incNuts} onChange={setIncNuts} />
                 </div>
+
+                {/* Turnkey Format / Hide Itemized Pricing Toggle */}
+                <div className="pt-3 mt-3 border-t border-white/10 bg-amber-500/10 -mx-4 -mb-4 p-4 rounded-b-xl border-amber-500/20">
+                  <Chk
+                    label="Hide Itemized Pricing on Proposal (Turnkey Lump-Sum Format / Single PO Summary)"
+                    id="hide-itemized-pricing"
+                    checked={hideItemizedPricing}
+                    onChange={setHideItemizedPricing}
+                  />
+                  <p className="text-[11px] text-amber-300/80 ml-8 mt-1">
+                    When checked, individual component prices are completely hidden in the PDF proposal. A technical BOM with specifications and a single turnkey purchase order summary with taxable value, GST, and total amount in words will be printed.
+                  </p>
+                </div>
               </div>
             </div>
 
@@ -2058,10 +2401,17 @@ export default function PricingCalculatorPage() {
 
           {/* Cost Breakdown Preview Sticky Card */}
           <div className="rounded-2xl border border-white/10 bg-white/5 p-6 space-y-6 sticky top-6">
-            <h3 className="text-lg font-bold text-white flex items-center gap-2">
-              <DocumentArrowDownIcon className="w-5 h-5 text-[#FECB00]" />
-              Cost Breakdown Preview
-            </h3>
+            <div className="flex items-center justify-between pb-2 border-b border-white/10 flex-wrap gap-2">
+              <h3 className="text-lg font-bold text-white flex items-center gap-2">
+                <DocumentArrowDownIcon className="w-5 h-5 text-[#FECB00]" />
+                Cost Breakdown Preview
+              </h3>
+              {calc && (
+                <span className={`text-[10px] px-2.5 py-0.5 rounded-full font-bold border uppercase tracking-wider ${calc.isIndustrial ? 'bg-cyan-500/15 text-cyan-300 border-cyan-500/30' : 'bg-[#FECB00]/15 text-[#FECB00] border-[#FECB00]/30'}`}>
+                  {calc.isIndustrial ? `Industrial (${calc.appliedProfitMarginPercent}% Margin)` : `Residential (${calc.appliedProfitMarginPercent}% Margin)`}
+                </span>
+              )}
+            </div>
 
             {!calc ? (
               <p className="text-sm text-white/40">Enter system size and configure components to see quotation.</p>
@@ -2083,6 +2433,9 @@ export default function PricingCalculatorPage() {
                       }))
                       : [{ l: `Inverter (Not Selected)`, v: 0 }]
                     ),
+                    ...((calc.selectedBatteryDetails || []).map((bat, i) => ({
+                      l: `Battery ${i + 1} (${cap(bat.brand)} ${bat.modelName}) x${bat.qty}`, v: bat.cost
+                    }))),
                     ...(calc.selectedStructures?.length > 0
                       ? calc.selectedStructures.map((st, i) => ({
                         l: `Structure ${i + 1} (${ALL_STRUCTURE_TYPES.find(opt => opt.v === st.type)?.l || st.type || 'Structure'}) [${st.kw}kW]`,
@@ -2149,6 +2502,12 @@ export default function PricingCalculatorPage() {
 
                 {/* PDF & Print Buttons */}
                 <div className="flex flex-col gap-2">
+                  <div className="flex items-center justify-between text-[11px] px-1 text-white/50">
+                    <span>Quotation Format:</span>
+                    <span className={hideItemizedPricing ? "text-[#FECB00] font-bold" : "text-white/80 font-medium"}>
+                      {hideItemizedPricing ? "Turnkey Lump-Sum (Prices Hidden)" : "Detailed Itemized"}
+                    </span>
+                  </div>
                   <button onClick={handleDownloadPDF} disabled={pdfLoading}
                     className="w-full py-3 rounded-xl font-bold text-sm flex items-center justify-center gap-2 transition-all hover:opacity-90 disabled:opacity-60"
                     style={{ background: "linear-gradient(135deg,#FECB00,#EBB800)", color: "#0a1122" }}>
@@ -2258,375 +2617,677 @@ export default function PricingCalculatorPage() {
             </div>
           </div>
 
-          {/* Itemized Cost Details Table */}
-          <table className="min-w-full border-collapse mb-6">
-            <thead>
-              <tr className="bg-[#1e3a8a]">
-                <th className="text-[10px] font-bold text-white uppercase px-3 py-2 border border-[#1e3a8a] text-center w-[40px]">S.No</th>
-                <th className="text-[10px] font-bold text-white uppercase px-3 py-2 border border-[#1e3a8a] text-left">Particulars / Components</th>
-                <th className="text-[10px] font-bold text-white uppercase px-3 py-2 border border-[#1e3a8a] text-center w-[80px]">Qty / Size</th>
-                <th className="text-[10px] font-bold text-white uppercase px-3 py-2 border border-[#1e3a8a] text-center w-[50px]">Unit</th>
-                <th className="text-[10px] font-bold text-white uppercase px-3 py-2 border border-[#1e3a8a] text-right w-[100px]">Unit Rate</th>
-                <th className="text-[10px] font-bold text-white uppercase px-3 py-2 border border-[#1e3a8a] text-right w-[120px]">Total (INR)</th>
-              </tr>
-            </thead>
-            <tbody className="bg-white">
-              {(() => {
-                let sno = 1;
-                return (
-                  <>
-                    {calc.selectedModuleDetails?.length > 0 ? calc.selectedModuleDetails.map((mod, idx) => (
-                      <tr key={`print-mod-${idx}`} className="hover:bg-slate-50">
-                        <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-center">{sno++}</td>
-                        <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300">
-                          <strong>Solar Modules ({cap(mod.brand)}):</strong> {mod.modelName || "N/A"} <br />
-                          <span className="text-[10px] text-slate-500">Tier-1 High-efficiency PV modules ({mod.wattage}Wp)</span>
-                        </td>
-                        <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-center">{mod.itemWp}</td>
-                        <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-center">Wp</td>
-                        <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-right">₹{(mod.ratePerWp || 0).toFixed(2)}</td>
-                        <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-right">{formatINR(mod.cost)}</td>
-                      </tr>
-                    )) : (
-                      <tr className="hover:bg-slate-50">
-                        <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-center">{sno++}</td>
-                        <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300">
-                          <strong>Solar Modules:</strong> Not Selected <br />
-                          <span className="text-[10px] text-slate-500">Tier-1 High-efficiency PV modules</span>
-                        </td>
-                        <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-center">{(effectiveSystemKW || 0) * 1000}</td>
-                        <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-center">Wp</td>
-                        <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-right">₹0.00</td>
-                        <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-right">₹0</td>
-                      </tr>
-                    )}
-                    {calc.selectedInverterDetails?.length > 0 ? calc.selectedInverterDetails.map((inv, idx) => (
-                      <tr key={idx} className="hover:bg-slate-50">
-                        <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-center">{sno++}</td>
-                        <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300">
-                          <strong>Solar Grid-Tie Inverter:</strong> {inv.modelName} <br />
-                          <span className="text-[10px] text-slate-500">Multi-MPPT High-efficiency inverter system</span>
-                        </td>
-                        <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-center">{inv.qty}</td>
-                        <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-center">Nos</td>
-                        <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-right">₹{(inv.cost / (inv.qty || 1)).toFixed(2)}</td>
-                        <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-right">{formatINR(inv.cost)}</td>
-                      </tr>
-                    )) : (
-                      <tr className="hover:bg-slate-50">
-                        <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-center">{sno++}</td>
-                        <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300">
-                          <strong>Solar Grid-Tie Inverters ({effectiveSystemKW || 0} kW):</strong> N/A <br />
-                          <span className="text-[10px] text-slate-500">Multi-MPPT High-efficiency inverter system</span>
-                        </td>
-                        <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-center">1</td>
-                        <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-center">Nos</td>
-                        <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-right">₹0</td>
-                        <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-right">₹0</td>
-                      </tr>
-                    )}
-                    {calc.acdbCost > 0 && (
-                      <tr className="hover:bg-slate-50">
-                        <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-center">{sno++}</td>
-                        <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300">
-                          <strong>ACDB Combiner / Panel</strong> <br />
-                          <span className="text-[10px] text-slate-500">L&T / Elmex / Schneider / Reputed Make</span>
-                        </td>
-                        <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-center">{effectiveSystemKW}</td>
-                        <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-center">kW</td>
-                        <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-right">₹{(calc.acdbRate || 0).toFixed(2)}</td>
-                        <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-right">{formatINR(calc.acdbCost)}</td>
-                      </tr>
-                    )}
-                    {calc.dcdbCost > 0 && (
-                      <tr className="hover:bg-slate-50">
-                        <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-center">{sno++}</td>
-                        <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300">
-                          <strong>DCDB Combiner / Panel</strong> <br />
-                          <span className="text-[10px] text-slate-500">Reputed Make</span>
-                        </td>
-                        <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-center">{effectiveSystemKW}</td>
-                        <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-center">kW</td>
-                        <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-right">₹{(calc.dcdbRate || 0).toFixed(2)}</td>
-                        <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-right">{formatINR(calc.dcdbCost)}</td>
-                      </tr>
-                    )}
-                    {calc.selectedStructures?.map((st, index) => (
-                      <tr key={index} className="hover:bg-slate-50">
-                        <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-center">{sno++}</td>
-                        <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300">
-                          <strong>Mounting Structure:</strong> {ALL_STRUCTURE_TYPES.find(opt => opt.v === st.type)?.l || st.type || "N/A"} <br />
-                          <span className="text-[10px] text-slate-500">Wind load sustained structural rails & clamps</span>
-                        </td>
-                        <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-center">{st.kw}</td>
-                        <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-center">kW</td>
-                        <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-right">₹{(st.rate || 0).toFixed(2)}</td>
-                        <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-right">{formatINR(st.cost)}</td>
-                      </tr>
-                    ))}
-                    <tr className="hover:bg-slate-50">
-                      <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-center">{sno++}</td>
-                      <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300">
-                        <strong>Structure Accessories:</strong> SS 304 Nut Bolts & Fasteners <br />
-                        <span className="text-[10px] text-slate-500">Anti-corrosion hardware for mechanical integrity</span>
-                      </td>
-                      <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-center">{effectiveSystemKW}</td>
-                      <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-center">kW</td>
-                      <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-right">Included</td>
-                      <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-right">Included</td>
-                    </tr>
-
-                    {calc.selectedDcCablesDetails?.map((item, idx) => {
-                      if (item.meters <= 0) return null;
-                      return (
-                        <tr key={`print-dc-${idx}`} className="hover:bg-slate-50">
+          {!hideItemizedPricing ? (
+            <>
+              {/* Itemized Cost Details Table */}
+              <table className="min-w-full border-collapse mb-6">
+                <thead>
+                  <tr className="bg-[#1e3a8a]">
+                    <th className="text-[10px] font-bold text-white uppercase px-3 py-2 border border-[#1e3a8a] text-center w-[40px]">S.No</th>
+                    <th className="text-[10px] font-bold text-white uppercase px-3 py-2 border border-[#1e3a8a] text-left">Particulars / Components</th>
+                    <th className="text-[10px] font-bold text-white uppercase px-3 py-2 border border-[#1e3a8a] text-center w-[80px]">Qty / Size</th>
+                    <th className="text-[10px] font-bold text-white uppercase px-3 py-2 border border-[#1e3a8a] text-center w-[50px]">Unit</th>
+                    <th className="text-[10px] font-bold text-white uppercase px-3 py-2 border border-[#1e3a8a] text-right w-[100px]">Unit Rate</th>
+                    <th className="text-[10px] font-bold text-white uppercase px-3 py-2 border border-[#1e3a8a] text-right w-[120px]">Total (INR)</th>
+                  </tr>
+                </thead>
+                <tbody className="bg-white">
+                  {(() => {
+                    let sno = 1;
+                    return (
+                      <>
+                        {calc.selectedModuleDetails?.length > 0 ? calc.selectedModuleDetails.map((mod, idx) => (
+                          <tr key={`print-mod-${idx}`} className="hover:bg-slate-50">
+                            <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-center">{sno++}</td>
+                            <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300">
+                              <strong>Solar Modules ({cap(mod.brand)}):</strong> {mod.modelName || "N/A"} <br />
+                              <span className="text-[10px] text-slate-500">Tier-1 High-efficiency PV modules ({mod.wattage}Wp)</span>
+                            </td>
+                            <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-center">{mod.itemWp}</td>
+                            <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-center">Wp</td>
+                            <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-right">₹{(mod.ratePerWp || 0).toFixed(2)}</td>
+                            <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-right">{formatINR(mod.cost)}</td>
+                          </tr>
+                        )) : (
+                          <tr className="hover:bg-slate-50">
+                            <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-center">{sno++}</td>
+                            <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300">
+                              <strong>Solar Modules:</strong> Not Selected <br />
+                              <span className="text-[10px] text-slate-500">Tier-1 High-efficiency PV modules</span>
+                            </td>
+                            <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-center">{(effectiveSystemKW || 0) * 1000}</td>
+                            <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-center">Wp</td>
+                            <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-right">₹0.00</td>
+                            <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-right">₹0</td>
+                          </tr>
+                        )}
+                        {calc.selectedInverterDetails?.length > 0 ? calc.selectedInverterDetails.map((inv, idx) => (
+                          <tr key={idx} className="hover:bg-slate-50">
+                            <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-center">{sno++}</td>
+                            <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300">
+                              <strong>Solar Grid-Tie Inverter:</strong> {inv.modelName} <br />
+                              <span className="text-[10px] text-slate-500">Multi-MPPT High-efficiency inverter system</span>
+                            </td>
+                            <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-center">{inv.qty}</td>
+                            <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-center">Nos</td>
+                            <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-right">₹{(inv.cost / (inv.qty || 1)).toFixed(2)}</td>
+                            <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-right">{formatINR(inv.cost)}</td>
+                          </tr>
+                        )) : (
+                          <tr className="hover:bg-slate-50">
+                            <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-center">{sno++}</td>
+                            <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300">
+                              <strong>Solar Grid-Tie Inverters ({effectiveSystemKW || 0} kW):</strong> N/A <br />
+                              <span className="text-[10px] text-slate-500">Multi-MPPT High-efficiency inverter system</span>
+                            </td>
+                            <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-center">1</td>
+                            <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-center">Nos</td>
+                            <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-right">₹0</td>
+                            <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-right">₹0</td>
+                          </tr>
+                        )}
+                        {calc.selectedBatteryDetails?.map((bat, idx) => (
+                          <tr key={`print-bat-${idx}`} className="hover:bg-slate-50">
+                            <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-center">{sno++}</td>
+                            <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300">
+                              <strong>Battery Storage System ({cap(bat.brand)}):</strong> {bat.modelName} <br />
+                              <span className="text-[10px] text-slate-500">Deep-cycle energy storage bank</span>
+                            </td>
+                            <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-center">{bat.qty}</td>
+                            <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-center">Nos</td>
+                            <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-right">₹{(bat.cost / (bat.qty || 1)).toFixed(2)}</td>
+                            <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-right">{formatINR(bat.cost)}</td>
+                          </tr>
+                        ))}
+                        {calc.acdbCost > 0 && (
+                          <tr className="hover:bg-slate-50">
+                            <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-center">{sno++}</td>
+                            <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300">
+                              <strong>ACDB Combiner / Panel</strong> <br />
+                              <span className="text-[10px] text-slate-500">L&T / Elmex / Schneider / Reputed Make</span>
+                            </td>
+                            <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-center">{effectiveSystemKW}</td>
+                            <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-center">kW</td>
+                            <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-right">₹{(calc.acdbRate || 0).toFixed(2)}</td>
+                            <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-right">{formatINR(calc.acdbCost)}</td>
+                          </tr>
+                        )}
+                        {calc.dcdbCost > 0 && (
+                          <tr className="hover:bg-slate-50">
+                            <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-center">{sno++}</td>
+                            <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300">
+                              <strong>DCDB Combiner / Panel</strong> <br />
+                              <span className="text-[10px] text-slate-500">Reputed Make</span>
+                            </td>
+                            <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-center">{effectiveSystemKW}</td>
+                            <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-center">kW</td>
+                            <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-right">₹{(calc.dcdbRate || 0).toFixed(2)}</td>
+                            <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-right">{formatINR(calc.dcdbCost)}</td>
+                          </tr>
+                        )}
+                        {calc.selectedStructures?.map((st, index) => (
+                          <tr key={index} className="hover:bg-slate-50">
+                            <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-center">{sno++}</td>
+                            <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300">
+                              <strong>Mounting Structure:</strong> {ALL_STRUCTURE_TYPES.find(opt => opt.v === st.type)?.l || st.type || "N/A"} <br />
+                              <span className="text-[10px] text-slate-500">Wind load sustained structural rails & clamps</span>
+                            </td>
+                            <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-center">{st.kw}</td>
+                            <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-center">kW</td>
+                            <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-right">₹{(st.rate || 0).toFixed(2)}</td>
+                            <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-right">{formatINR(st.cost)}</td>
+                          </tr>
+                        ))}
+                        <tr className="hover:bg-slate-50">
                           <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-center">{sno++}</td>
                           <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300">
-                            <strong>DC Solar Cable ({item.brandLabel}):</strong> {item.cableLabel} <br />
-                            <span className="text-[10px] text-slate-500">Tinned copper flexible single-core solar wire</span>
+                            <strong>Structure Accessories:</strong> SS 304 Nut Bolts & Fasteners <br />
+                            <span className="text-[10px] text-slate-500">Anti-corrosion hardware for mechanical integrity</span>
                           </td>
-                          <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-center">{item.meters}</td>
-                          <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-center">m</td>
-                          <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-right">₹{(item.rate || 0).toFixed(2)}</td>
-                          <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-right">{formatINR(item.cost)}</td>
+                          <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-center">{effectiveSystemKW}</td>
+                          <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-center">kW</td>
+                          <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-right">Included</td>
+                          <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-right">Included</td>
                         </tr>
-                      );
-                    })}
-                    {invToAcdbCableM > 0 && (
-                      <tr className="hover:bg-slate-50">
-                        <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-center">{sno++}</td>
-                        <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300">
-                          <strong>AC Solar Cable - Inv to ACDB ({CABLE_BRANDS.find(b => b.v === invToAcdbCableBrand)?.l || cap(invToAcdbCableBrand)}):</strong> {calc.selInvToAcdbCable?.label || "N/A"} <br />
-                          <span className="text-[10px] text-slate-500">Multicore flexible AC cabling run</span>
-                        </td>
-                        <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-center">{invToAcdbCableM}</td>
-                        <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-center">m</td>
-                        <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-right">₹{(calc.invToAcdbRate || 0).toFixed(2)}</td>
-                        <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-right">{formatINR(calc.invToAcdbCost)}</td>
-                      </tr>
-                    )}
-                    {acdbToMainCableM > 0 && (
-                      <tr className="hover:bg-slate-50">
-                        <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-center">{sno++}</td>
-                        <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300">
-                          <strong>AC Solar Cable - ACDB to Main ({CABLE_BRANDS.find(b => b.v === acdbToMainCableBrand)?.l || cap(acdbToMainCableBrand)}):</strong> {calc.selAcdbToMainCable?.label || "N/A"} <br />
-                          <span className="text-[10px] text-slate-500">AC distribution cable run</span>
-                        </td>
-                        <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-center">{acdbToMainCableM}</td>
-                        <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-center">m</td>
-                        <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-right">₹{(calc.acdbToMainRate || 0).toFixed(2)}</td>
-                        <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-right">{formatINR(calc.acdbToMainCost)}</td>
-                      </tr>
-                    )}
-                    {calc.pitsCount > 0 && (
-                      <tr className="hover:bg-slate-50">
-                        <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-center">{sno++}</td>
-                        <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300">
-                          <strong>Chemical Earthing Pits:</strong> Copper Chemical Pits<br />
-                          <span className="text-[10px] text-slate-500">Low-resistance maintenance-free earthing connection</span>
-                        </td>
-                        <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-center">{calc.pitsCount}</td>
-                        <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-center">pits</td>
-                        <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-right">₹{(calc.pitRate || 0).toFixed(2)}</td>
-                        <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-right">{formatINR(calc.pitsCost)}</td>
-                      </tr>
-                    )}
-                    {calc.earthingWireMeters > 0 && (
-                      <tr className="hover:bg-slate-50">
-                        <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-center">{sno++}</td>
-                        <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300">
-                          <strong>Earthing Conductor / Wire:</strong> {calc.earthingLabel}<br />
-                          <span className="text-[10px] text-slate-500">Dedicated equipment safety grounding run</span>
-                        </td>
-                        <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-center">{calc.earthingWireMeters}</td>
-                        <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-center">m</td>
-                        <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-right">₹{(calc.earthingWireRate || 0).toFixed(2)}</td>
-                        <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-right">{formatINR(calc.earthingWireCost)}</td>
-                      </tr>
-                    )}
-                    {calc.laCount > 0 && (
-                      <tr className="hover:bg-slate-50">
-                        <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-center">{sno++}</td>
-                        <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300">
-                          <strong>Lightning Protection System:</strong> {laType === "ese" ? "ESE Active Lightning Arrestor" : "Conventional Lightning Arrestor"}<br />
-                          <span className="text-[10px] text-slate-500">Safety shield against high-voltage lightning surges</span>
-                        </td>
-                        <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-center">{calc.laCount}</td>
-                        <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-center">units</td>
-                        <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-right">₹{(calc.laUnitRate || 0).toFixed(2)}</td>
-                        <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-right">{formatINR(calc.laCost)}</td>
-                      </tr>
-                    )}
-                    {walkway && Number(walkwayM) > 0 && (
-                      <tr className="hover:bg-slate-50">
-                        <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-center">{sno++}</td>
-                        <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300">
-                          <strong>Roof Walkway:</strong> {walkwayType === "gi" ? "GI Steel Grating Walkway" : "FRP Anti-corrosion Walkway"}<br />
-                          <span className="text-[10px] text-slate-500">Safe pathway on roof for standard O&M visits</span>
-                        </td>
-                        <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-center">{walkwayM}</td>
-                        <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-center">m</td>
-                        <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-right">₹{(calc.walkRate || 0).toFixed(2)}</td>
-                        <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-right">{formatINR(calc.walkCost)}</td>
-                      </tr>
-                    )}
-                    {customSafety > 0 && (
-                      <tr className="hover:bg-slate-50">
-                        <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-center">{sno++}</td>
-                        <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300">
-                          <strong>Safety Lifeline:</strong> Stainless steel safety lifeline cable for maintenance safety<br />
-                          <span className="text-[10px] text-slate-500">Anchor lifeline system for cleaning personnel</span>
-                        </td>
-                        <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-center">{customSafety}</td>
-                        <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-center">m</td>
-                        <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-right">₹{(calc.safetyLineRate || 0).toFixed(2)}</td>
-                        <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-right">{formatINR(calc.safetyCost)}</td>
-                      </tr>
-                    )}
-                    {calc.mc4Cost > 0 && (
-                      <tr className="hover:bg-slate-50">
-                        <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-center">{sno++}</td>
-                        <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300">
-                          <strong>MC4 Connectors:</strong> High resistance waterproof module connection pairs<br />
-                          <span className="text-[10px] text-slate-500">Waterproof module string connector links</span>
-                        </td>
-                        <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-center">{calc.mc4Pairs}</td>
-                        <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-center">pairs</td>
-                        <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-right">₹{(calc.mc4Rate || 0).toFixed(2)}</td>
-                        <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-right">{formatINR(calc.mc4Cost)}</td>
-                      </tr>
-                    )}
-                    {calc.mc4BranchCost > 0 && (
-                      <tr className="hover:bg-slate-50">
-                        <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-center">{sno++}</td>
-                        <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300">
-                          <strong>Branch (Y) Connectors:</strong> High resistance waterproof parallel connections<br />
-                          <span className="text-[10px] text-slate-500">Parallel string configuration connectors</span>
-                        </td>
-                        <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-center">{calc.mc4BranchQty}</td>
-                        <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-center">nos</td>
-                        <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-right">₹{(calc.branchRate || 0).toFixed(2)}</td>
-                        <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-right">{formatINR(calc.mc4BranchCost)}</td>
-                      </tr>
-                    )}
-                    {incBos && (
-                      <tr className="hover:bg-slate-50">
-                        <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-center">{sno++}</td>
-                        <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300">
-                          <strong>BOS &amp; Accessories:</strong> Cable Lugs, Tape, Cable tie &amp; Conduit Pipe with accessories
-                        </td>
-                        <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-center">{effectiveSystemKW}</td>
-                        <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-center">kWp</td>
-                        <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-right">Included</td>
-                        <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-right">Included</td>
-                      </tr>
-                    )}
-                    {incEng && (
-                      <tr className="hover:bg-slate-50">
-                        <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-center">{sno++}</td>
-                        <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300">
-                          <strong>Engineering &amp; Supervision:</strong> String designing, Shadow Analysis, electrical design, and panel placement
-                        </td>
-                        <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-center">{effectiveSystemKW}</td>
-                        <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-center">kWp</td>
-                        <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-right">Included</td>
-                        <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-right">Included</td>
-                      </tr>
-                    )}
-                    {incNuts && (
-                      <tr className="hover:bg-slate-50">
-                        <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-center">{sno++}</td>
-                        <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300">
-                          <strong>Structure Hardware:</strong> Only Nut Bolts
-                        </td>
-                        <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-center">{effectiveSystemKW}</td>
-                        <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-center">kWp</td>
-                        <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-right">Included</td>
-                        <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-right">Included</td>
-                      </tr>
-                    )}
-                    {incMon && (
-                      <tr className="hover:bg-slate-50">
-                        <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-center">{sno++}</td>
-                        <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300">
-                          <strong>Remote Monitoring Access:</strong> Continuous monitoring through data logger device
-                        </td>
-                        <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-center">1</td>
-                        <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-center">Set</td>
-                        <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-right">Included</td>
-                        <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-right">Included</td>
-                      </tr>
-                    )}
-                    {incTrans && (
-                      <tr className="hover:bg-slate-50">
-                        <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-center">{sno++}</td>
-                        <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300">
-                          <strong>Transportation &amp; Freight:</strong> Till site loading and unloading
-                        </td>
-                        <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-center">1</td>
-                        <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-center">Job</td>
-                        <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-right">Included</td>
-                        <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-right">Included</td>
-                      </tr>
-                    )}
-                    {discom && (
-                      <tr className="hover:bg-slate-50">
-                        <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-center">{sno++}</td>
-                        <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300">
-                          <strong>DISCOM Liaising &amp; Net Metering:</strong> Net-metering approval process with local electricity authority
-                        </td>
-                        <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-center">1</td>
-                        <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-center">job</td>
-                        <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-right">₹{(calc.discomCost || 0).toFixed(2)}</td>
-                        <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-right">{formatINR(calc.discomCost)}</td>
-                      </tr>
-                    )}
-                    <tr className="hover:bg-slate-50">
-                      <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-center">{sno++}</td>
-                      <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300">
-                        <strong>Installation &amp; Commissioning ({roofType === "rcc" ? "Rooftop RCC" : roofType === "profile" ? "Shed" : roofType === "ground" ? "Ground-Mounted" : "Standard"}):</strong> On-site mechanics, engineering execution, panel staging, and commissioning
-                      </td>
-                      <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-center">{effectiveSystemKW}</td>
-                      <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-center">kW</td>
-                      <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-right">₹{(calc.installRate || 0).toFixed(2)}</td>
-                      <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-right">{formatINR(calc.installCost)}</td>
-                    </tr>
-                  </>
-                );
-              })()}
-            </tbody>
-          </table>
 
-          {/* Totals Box (renders naturally below the table, moving to Page 2 if table overflows) */}
-          <div className="flex justify-end mb-6 avoid-break">
-            <div className="w-1/2 space-y-2 border-2 border-[#eab308] bg-[#fefcf0]/50 rounded-lg p-3">
-              <div className="flex justify-between text-xs text-slate-700">
-                <span>Base Plant Cost:</span>
-                <span className="font-semibold text-slate-800">{formatINR(calc.markedUpBase)}</span>
-              </div>
-              {calc.discountAmount > 0 && (
-                <div className="flex justify-between text-xs text-emerald-600 font-semibold">
-                  <span>Negotiation Discount ({calc.effectiveDiscountPercent}%):</span>
-                  <span>- {formatINR(calc.discountAmount)}</span>
+                        {calc.selectedDcCablesDetails?.map((item, idx) => {
+                          if (item.meters <= 0) return null;
+                          return (
+                            <tr key={`print-dc-${idx}`} className="hover:bg-slate-50">
+                              <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-center">{sno++}</td>
+                              <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300">
+                                <strong>DC Solar Cable ({item.brandLabel}):</strong> {item.cableLabel} <br />
+                                <span className="text-[10px] text-slate-500">Tinned copper flexible single-core solar wire</span>
+                              </td>
+                              <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-center">{item.meters}</td>
+                              <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-center">m</td>
+                              <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-right">₹{(item.rate || 0).toFixed(2)}</td>
+                              <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-right">{formatINR(item.cost)}</td>
+                            </tr>
+                          );
+                        })}
+                        {invToAcdbCableM > 0 && (
+                          <tr className="hover:bg-slate-50">
+                            <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-center">{sno++}</td>
+                            <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300">
+                              <strong>AC Solar Cable - Inv to ACDB ({CABLE_BRANDS.find(b => b.v === invToAcdbCableBrand)?.l || cap(invToAcdbCableBrand)}):</strong> {calc.selInvToAcdbCable?.label || "N/A"} <br />
+                              <span className="text-[10px] text-slate-500">Multicore flexible AC cabling run</span>
+                            </td>
+                            <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-center">{invToAcdbCableM}</td>
+                            <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-center">m</td>
+                            <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-right">₹{(calc.invToAcdbRate || 0).toFixed(2)}</td>
+                            <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-right">{formatINR(calc.invToAcdbCost)}</td>
+                          </tr>
+                        )}
+                        {acdbToMainCableM > 0 && (
+                          <tr className="hover:bg-slate-50">
+                            <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-center">{sno++}</td>
+                            <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300">
+                              <strong>AC Solar Cable - ACDB to Main ({CABLE_BRANDS.find(b => b.v === acdbToMainCableBrand)?.l || cap(acdbToMainCableBrand)}):</strong> {calc.selAcdbToMainCable?.label || "N/A"} <br />
+                              <span className="text-[10px] text-slate-500">AC distribution cable run</span>
+                            </td>
+                            <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-center">{acdbToMainCableM}</td>
+                            <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-center">m</td>
+                            <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-right">₹{(calc.acdbToMainRate || 0).toFixed(2)}</td>
+                            <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-right">{formatINR(calc.acdbToMainCost)}</td>
+                          </tr>
+                        )}
+                        {calc.pitsCount > 0 && (
+                          <tr className="hover:bg-slate-50">
+                            <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-center">{sno++}</td>
+                            <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300">
+                              <strong>Chemical Earthing Pits:</strong> Copper Chemical Pits<br />
+                              <span className="text-[10px] text-slate-500">Low-resistance maintenance-free earthing connection</span>
+                            </td>
+                            <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-center">{calc.pitsCount}</td>
+                            <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-center">pits</td>
+                            <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-right">₹{(calc.pitRate || 0).toFixed(2)}</td>
+                            <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-right">{formatINR(calc.pitsCost)}</td>
+                          </tr>
+                        )}
+                        {calc.earthingWireMeters > 0 && (
+                          <tr className="hover:bg-slate-50">
+                            <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-center">{sno++}</td>
+                            <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300">
+                              <strong>Earthing Conductor / Wire:</strong> {calc.earthingLabel}<br />
+                              <span className="text-[10px] text-slate-500">Dedicated equipment safety grounding run</span>
+                            </td>
+                            <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-center">{calc.earthingWireMeters}</td>
+                            <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-center">m</td>
+                            <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-right">₹{(calc.earthingWireRate || 0).toFixed(2)}</td>
+                            <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-right">{formatINR(calc.earthingWireCost)}</td>
+                          </tr>
+                        )}
+                        {calc.laCount > 0 && (
+                          <tr className="hover:bg-slate-50">
+                            <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-center">{sno++}</td>
+                            <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300">
+                              <strong>Lightning Protection System:</strong> {laType === "ese" ? "ESE Active Lightning Arrestor" : "Conventional Lightning Arrestor"}<br />
+                              <span className="text-[10px] text-slate-500">Safety shield against high-voltage lightning surges</span>
+                            </td>
+                            <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-center">{calc.laCount}</td>
+                            <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-center">units</td>
+                            <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-right">₹{(calc.laUnitRate || 0).toFixed(2)}</td>
+                            <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-right">{formatINR(calc.laCost)}</td>
+                          </tr>
+                        )}
+                        {walkway && Number(walkwayM) > 0 && (
+                          <tr className="hover:bg-slate-50">
+                            <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-center">{sno++}</td>
+                            <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300">
+                              <strong>Roof Walkway:</strong> {walkwayType === "gi" ? "GI Steel Grating Walkway" : "FRP Anti-corrosion Walkway"}<br />
+                              <span className="text-[10px] text-slate-500">Safe pathway on roof for standard O&M visits</span>
+                            </td>
+                            <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-center">{walkwayM}</td>
+                            <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-center">m</td>
+                            <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-right">₹{(calc.walkRate || 0).toFixed(2)}</td>
+                            <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-right">{formatINR(calc.walkCost)}</td>
+                          </tr>
+                        )}
+                        {customSafety > 0 && (
+                          <tr className="hover:bg-slate-50">
+                            <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-center">{sno++}</td>
+                            <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300">
+                              <strong>Safety Lifeline:</strong> Stainless steel safety lifeline cable for maintenance safety<br />
+                              <span className="text-[10px] text-slate-500">Anchor lifeline system for cleaning personnel</span>
+                            </td>
+                            <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-center">{customSafety}</td>
+                            <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-center">m</td>
+                            <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-right">₹{(calc.safetyLineRate || 0).toFixed(2)}</td>
+                            <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-right">{formatINR(calc.safetyCost)}</td>
+                          </tr>
+                        )}
+                        {calc.mc4Cost > 0 && (
+                          <tr className="hover:bg-slate-50">
+                            <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-center">{sno++}</td>
+                            <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300">
+                              <strong>MC4 Connectors:</strong> High resistance waterproof module connection pairs<br />
+                              <span className="text-[10px] text-slate-500">Waterproof module string connector links</span>
+                            </td>
+                            <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-center">{calc.mc4Pairs}</td>
+                            <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-center">pairs</td>
+                            <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-right">₹{(calc.mc4Rate || 0).toFixed(2)}</td>
+                            <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-right">{formatINR(calc.mc4Cost)}</td>
+                          </tr>
+                        )}
+                        {calc.mc4BranchCost > 0 && (
+                          <tr className="hover:bg-slate-50">
+                            <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-center">{sno++}</td>
+                            <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300">
+                              <strong>Branch (Y) Connectors:</strong> High resistance waterproof parallel connections<br />
+                              <span className="text-[10px] text-slate-500">Parallel string configuration connectors</span>
+                            </td>
+                            <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-center">{calc.mc4BranchQty}</td>
+                            <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-center">nos</td>
+                            <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-right">₹{(calc.branchRate || 0).toFixed(2)}</td>
+                            <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-right">{formatINR(calc.mc4BranchCost)}</td>
+                          </tr>
+                        )}
+                        {incBos && (
+                          <tr className="hover:bg-slate-50">
+                            <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-center">{sno++}</td>
+                            <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300">
+                              <strong>BOS &amp; Accessories:</strong> Cable Lugs, Tape, Cable tie &amp; Conduit Pipe with accessories
+                            </td>
+                            <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-center">{effectiveSystemKW}</td>
+                            <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-center">kWp</td>
+                            <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-right">Included</td>
+                            <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-right">Included</td>
+                          </tr>
+                        )}
+                        {incEng && (
+                          <tr className="hover:bg-slate-50">
+                            <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-center">{sno++}</td>
+                            <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300">
+                              <strong>Engineering &amp; Supervision:</strong> String designing, Shadow Analysis, electrical design, and panel placement
+                            </td>
+                            <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-center">{effectiveSystemKW}</td>
+                            <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-center">kWp</td>
+                            <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-right">Included</td>
+                            <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-right">Included</td>
+                          </tr>
+                        )}
+                        {incNuts && (
+                          <tr className="hover:bg-slate-50">
+                            <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-center">{sno++}</td>
+                            <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300">
+                              <strong>Structure Hardware:</strong> Only Nut Bolts
+                            </td>
+                            <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-center">{effectiveSystemKW}</td>
+                            <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-center">kWp</td>
+                            <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-right">Included</td>
+                            <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-right">Included</td>
+                          </tr>
+                        )}
+                        {incMon && (
+                          <tr className="hover:bg-slate-50">
+                            <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-center">{sno++}</td>
+                            <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300">
+                              <strong>Remote Monitoring Access:</strong> Continuous monitoring through data logger device
+                            </td>
+                            <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-center">1</td>
+                            <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-center">Set</td>
+                            <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-right">Included</td>
+                            <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-right">Included</td>
+                          </tr>
+                        )}
+                        {incTrans && (
+                          <tr className="hover:bg-slate-50">
+                            <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-center">{sno++}</td>
+                            <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300">
+                              <strong>Transportation &amp; Freight:</strong> Till site loading and unloading
+                            </td>
+                            <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-center">1</td>
+                            <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-center">Job</td>
+                            <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-right">Included</td>
+                            <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-right">Included</td>
+                          </tr>
+                        )}
+                        {discom && (
+                          <tr className="hover:bg-slate-50">
+                            <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-center">{sno++}</td>
+                            <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300">
+                              <strong>DISCOM Liaising &amp; Net Metering:</strong> Net-metering approval process with local electricity authority
+                            </td>
+                            <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-center">1</td>
+                            <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-center">job</td>
+                            <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-right">₹{(calc.discomCost || 0).toFixed(2)}</td>
+                            <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-right">{formatINR(calc.discomCost)}</td>
+                          </tr>
+                        )}
+                        <tr className="hover:bg-slate-50">
+                          <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-center">{sno++}</td>
+                          <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300">
+                            <strong>Installation &amp; Commissioning ({roofType === "rcc" ? "Rooftop RCC" : roofType === "profile" ? "Shed" : roofType === "ground" ? "Ground-Mounted" : "Standard"}):</strong> On-site mechanics, engineering execution, panel staging, and commissioning
+                          </td>
+                          <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-center">{effectiveSystemKW}</td>
+                          <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-center">kW</td>
+                          <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-right">₹{(calc.installRate || 0).toFixed(2)}</td>
+                          <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-right">{formatINR(calc.installCost)}</td>
+                        </tr>
+                      </>
+                    );
+                  })()}
+                </tbody>
+              </table>
+
+              {/* Totals Box (renders naturally below the table, moving to Page 2 if table overflows) */}
+              <div className="flex justify-end mb-6 avoid-break">
+                <div className="w-1/2 space-y-2 border-2 border-[#eab308] bg-[#fefcf0]/50 rounded-lg p-3">
+                  <div className="flex justify-between text-xs text-slate-700">
+                    <span>Base Plant Cost:</span>
+                    <span className="font-semibold text-slate-800">{formatINR(calc.markedUpBase)}</span>
+                  </div>
+                  {calc.discountAmount > 0 && (
+                    <div className="flex justify-between text-xs text-emerald-600 font-semibold">
+                      <span>Negotiation Discount ({calc.effectiveDiscountPercent}%):</span>
+                      <span>- {formatINR(calc.discountAmount)}</span>
+                    </div>
+                  )}
+                  <div className="flex justify-between text-xs text-slate-700">
+                    <span>Taxable Subtotal:</span>
+                    <span className="font-semibold text-slate-800">{formatINR(calc.baseTotal)}</span>
+                  </div>
+                  <div className="flex justify-between text-xs text-slate-700">
+                    <span>GST ({calc.gstPercent}%):</span>
+                    <span className="font-semibold text-slate-800">{formatINR(calc.gst)}</span>
+                  </div>
+                  <div className="flex justify-between text-sm text-[#1e3a8a] border-t border-[#eab308] pt-2 font-black">
+                    <span>Grand Total (Net Value):</span>
+                    <span>{formatINR(calc.grandTotal)}</span>
+                  </div>
+                  <div className="text-[9px] font-bold text-slate-500 text-right pt-1">
+                    Average cost per watt: ₹{(calc.perWp || 0).toFixed(2)}/Wp (incl. GST)
+                  </div>
                 </div>
-              )}
-              <div className="flex justify-between text-xs text-slate-700">
-                <span>Taxable Subtotal:</span>
-                <span className="font-semibold text-slate-800">{formatINR(calc.baseTotal)}</span>
               </div>
-              <div className="flex justify-between text-xs text-slate-700">
-                <span>GST ({calc.gstPercent}%):</span>
-                <span className="font-semibold text-slate-800">{formatINR(calc.gst)}</span>
+            </>
+          ) : (
+            <>
+              {/* Technical BOM Table (Turnkey Format) */}
+              <table className="min-w-full border-collapse mb-6">
+                <thead>
+                  <tr className="bg-[#1e3a8a]">
+                    <th className="text-[10px] font-bold text-white uppercase px-2.5 py-2 border border-[#1e3a8a] text-center w-[36px]">S.No</th>
+                    <th className="text-[10px] font-bold text-white uppercase px-2.5 py-2 border border-[#1e3a8a] text-left w-[160px]">Material</th>
+                    <th className="text-[10px] font-bold text-white uppercase px-2.5 py-2 border border-[#1e3a8a] text-left">Technical Specifications</th>
+                    <th className="text-[10px] font-bold text-white uppercase px-2.5 py-2 border border-[#1e3a8a] text-left w-[130px]">Make / Brand</th>
+                    <th className="text-[10px] font-bold text-white uppercase px-2.5 py-2 border border-[#1e3a8a] text-center w-[45px]">Units</th>
+                    <th className="text-[10px] font-bold text-white uppercase px-2.5 py-2 border border-[#1e3a8a] text-center w-[45px]">Qty</th>
+                  </tr>
+                </thead>
+                <tbody className="bg-white">
+                  {(() => {
+                    let sno = 1;
+                    return (
+                      <>
+                        {calc.selectedModuleDetails?.length > 0 ? calc.selectedModuleDetails.map((mod, idx) => (
+                          <tr key={`turnkey-mod-${idx}`} className="hover:bg-slate-50">
+                            <td className="text-xs text-slate-700 px-2.5 py-1.5 border border-slate-300 text-center font-semibold">{sno++}</td>
+                            <td className="text-xs text-slate-800 px-2.5 py-1.5 border border-slate-300 font-bold">Solar PV Modules</td>
+                            <td className="text-xs text-slate-700 px-2.5 py-1.5 border border-slate-300">Tier-1 High Efficiency PV Modules ({mod.wattage}Wp, {mod.tech || 'Mono PERC/TopCon'})</td>
+                            <td className="text-xs text-slate-700 px-2.5 py-1.5 border border-slate-300">{cap(mod.brand)} / Reputed Tier-1</td>
+                            <td className="text-xs text-slate-700 px-2.5 py-1.5 border border-slate-300 text-center">Nos</td>
+                            <td className="text-xs text-slate-700 px-2.5 py-1.5 border border-slate-300 text-center font-bold">{mod.panels || mod.qty}</td>
+                          </tr>
+                        )) : (
+                          <tr className="hover:bg-slate-50">
+                            <td className="text-xs text-slate-700 px-2.5 py-1.5 border border-slate-300 text-center font-semibold">{sno++}</td>
+                            <td className="text-xs text-slate-800 px-2.5 py-1.5 border border-slate-300 font-bold">Solar PV Modules</td>
+                            <td className="text-xs text-slate-700 px-2.5 py-1.5 border border-slate-300">Tier-1 High Efficiency Solar PV Modules</td>
+                            <td className="text-xs text-slate-700 px-2.5 py-1.5 border border-slate-300">Tier-1 Make</td>
+                            <td className="text-xs text-slate-700 px-2.5 py-1.5 border border-slate-300 text-center">Wp</td>
+                            <td className="text-xs text-slate-700 px-2.5 py-1.5 border border-slate-300 text-center font-bold">{(effectiveSystemKW || 0) * 1000}</td>
+                          </tr>
+                        )}
+                        {calc.selectedInverterDetails?.map((inv, idx) => (
+                          <tr key={`turnkey-inv-${idx}`} className="hover:bg-slate-50">
+                            <td className="text-xs text-slate-700 px-2.5 py-1.5 border border-slate-300 text-center font-semibold">{sno++}</td>
+                            <td className="text-xs text-slate-800 px-2.5 py-1.5 border border-slate-300 font-bold">Solar Inverter</td>
+                            <td className="text-xs text-slate-700 px-2.5 py-1.5 border border-slate-300">Grid-Tie / Hybrid Multi-MPPT Inverter System ({inv.modelName})</td>
+                            <td className="text-xs text-slate-700 px-2.5 py-1.5 border border-slate-300">{cap(inv.brand)} / Tier-1</td>
+                            <td className="text-xs text-slate-700 px-2.5 py-1.5 border border-slate-300 text-center">Nos</td>
+                            <td className="text-xs text-slate-700 px-2.5 py-1.5 border border-slate-300 text-center font-bold">{inv.qty}</td>
+                          </tr>
+                        ))}
+                        {calc.selectedBatteryDetails?.map((bat, idx) => (
+                          <tr key={`turnkey-bat-${idx}`} className="hover:bg-slate-50">
+                            <td className="text-xs text-slate-700 px-2.5 py-1.5 border border-slate-300 text-center font-semibold">{sno++}</td>
+                            <td className="text-xs text-slate-800 px-2.5 py-1.5 border border-slate-300 font-bold">Battery Storage Bank</td>
+                            <td className="text-xs text-slate-700 px-2.5 py-1.5 border border-slate-300">Deep-Cycle Solar Battery Bank ({bat.modelName})</td>
+                            <td className="text-xs text-slate-700 px-2.5 py-1.5 border border-slate-300">{cap(bat.brand)}</td>
+                            <td className="text-xs text-slate-700 px-2.5 py-1.5 border border-slate-300 text-center">Nos</td>
+                            <td className="text-xs text-slate-700 px-2.5 py-1.5 border border-slate-300 text-center font-bold">{bat.qty}</td>
+                          </tr>
+                        ))}
+                        {calc.acdbCost > 0 && (
+                          <tr className="hover:bg-slate-50">
+                            <td className="text-xs text-slate-700 px-2.5 py-1.5 border border-slate-300 text-center font-semibold">{sno++}</td>
+                            <td className="text-xs text-slate-800 px-2.5 py-1.5 border border-slate-300 font-bold">AC Distribution Box (ACDB)</td>
+                            <td className="text-xs text-slate-700 px-2.5 py-1.5 border border-slate-300">ACDB Combiner with MCB/MCCB, Surge Protection Device (SPD) & Fuses</td>
+                            <td className="text-xs text-slate-700 px-2.5 py-1.5 border border-slate-300">L&T / Schneider / Elmex / Reputed</td>
+                            <td className="text-xs text-slate-700 px-2.5 py-1.5 border border-slate-300 text-center">Set</td>
+                            <td className="text-xs text-slate-700 px-2.5 py-1.5 border border-slate-300 text-center font-bold">1</td>
+                          </tr>
+                        )}
+                        {calc.dcdbCost > 0 && (
+                          <tr className="hover:bg-slate-50">
+                            <td className="text-xs text-slate-700 px-2.5 py-1.5 border border-slate-300 text-center font-semibold">{sno++}</td>
+                            <td className="text-xs text-slate-800 px-2.5 py-1.5 border border-slate-300 font-bold">DC Distribution Box (DCDB)</td>
+                            <td className="text-xs text-slate-700 px-2.5 py-1.5 border border-slate-300">DC Combiner Box with Class-1 DC Fuses & High surge arrestor SPD</td>
+                            <td className="text-xs text-slate-700 px-2.5 py-1.5 border border-slate-300">Reputed Make</td>
+                            <td className="text-xs text-slate-700 px-2.5 py-1.5 border border-slate-300 text-center">Set</td>
+                            <td className="text-xs text-slate-700 px-2.5 py-1.5 border border-slate-300 text-center font-bold">1</td>
+                          </tr>
+                        )}
+                        {calc.selectedStructures?.map((st, idx) => (
+                          <tr key={`turnkey-st-${idx}`} className="hover:bg-slate-50">
+                            <td className="text-xs text-slate-700 px-2.5 py-1.5 border border-slate-300 text-center font-semibold">{sno++}</td>
+                            <td className="text-xs text-slate-800 px-2.5 py-1.5 border border-slate-300 font-bold">Module Mounting Structure</td>
+                            <td className="text-xs text-slate-700 px-2.5 py-1.5 border border-slate-300">{ALL_STRUCTURE_TYPES.find(opt => opt.v === st.type)?.l || st.type || "Mounting Structure"} (Engineered for wind resistance up to 150 kmph)</td>
+                            <td className="text-xs text-slate-700 px-2.5 py-1.5 border border-slate-300">Standard Structural Grade</td>
+                            <td className="text-xs text-slate-700 px-2.5 py-1.5 border border-slate-300 text-center">kWp</td>
+                            <td className="text-xs text-slate-700 px-2.5 py-1.5 border border-slate-300 text-center font-bold">{st.kw}</td>
+                          </tr>
+                        ))}
+                        <tr className="hover:bg-slate-50">
+                          <td className="text-xs text-slate-700 px-2.5 py-1.5 border border-slate-300 text-center font-semibold">{sno++}</td>
+                          <td className="text-xs text-slate-800 px-2.5 py-1.5 border border-slate-300 font-bold">Structure Fasteners & Hardware</td>
+                          <td className="text-xs text-slate-700 px-2.5 py-1.5 border border-slate-300">SS 304 / High tensile anti-corrosion nut bolts, clamps & brackets</td>
+                          <td className="text-xs text-slate-700 px-2.5 py-1.5 border border-slate-300">Reputed Make</td>
+                          <td className="text-xs text-slate-700 px-2.5 py-1.5 border border-slate-300 text-center">Set</td>
+                          <td className="text-xs text-slate-700 px-2.5 py-1.5 border border-slate-300 text-center font-bold">1</td>
+                        </tr>
+                        {calc.selectedDcCablesDetails?.map((item, idx) => {
+                          if (item.meters <= 0) return null;
+                          return (
+                            <tr key={`turnkey-dc-${idx}`} className="hover:bg-slate-50">
+                              <td className="text-xs text-slate-700 px-2.5 py-1.5 border border-slate-300 text-center font-semibold">{sno++}</td>
+                              <td className="text-xs text-slate-800 px-2.5 py-1.5 border border-slate-300 font-bold">DC Solar Cable</td>
+                              <td className="text-xs text-slate-700 px-2.5 py-1.5 border border-slate-300">{item.cableLabel} (Single-core flexible tinned copper solar wire)</td>
+                              <td className="text-xs text-slate-700 px-2.5 py-1.5 border border-slate-300">{item.brandLabel || "Polycab / Siechem"}</td>
+                              <td className="text-xs text-slate-700 px-2.5 py-1.5 border border-slate-300 text-center">Mtr</td>
+                              <td className="text-xs text-slate-700 px-2.5 py-1.5 border border-slate-300 text-center font-bold">{item.meters}</td>
+                            </tr>
+                          );
+                        })}
+                        {invToAcdbCableM > 0 && (
+                          <tr className="hover:bg-slate-50">
+                            <td className="text-xs text-slate-700 px-2.5 py-1.5 border border-slate-300 text-center font-semibold">{sno++}</td>
+                            <td className="text-xs text-slate-800 px-2.5 py-1.5 border border-slate-300 font-bold">AC Solar Cable (Inv to ACDB)</td>
+                            <td className="text-xs text-slate-700 px-2.5 py-1.5 border border-slate-300">{calc.selInvToAcdbCable?.label || "Multicore flexible AC cabling run"}</td>
+                            <td className="text-xs text-slate-700 px-2.5 py-1.5 border border-slate-300">{CABLE_BRANDS.find(b => b.v === invToAcdbCableBrand)?.l || cap(invToAcdbCableBrand)}</td>
+                            <td className="text-xs text-slate-700 px-2.5 py-1.5 border border-slate-300 text-center">Mtr</td>
+                            <td className="text-xs text-slate-700 px-2.5 py-1.5 border border-slate-300 text-center font-bold">{invToAcdbCableM}</td>
+                          </tr>
+                        )}
+                        {acdbToMainCableM > 0 && (
+                          <tr className="hover:bg-slate-50">
+                            <td className="text-xs text-slate-700 px-2.5 py-1.5 border border-slate-300 text-center font-semibold">{sno++}</td>
+                            <td className="text-xs text-slate-800 px-2.5 py-1.5 border border-slate-300 font-bold">AC Solar Cable (ACDB to Main)</td>
+                            <td className="text-xs text-slate-700 px-2.5 py-1.5 border border-slate-300">{calc.selAcdbToMainCable?.label || "Multicore distribution AC cable"}</td>
+                            <td className="text-xs text-slate-700 px-2.5 py-1.5 border border-slate-300">{CABLE_BRANDS.find(b => b.v === acdbToMainCableBrand)?.l || cap(acdbToMainCableBrand)}</td>
+                            <td className="text-xs text-slate-700 px-2.5 py-1.5 border border-slate-300 text-center">Mtr</td>
+                            <td className="text-xs text-slate-700 px-2.5 py-1.5 border border-slate-300 text-center font-bold">{acdbToMainCableM}</td>
+                          </tr>
+                        )}
+                        {calc.pitsCount > 0 && (
+                          <tr className="hover:bg-slate-50">
+                            <td className="text-xs text-slate-700 px-2.5 py-1.5 border border-slate-300 text-center font-semibold">{sno++}</td>
+                            <td className="text-xs text-slate-800 px-2.5 py-1.5 border border-slate-300 font-bold">Chemical Earthing Pits</td>
+                            <td className="text-xs text-slate-700 px-2.5 py-1.5 border border-slate-300">Maintenance-free chemical copper earthing electrode with compound</td>
+                            <td className="text-xs text-slate-700 px-2.5 py-1.5 border border-slate-300">Reputed Make</td>
+                            <td className="text-xs text-slate-700 px-2.5 py-1.5 border border-slate-300 text-center">Pits</td>
+                            <td className="text-xs text-slate-700 px-2.5 py-1.5 border border-slate-300 text-center font-bold">{calc.pitsCount}</td>
+                          </tr>
+                        )}
+                        {calc.earthingWireMeters > 0 && (
+                          <tr className="hover:bg-slate-50">
+                            <td className="text-xs text-slate-700 px-2.5 py-1.5 border border-slate-300 text-center font-semibold">{sno++}</td>
+                            <td className="text-xs text-slate-800 px-2.5 py-1.5 border border-slate-300 font-bold">Earthing Conductor</td>
+                            <td className="text-xs text-slate-700 px-2.5 py-1.5 border border-slate-300">{calc.earthingLabel} (Dedicated equipment & plant safety grounding)</td>
+                            <td className="text-xs text-slate-700 px-2.5 py-1.5 border border-slate-300">Reputed Make</td>
+                            <td className="text-xs text-slate-700 px-2.5 py-1.5 border border-slate-300 text-center">Mtr</td>
+                            <td className="text-xs text-slate-700 px-2.5 py-1.5 border border-slate-300 text-center font-bold">{calc.earthingWireMeters}</td>
+                          </tr>
+                        )}
+                        {calc.laCount > 0 && (
+                          <tr className="hover:bg-slate-50">
+                            <td className="text-xs text-slate-700 px-2.5 py-1.5 border border-slate-300 text-center font-semibold">{sno++}</td>
+                            <td className="text-xs text-slate-800 px-2.5 py-1.5 border border-slate-300 font-bold">Lightning Protection System</td>
+                            <td className="text-xs text-slate-700 px-2.5 py-1.5 border border-slate-300">{laType === "ese" ? "ESE Active Early Streamer Emission Lightning Arrestor" : "Conventional Spike Lightning Arrestor"}</td>
+                            <td className="text-xs text-slate-700 px-2.5 py-1.5 border border-slate-300">Reputed Make</td>
+                            <td className="text-xs text-slate-700 px-2.5 py-1.5 border border-slate-300 text-center">Nos</td>
+                            <td className="text-xs text-slate-700 px-2.5 py-1.5 border border-slate-300 text-center font-bold">{calc.laCount}</td>
+                          </tr>
+                        )}
+                        {walkway && Number(walkwayM) > 0 && (
+                          <tr className="hover:bg-slate-50">
+                            <td className="text-xs text-slate-700 px-2.5 py-1.5 border border-slate-300 text-center font-semibold">{sno++}</td>
+                            <td className="text-xs text-slate-800 px-2.5 py-1.5 border border-slate-300 font-bold">Roof Walkway</td>
+                            <td className="text-xs text-slate-700 px-2.5 py-1.5 border border-slate-300">{walkwayType === "gi" ? "GI Steel Grating Walkway" : "FRP Anti-corrosion Walkway"}</td>
+                            <td className="text-xs text-slate-700 px-2.5 py-1.5 border border-slate-300">Standard Make</td>
+                            <td className="text-xs text-slate-700 px-2.5 py-1.5 border border-slate-300 text-center">Mtr</td>
+                            <td className="text-xs text-slate-700 px-2.5 py-1.5 border border-slate-300 text-center font-bold">{walkwayM}</td>
+                          </tr>
+                        )}
+                        {customSafety > 0 && (
+                          <tr className="hover:bg-slate-50">
+                            <td className="text-xs text-slate-700 px-2.5 py-1.5 border border-slate-300 text-center font-semibold">{sno++}</td>
+                            <td className="text-xs text-slate-800 px-2.5 py-1.5 border border-slate-300 font-bold">Safety Lifeline System</td>
+                            <td className="text-xs text-slate-700 px-2.5 py-1.5 border border-slate-300">Stainless steel lifeline wire rope with roof anchor brackets</td>
+                            <td className="text-xs text-slate-700 px-2.5 py-1.5 border border-slate-300">Standard Make</td>
+                            <td className="text-xs text-slate-700 px-2.5 py-1.5 border border-slate-300 text-center">Mtr</td>
+                            <td className="text-xs text-slate-700 px-2.5 py-1.5 border border-slate-300 text-center font-bold">{customSafety}</td>
+                          </tr>
+                        )}
+                        {(calc.mc4Cost > 0 || calc.mc4BranchCost > 0) && (
+                          <tr className="hover:bg-slate-50">
+                            <td className="text-xs text-slate-700 px-2.5 py-1.5 border border-slate-300 text-center font-semibold">{sno++}</td>
+                            <td className="text-xs text-slate-800 px-2.5 py-1.5 border border-slate-300 font-bold">MC4 & Branch Connectors</td>
+                            <td className="text-xs text-slate-700 px-2.5 py-1.5 border border-slate-300">IP67 / IP68 UV resistant waterproof module string connectors</td>
+                            <td className="text-xs text-slate-700 px-2.5 py-1.5 border border-slate-300">Multi-Contact / Reputed</td>
+                            <td className="text-xs text-slate-700 px-2.5 py-1.5 border border-slate-300 text-center">Set</td>
+                            <td className="text-xs text-slate-700 px-2.5 py-1.5 border border-slate-300 text-center font-bold">{(Number(calc.mc4Pairs) || 0) + (Number(calc.mc4BranchQty) || 0) > 0 ? (Number(calc.mc4Pairs) || 0) + (Number(calc.mc4BranchQty) || 0) : 1}</td>
+                          </tr>
+                        )}
+                        {incBos && (
+                          <tr className="hover:bg-slate-50">
+                            <td className="text-xs text-slate-700 px-2.5 py-1.5 border border-slate-300 text-center font-semibold">{sno++}</td>
+                            <td className="text-xs text-slate-800 px-2.5 py-1.5 border border-slate-300 font-bold">BOS Accessories & Wiring</td>
+                            <td className="text-xs text-slate-700 px-2.5 py-1.5 border border-slate-300">Cable ties, cable trays, PVC conduit pipes, copper lugs, glands & safety labels</td>
+                            <td className="text-xs text-slate-700 px-2.5 py-1.5 border border-slate-300">Reputed / Tier-1</td>
+                            <td className="text-xs text-slate-700 px-2.5 py-1.5 border border-slate-300 text-center">Lot</td>
+                            <td className="text-xs text-slate-700 px-2.5 py-1.5 border border-slate-300 text-center font-bold">1</td>
+                          </tr>
+                        )}
+                        <tr className="hover:bg-slate-50">
+                          <td className="text-xs text-slate-700 px-2.5 py-1.5 border border-slate-300 text-center font-semibold">{sno++}</td>
+                          <td className="text-xs text-slate-800 px-2.5 py-1.5 border border-slate-300 font-bold">Installation, Testing & Commissioning</td>
+                          <td className="text-xs text-slate-700 px-2.5 py-1.5 border border-slate-300">Complete mechanical erection, electrical integration, string testing & commissioning ({roofType === "rcc" ? "Rooftop RCC" : roofType === "profile" ? "Shed" : roofType === "ground" ? "Ground-Mounted" : "Standard"})</td>
+                          <td className="text-xs text-slate-700 px-2.5 py-1.5 border border-slate-300">Divvy Solar Technical Team</td>
+                          <td className="text-xs text-slate-700 px-2.5 py-1.5 border border-slate-300 text-center">Job</td>
+                          <td className="text-xs text-slate-700 px-2.5 py-1.5 border border-slate-300 text-center font-bold">1</td>
+                        </tr>
+                        {incEng && (
+                          <tr className="hover:bg-slate-50">
+                            <td className="text-xs text-slate-700 px-2.5 py-1.5 border border-slate-300 text-center font-semibold">{sno++}</td>
+                            <td className="text-xs text-slate-800 px-2.5 py-1.5 border border-slate-300 font-bold">Engineering & System Design</td>
+                            <td className="text-xs text-slate-700 px-2.5 py-1.5 border border-slate-300">3D shadow analysis, string sizing, electrical SLD & technical supervision</td>
+                            <td className="text-xs text-slate-700 px-2.5 py-1.5 border border-slate-300">Divvy Solar Design Engineering</td>
+                            <td className="text-xs text-slate-700 px-2.5 py-1.5 border border-slate-300 text-center">Job</td>
+                            <td className="text-xs text-slate-700 px-2.5 py-1.5 border border-slate-300 text-center font-bold">1</td>
+                          </tr>
+                        )}
+                        {incMon && (
+                          <tr className="hover:bg-slate-50">
+                            <td className="text-xs text-slate-700 px-2.5 py-1.5 border border-slate-300 text-center font-semibold">{sno++}</td>
+                            <td className="text-xs text-slate-800 px-2.5 py-1.5 border border-slate-300 font-bold">Remote Monitoring System</td>
+                            <td className="text-xs text-slate-700 px-2.5 py-1.5 border border-slate-300">IoT Data logger device with cloud mobile application & web portal</td>
+                            <td className="text-xs text-slate-700 px-2.5 py-1.5 border border-slate-300">Inverter OEM / Divvy Solar</td>
+                            <td className="text-xs text-slate-700 px-2.5 py-1.5 border border-slate-300 text-center">Set</td>
+                            <td className="text-xs text-slate-700 px-2.5 py-1.5 border border-slate-300 text-center font-bold">1</td>
+                          </tr>
+                        )}
+                        {incTrans && (
+                          <tr className="hover:bg-slate-50">
+                            <td className="text-xs text-slate-700 px-2.5 py-1.5 border border-slate-300 text-center font-semibold">{sno++}</td>
+                            <td className="text-xs text-slate-800 px-2.5 py-1.5 border border-slate-300 font-bold">Transportation & Freight</td>
+                            <td className="text-xs text-slate-700 px-2.5 py-1.5 border border-slate-300">Safe transit, transit insurance, loading, transportation to site & unloading</td>
+                            <td className="text-xs text-slate-700 px-2.5 py-1.5 border border-slate-300">Divvy Solar Logistics</td>
+                            <td className="text-xs text-slate-700 px-2.5 py-1.5 border border-slate-300 text-center">Job</td>
+                            <td className="text-xs text-slate-700 px-2.5 py-1.5 border border-slate-300 text-center font-bold">1</td>
+                          </tr>
+                        )}
+                        {discom && (
+                          <tr className="hover:bg-slate-50">
+                            <td className="text-xs text-slate-700 px-2.5 py-1.5 border border-slate-300 text-center font-semibold">{sno++}</td>
+                            <td className="text-xs text-slate-800 px-2.5 py-1.5 border border-slate-300 font-bold">DISCOM Liaising & Net Metering</td>
+                            <td className="text-xs text-slate-700 px-2.5 py-1.5 border border-slate-300">Net-metering application processing, grid feasibility and DISCOM coordination</td>
+                            <td className="text-xs text-slate-700 px-2.5 py-1.5 border border-slate-300">Divvy Solar Regulatory</td>
+                            <td className="text-xs text-slate-700 px-2.5 py-1.5 border border-slate-300 text-center">Job</td>
+                            <td className="text-xs text-slate-700 px-2.5 py-1.5 border border-slate-300 text-center font-bold">1</td>
+                          </tr>
+                        )}
+                      </>
+                    );
+                  })()}
+                </tbody>
+              </table>
+
+              {/* Turnkey Commercial Purchase Order Table */}
+              <table className="min-w-full border-collapse mb-4 avoid-break">
+                <thead>
+                  <tr className="bg-[#1e3a8a]">
+                    <th className="text-[10px] font-bold text-white uppercase px-3 py-2 border border-[#1e3a8a] text-center w-[40px]">S.No</th>
+                    <th className="text-[10px] font-bold text-white uppercase px-3 py-2 border border-[#1e3a8a] text-left">Purchase Order For</th>
+                    <th className="text-[10px] font-bold text-white uppercase px-3 py-2 border border-[#1e3a8a] text-right w-[120px]">Taxable Value</th>
+                    <th className="text-[10px] font-bold text-white uppercase px-3 py-2 border border-[#1e3a8a] text-right w-[110px]">GST @ {calc.gstPercent}%</th>
+                    <th className="text-[10px] font-bold text-white uppercase px-3 py-2 border border-[#1e3a8a] text-right w-[130px]">Total Amount</th>
+                  </tr>
+                </thead>
+                <tbody className="bg-white">
+                  <tr>
+                    <td className="text-xs text-slate-700 px-3 py-3 border border-slate-300 text-center font-bold">1</td>
+                    <td className="text-xs text-slate-800 px-3 py-3 border border-slate-300 font-semibold">
+                      Complete Supply, Installation, Testing &amp; Commissioning of {effectiveSystemKW || 0} kWp Solar PV System @ ₹{Math.round(calc.perWp * 1000).toLocaleString('en-IN')}/- Per kWp
+                      {calc.discountAmount > 0 && (
+                        <div className="text-[10px] text-emerald-600 font-normal mt-0.5">Special discount of {calc.effectiveDiscountPercent}% applied</div>
+                      )}
+                    </td>
+                    <td className="text-xs text-slate-700 px-3 py-3 border border-slate-300 text-right font-bold">{formatINR(calc.baseTotal)}</td>
+                    <td className="text-xs text-slate-700 px-3 py-3 border border-slate-300 text-right font-bold">{formatINR(calc.gst)}</td>
+                    <td className="text-xs text-[#1e3a8a] px-3 py-3 border border-slate-300 text-right font-black text-sm">{formatINR(calc.grandTotal)}</td>
+                  </tr>
+                </tbody>
+              </table>
+
+              {/* Turnkey Amount in Words Banner */}
+              <div className="bg-[#fefcf0] border-2 border-[#eab308] p-2.5 rounded-lg mb-6 text-center text-xs font-bold text-[#1e3a8a] uppercase tracking-wide avoid-break">
+                ({inWords(Math.round(calc.grandTotal)).toUpperCase()} ONLY INCLUSIVE GST)
               </div>
-              <div className="flex justify-between text-sm text-[#1e3a8a] border-t border-[#eab308] pt-2 font-black">
-                <span>Grand Total (Net Value):</span>
-                <span>{formatINR(calc.grandTotal)}</span>
-              </div>
-              <div className="text-[9px] font-bold text-slate-500 text-right pt-1">
-                Average cost per watt: ₹{(calc.perWp || 0).toFixed(2)}/Wp (incl. GST)
-              </div>
-            </div>
-          </div>
+            </>
+          )}
 
           <div className="grid grid-cols-2 gap-6 pt-4 border-t border-slate-200 mb-8 avoid-break">
             <div>
