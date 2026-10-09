@@ -97,7 +97,7 @@ export default function AdminLayout({ children }) {
     const isFinanceRole = session?.user?.role === "finance";
 
     const navigation = isFinanceRole ? [
-        { name: '💰 Pricing & Financials', href: '/admin/dashboard/pricing-settings', icon: CurrencyRupeeIcon, solidIcon: CurrencySolid },
+        { name: '📦 Pricing Settings', href: '/admin/dashboard/pricing-settings', icon: CurrencyRupeeIcon, solidIcon: CurrencySolid },
     ] : [
         { name: 'Dashboard', href: '/admin/dashboard', icon: HomeIcon, solidIcon: HomeSolid },
         { name: 'Leads', href: '/admin/leads', icon: InboxStackIcon, solidIcon: InboxSolid },

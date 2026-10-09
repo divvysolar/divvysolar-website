@@ -342,6 +342,7 @@ export default function PricingSettingsPage() {
   };
 
   const isAdmin = session?.user?.role === "admin";
+  const isFinance = session?.user?.role === "finance";
 
   if(loading||!rates) return (
     <div className="flex items-center justify-center py-32">
@@ -386,8 +387,8 @@ export default function PricingSettingsPage() {
         </div>
       )}
 
-      {/* ── 0. Financial & Percentage Controls (Admin & Finance) ── */}
-      {(isAdmin || isFinance) && (
+      {/* ── 0. Financial & Percentage Controls (Super Admin ONLY) ── */}
+      {isAdmin && (
         <section className="rounded-2xl bg-[#0b1329] border-2 border-[#FECB00]/40 p-6 space-y-6 shadow-2xl relative overflow-hidden">
           <div className="absolute top-0 right-0 w-48 h-48 bg-[#FECB00]/5 rounded-full blur-3xl pointer-events-none"></div>
 
