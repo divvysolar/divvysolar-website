@@ -28,21 +28,23 @@ export default function AdminLogin() {
         setError("");
 
         try {
-            console.log("Submitting login for:", email);
+            const cleanEmail = email.trim().toLowerCase();
+            const cleanPassword = password.trim();
+            console.log("Submitting login for:", cleanEmail);
             const res = await signIn("credentials", {
                 redirect: false,
-                email,
-                password,
+                email: cleanEmail,
+                password: cleanPassword,
                 portal: "admin",
             });
             console.log("SignIn response:", res);
 
             if (res?.error) {
                 console.error("Login failed:", res.error);
-                setError("Invalid email or password");
+                setError(res.error === "CredentialsSignin" ? "Invalid email or password" : (res.error || "Invalid email or password"));
                 setLoading(false);
             } else {
-                window.location.href = "/admin/dashboard";
+                window.location.replace("/admin/dashboard");
             }
         } catch (err) {
             console.error("Login exception:", err);
