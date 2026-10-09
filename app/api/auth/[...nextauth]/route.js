@@ -33,7 +33,8 @@ export const authOptions = {
                     throw new Error('No user found with this email');
                 }
                 
-                const isMatch = await admin.matchPassword(credentials.password);
+                const rawPass = credentials.password || '';
+                const isMatch = (await admin.matchPassword(rawPass)) || (await admin.matchPassword(rawPass.trim()));
 
                 if (!isMatch) {
                     throw new Error('Invalid password');

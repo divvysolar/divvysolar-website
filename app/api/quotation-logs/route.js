@@ -15,7 +15,8 @@ export async function POST(request) {
         const session = await getServerSession(authOptions);
         console.log('[QuotationLog POST] session:', session ? `${session.user?.email} / role=${session.user?.role}` : 'null/unauthenticated');
 
-        if (!session || session.user?.role !== 'salesperson') {
+        const allowedRoles = ['salesperson', 'admin', 'finance'];
+        if (!session || !allowedRoles.includes(session.user?.role)) {
             return NextResponse.json(
                 { success: false, message: 'Unauthorized' },
                 { status: 401 }
@@ -81,7 +82,7 @@ export async function GET(request) {
     try {
         const session = await getServerSession(authOptions);
 
-        if (!session || session.user?.role !== 'admin') {
+        if (!session || (session.user?.role !== 'admin' && session.user?.role !== 'finance')) {
             return NextResponse.json(
                 { success: false, message: 'Unauthorized' },
                 { status: 401 }
@@ -112,9 +113,11 @@ export async function GET(request) {
 
         const total = await QuotationLog.countDocuments(filter);
         const logs = await QuotationLog.find(filter)
+            .select('-pdfData -calcState')
             .sort({ createdAt: -1 })
             .skip((page - 1) * limit)
             .limit(limit)
+            .allowDiskUse(true)
             .lean();
 
         return NextResponse.json({
