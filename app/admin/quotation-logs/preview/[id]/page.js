@@ -22,11 +22,10 @@ const ROOF_TYPES = [
 const ALL_STRUCTURE_TYPES = [
     { v: "ms_fabricated", l: "MS Fabricated" },
     { v: "gi", l: "GI Structure" },
-    { v: "hot_dip_gi", l: "Hot-dip GI" },
+    { v: "hot_dip_gi", l: "Elevated GI" },
     { v: "alu_monorail", l: "Aluminium Monorail" },
     { v: "alu_longrail", l: "Aluminium Long rail" },
     { v: "ground_gi", l: "GI Structure (Ground)" },
-    { v: "ground_hot_dip", l: "Hot-dip GI (Ground)" },
     { v: "ground_galvalume", l: "Galvalume (Ground)" }
 ];
 
@@ -213,6 +212,14 @@ export default async function QuotationPreviewPage({ params }) {
     const dateStr = new Date(log.createdAt).toLocaleDateString("en-IN", { day: "numeric", month: "long", year: "numeric" });
     const quoteRefStr = quoteRef || `DS/QP/${new Date(log.createdAt).getFullYear()}/${log._id.toString().substring(18).toUpperCase()}`;
     const customTermRows = customTerms ? customTerms.split('\n').filter(t => t.trim()).map((t, idx) => `<li key="${idx}" style="padding:2px 0">${t}</li>`).join('') : '';
+
+    const modW = (state?.moduleWarranty && state.moduleWarranty.trim()) ? (state.moduleWarranty.toLowerCase().includes('year') ? state.moduleWarranty : `${state.moduleWarranty} Years`) : '25 Years';
+    const invW = (state?.inverterWarranty && state.inverterWarranty.trim()) ? (state.inverterWarranty.toLowerCase().includes('year') ? state.inverterWarranty : `${state.inverterWarranty} Years`) : '5 Years';
+    const batW = (state?.batteryWarranty && state.batteryWarranty.trim()) ? (state.batteryWarranty.toLowerCase().includes('year') ? state.batteryWarranty : `${state.batteryWarranty} Years`) : '5 Years';
+    let dynamicWarrantyTerm = `Warranty: ${modW} performance warranty on solar modules, ${invW} on grid-tie inverters.`;
+    if (systemType === "hybrid" || state?.batteries?.length > 0 || calc?.selectedBatteryDetails?.length > 0) {
+        dynamicWarrantyTerm += ` ${batW} on battery storage system.`;
+    }
 
     const branchKey = state?.issuingBranch || log.issuingBranch || detectBranchOffice(clientLocation) || 'gurgaon';
     const activeOffice = DIVVY_BRANCH_OFFICES[branchKey] || DIVVY_BRANCH_OFFICES.gurgaon;
@@ -587,7 +594,7 @@ export default async function QuotationPreviewPage({ params }) {
                                 <li>Estimated Delivery: 4 to 6 weeks from structural layout approval and receipt of advance.</li>
                                 <li>Grid integration approvals (Net Metering) timeline varies according to State DISCOM.</li>
                                 <li>Quotation validity: 15 days from the date of issuance.</li>
-                                <li>Warranty: 25 years performance warranty on solar modules, 5 years on grid-tie inverters.</li>
+                                <li>{dynamicWarrantyTerm}</li>
                             </ul>
                             {customTerms && customTerms.trim() && (
                                 <>

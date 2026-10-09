@@ -21,11 +21,10 @@ const INVERTER_BRANDS = ["havells","luminous","utl","sungrow","invergy"];
 const STRUCTURE_TYPES_ADMIN = [
   { v: "ms_fabricated", l: "MS Fabricated" },
   { v: "gi", l: "GI Structure" },
-  { v: "hot_dip_gi", l: "Hot-dip GI" },
+  { v: "hot_dip_gi", l: "Elevated GI" },
   { v: "alu_monorail", l: "Aluminium Monorail" },
   { v: "alu_longrail", l: "Aluminium Long rail" },
   { v: "ground_gi", l: "Ground - GI Structure" },
-  { v: "ground_hot_dip", l: "Ground - Hot-dip GI" },
   { v: "ground_galvalume", l: "Ground - Galvalume" },
 ];
 const cap = s => (s && typeof s === 'string') ? (s.charAt(0).toUpperCase() + s.slice(1)) : (s || '');
@@ -353,20 +352,17 @@ export default function PricingSettingsPage() {
     </div>
   );
 
-  const allModuleBrands = Array.from(new Set([
-    "waaree", "vikram", "adani", "jakson", "havells", "luminous", "eastman",
-    ...Object.keys(rates.modules || {}).filter(k => k !== 'typeAdder' && !k.startsWith('$'))
-  ]));
+  const allModuleBrands = rates.modules
+    ? Object.keys(rates.modules).filter(k => k !== 'typeAdder' && !k.startsWith('$'))
+    : ["waaree", "vikram", "adani", "jakson", "havells", "luminous", "eastman"];
 
-  const allInverterBrands = Array.from(new Set([
-    "havells", "luminous", "utl", "sungrow", "invergy", "eastman",
-    ...Object.keys(rates.inverters || {}).filter(k => !k.startsWith('$'))
-  ]));
+  const allInverterBrands = rates.inverters
+    ? Object.keys(rates.inverters).filter(k => !k.startsWith('$'))
+    : ["havells", "luminous", "utl", "sungrow", "invergy", "eastman"];
 
-  const allBatteryBrands = Array.from(new Set([
-    "eastman", "exide", "luminous", "livguard", "amaron", "dyness",
-    ...Object.keys(rates.batteries || {}).filter(k => !k.startsWith('$'))
-  ]));
+  const allBatteryBrands = rates.batteries
+    ? Object.keys(rates.batteries).filter(k => !k.startsWith('$'))
+    : [];
 
   return (
     <div className="space-y-8">
@@ -731,6 +727,8 @@ export default function PricingSettingsPage() {
 
           <NumInput label="GI Walkway (₹/m)" value={rates.walkwayGiRate} onChange={v=>update("walkwayGiRate",v)}/>
           <NumInput label="FRP Walkway (₹/m)" value={rates.walkwayFrpRate} onChange={v=>update("walkwayFrpRate",v)}/>
+          <NumInput label="uPVC Conduit Pipe (₹/m)" value={rates.conduitUpvcRate ?? 65} onChange={v=>update("conduitUpvcRate",v)}/>
+          <NumInput label="GI Cable Tray (₹/m)" value={rates.cableTrayRate ?? 280} onChange={v=>update("cableTrayRate",v)}/>
           <NumInput label="Safety Line (₹/m)" value={rates.safetyLineRate} onChange={v=>update("safetyLineRate",v)}/>
           <NumInput label="MC4 Connectors (₹/pair)" value={rates.mc4ConnectorRate} onChange={v=>update("mc4ConnectorRate",v)}/>
           <NumInput label="ACDB Combiner (₹/kW)" value={rates.acdbRatePerKw} onChange={v=>update("acdbRatePerKw",v)}/>
