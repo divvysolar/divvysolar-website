@@ -386,8 +386,8 @@ export default function PricingSettingsPage() {
         </div>
       )}
 
-      {/* ── 0. Financial & Percentage Controls (Admin Only) ── */}
-      {isAdmin && (
+      {/* ── 0. Financial & Percentage Controls (Admin & Finance) ── */}
+      {(isAdmin || isFinance) && (
         <section className="rounded-2xl bg-[#0b1329] border-2 border-[#FECB00]/40 p-6 space-y-6 shadow-2xl relative overflow-hidden">
           <div className="absolute top-0 right-0 w-48 h-48 bg-[#FECB00]/5 rounded-full blur-3xl pointer-events-none"></div>
 
@@ -399,14 +399,14 @@ export default function PricingSettingsPage() {
               <div>
                 <div className="flex items-center gap-2">
                   <h2 className="text-lg font-black text-white">
-                    Residential Pricing &amp; Margin Controls
+                    Company Profit Margins &amp; Financial Controls
                   </h2>
                   <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-[#FECB00] text-[#070b15]">
                     Admin Full Power
                   </span>
                 </div>
                 <p className="text-white/50 text-xs mt-0.5">
-                  Set company profit margins, salesperson discount negotiation limits, and composite GST rate.
+                  Set company profit margins, salesperson discount negotiation limits, GST rate, and default payment milestones.
                 </p>
               </div>
             </div>
@@ -421,31 +421,33 @@ export default function PricingSettingsPage() {
           </div>
 
           {/* Key Percentage Controls */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
             {/* Residential Controls */}
             <div className="p-4 rounded-xl bg-emerald-500/5 border border-emerald-500/20 space-y-3">
               <div className="flex items-center justify-between">
-                <span className="text-xs font-bold uppercase tracking-wider text-emerald-400">Residential Solar</span>
-                <span className="text-[10px] text-emerald-400/70 bg-emerald-400/10 px-2 py-0.5 rounded">Rooftop</span>
+                <span className="text-xs font-bold uppercase tracking-wider text-emerald-400">Residential Solar (&lt; 100 kWp)</span>
+                <span className="text-[10px] text-emerald-400/70 bg-emerald-400/10 px-2 py-0.5 rounded">Standard Tier</span>
               </div>
-              <NumInput 
-                label="Residential Profit Margin" 
-                value={rates.financialSettings?.residential?.profitMarginPercent ?? rates.financialSettings?.profitMarginPercent ?? 17} 
-                onChange={v => {
-                  update("financialSettings.residential.profitMarginPercent", v);
-                  update("financialSettings.profitMarginPercent", v);
-                }} 
-                unit="%" 
-              />
-              <NumInput 
-                label="Max Sales Discount" 
-                value={rates.financialSettings?.residential?.maxDiscountPercent ?? rates.financialSettings?.maxDiscountPercent ?? 5} 
-                onChange={v => {
-                  update("financialSettings.residential.maxDiscountPercent", v);
-                  update("financialSettings.maxDiscountPercent", v);
-                }} 
-                unit="%" 
-              />
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <NumInput 
+                  label="Profit Margin %" 
+                  value={rates.financialSettings?.residential?.profitMarginPercent ?? rates.financialSettings?.profitMarginPercent ?? 17} 
+                  onChange={v => {
+                    update("financialSettings.residential.profitMarginPercent", v);
+                    update("financialSettings.profitMarginPercent", v);
+                  }} 
+                  unit="%" 
+                />
+                <NumInput 
+                  label="Max Sales Discount %" 
+                  value={rates.financialSettings?.residential?.maxDiscountPercent ?? rates.financialSettings?.maxDiscountPercent ?? 5} 
+                  onChange={v => {
+                    update("financialSettings.residential.maxDiscountPercent", v);
+                    update("financialSettings.maxDiscountPercent", v);
+                  }} 
+                  unit="%" 
+                />
+              </div>
               <p className="text-[10.5px] text-emerald-300/80 leading-relaxed">
                 Applied on Residential Rooftop systems and plants under 100 kWp.
               </p>
@@ -454,42 +456,55 @@ export default function PricingSettingsPage() {
             {/* Industrial Controls */}
             <div className="p-4 rounded-xl bg-blue-500/5 border border-blue-500/20 space-y-3">
               <div className="flex items-center justify-between">
-                <span className="text-xs font-bold uppercase tracking-wider text-blue-400">Industrial & Commercial</span>
-                <span className="text-[10px] text-blue-400/70 bg-blue-400/10 px-2 py-0.5 rounded">100 kW+ / C&I</span>
+                <span className="text-xs font-bold uppercase tracking-wider text-blue-400">Industrial &amp; Commercial (100 kW+ / C&amp;I)</span>
+                <span className="text-[10px] text-blue-400/70 bg-blue-400/10 px-2 py-0.5 rounded">Volume / C&amp;I Tier</span>
               </div>
-              <NumInput 
-                label="Industrial Profit Margin" 
-                value={rates.financialSettings?.industrial?.profitMarginPercent ?? 8} 
-                onChange={v => update("financialSettings.industrial.profitMarginPercent", v)} 
-                unit="%" 
-              />
-              <NumInput 
-                label="Max Allowed Discount" 
-                value={rates.financialSettings?.industrial?.maxDiscountPercent ?? 3} 
-                onChange={v => update("financialSettings.industrial.maxDiscountPercent", v)} 
-                unit="%" 
-              />
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <NumInput 
+                  label="Profit Margin %" 
+                  value={rates.financialSettings?.industrial?.profitMarginPercent ?? 8} 
+                  onChange={v => update("financialSettings.industrial.profitMarginPercent", v)} 
+                  unit="%" 
+                />
+                <NumInput 
+                  label="Max Allowed Discount %" 
+                  value={rates.financialSettings?.industrial?.maxDiscountPercent ?? 3} 
+                  onChange={v => update("financialSettings.industrial.maxDiscountPercent", v)} 
+                  unit="%" 
+                />
+              </div>
               <p className="text-[10.5px] text-blue-300/80 leading-relaxed">
-                Applied on Industrial proposals and large projects 100 kWp & above.
+                Applied on Industrial proposals and large projects 100 kWp &amp; above.
               </p>
             </div>
+          </div>
 
-            {/* General GST & Financials */}
-            <div className="p-4 rounded-xl bg-white/5 border border-white/10 space-y-3">
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-bold uppercase tracking-wider text-white/70">Tax & Milestones</span>
-                <span className="text-[10px] text-white/40 bg-white/10 px-2 py-0.5 rounded">Statutory</span>
-              </div>
-              <NumInput 
-                label="Standard Solar GST" 
-                value={rates.financialSettings?.gstPercent ?? 8.9} 
-                onChange={v => update("financialSettings.gstPercent", v)} 
-                unit="%" 
-              />
-              <p className="text-[10.5px] text-slate-400 leading-relaxed">
-                Standard composite EPC GST rate on complete solar supply & installation (8.90%).
-              </p>
-            </div>
+          {/* Global GST & Payment Milestones */}
+          <div className="pt-2 border-t border-white/10 grid grid-cols-2 sm:grid-cols-4 gap-4">
+            <NumInput 
+              label="Standard Solar GST %" 
+              unit="%" 
+              value={rates.financialSettings?.gstPercent ?? 8.9} 
+              onChange={v => update("financialSettings.gstPercent", v)}
+            />
+            <NumInput 
+              label="Advance Booking %" 
+              unit="%" 
+              value={rates.financialSettings?.advancePaymentPercent ?? 10} 
+              onChange={v => update("financialSettings.advancePaymentPercent", v)}
+            />
+            <NumInput 
+              label="Material Dispatch %" 
+              unit="%" 
+              value={rates.financialSettings?.dispatchPaymentPercent ?? 85} 
+              onChange={v => update("financialSettings.dispatchPaymentPercent", v)}
+            />
+            <NumInput 
+              label="Handover / Comm. %" 
+              unit="%" 
+              value={rates.financialSettings?.handoverPaymentPercent ?? 5} 
+              onChange={v => update("financialSettings.handoverPaymentPercent", v)}
+            />
           </div>
         </section>
       )}
@@ -763,90 +778,7 @@ export default function PricingSettingsPage() {
         </div>
       </section>
 
-      {/* ── 8. Financial Markups & Segment Profit Margins (Admin & Finance) ── */}
-      <section className="rounded-2xl bg-white/5 border border-white/10 p-6 space-y-6">
-        <div className="flex items-center gap-3">
-          <BanknotesIcon className="w-6 h-6 text-[#FECB00]"/>
-          <div>
-            <h2 className="text-lg font-bold text-white">Segment Profit Margins &amp; Financial Controls</h2>
-            <p className="text-white/40 text-xs mt-0.5">Control company profit margins and discount limits independently for Residential vs Industrial projects.</p>
-          </div>
-        </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {/* Residential Card */}
-          <div className="p-4 rounded-xl bg-white/3 border border-white/5 space-y-4">
-            <div className="flex items-center justify-between pb-2 border-b border-white/5">
-              <span className="text-sm font-bold text-[#FECB00] uppercase tracking-wider">Residential Solar (&lt; 100 kW)</span>
-              <span className="text-[10px] px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 font-bold">Standard Tier</span>
-            </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <NumInput 
-                label="Profit Margin %" 
-                unit="%" 
-                value={rates.financialSettings?.residential?.profitMarginPercent ?? (rates.financialSettings?.profitMarginPercent ?? 17)} 
-                onChange={v => update("financialSettings.residential.profitMarginPercent", v)}
-              />
-              <NumInput 
-                label="Max Sales Discount %" 
-                unit="%" 
-                value={rates.financialSettings?.residential?.maxDiscountPercent ?? (rates.financialSettings?.maxDiscountPercent ?? 5)} 
-                onChange={v => update("financialSettings.residential.maxDiscountPercent", v)}
-              />
-            </div>
-          </div>
-
-          {/* Industrial / C&I Card */}
-          <div className="p-4 rounded-xl bg-white/3 border border-white/5 space-y-4">
-            <div className="flex items-center justify-between pb-2 border-b border-white/5">
-              <span className="text-sm font-bold text-[#FECB00] uppercase tracking-wider">Industrial &amp; Commercial (100 kW+ / C&amp;I)</span>
-              <span className="text-[10px] px-2 py-0.5 rounded bg-cyan-500/20 text-cyan-300 font-bold">Volume / C&amp;I Tier</span>
-            </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <NumInput 
-                label="Profit Margin %" 
-                unit="%" 
-                value={rates.financialSettings?.industrial?.profitMarginPercent ?? 8} 
-                onChange={v => update("financialSettings.industrial.profitMarginPercent", v)}
-              />
-              <NumInput 
-                label="Max Sales Discount %" 
-                unit="%" 
-                value={rates.financialSettings?.industrial?.maxDiscountPercent ?? 3} 
-                onChange={v => update("financialSettings.industrial.maxDiscountPercent", v)}
-              />
-            </div>
-          </div>
-        </div>
-
-        {/* Global GST & Payment Milestones */}
-        <div className="pt-2 border-t border-white/5 grid grid-cols-2 sm:grid-cols-4 gap-4">
-          <NumInput 
-            label="Standard Solar GST %" 
-            unit="%" 
-            value={rates.financialSettings?.gstPercent ?? 8.9} 
-            onChange={v => update("financialSettings.gstPercent", v)}
-          />
-          <NumInput 
-            label="Advance Booking %" 
-            unit="%" 
-            value={rates.financialSettings?.advancePaymentPercent ?? 10} 
-            onChange={v => update("financialSettings.advancePaymentPercent", v)}
-          />
-          <NumInput 
-            label="Material Dispatch %" 
-            unit="%" 
-            value={rates.financialSettings?.dispatchPaymentPercent ?? 85} 
-            onChange={v => update("financialSettings.dispatchPaymentPercent", v)}
-          />
-          <NumInput 
-            label="Handover / Comm. %" 
-            unit="%" 
-            value={rates.financialSettings?.handoverPaymentPercent ?? 5} 
-            onChange={v => update("financialSettings.handoverPaymentPercent", v)}
-          />
-        </div>
-      </section>
 
 
       {/* ── 9. Standard Company Terms & Conditions (Fixed on Proposals) ── */}

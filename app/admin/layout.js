@@ -38,54 +38,43 @@ export default function AdminLayout({ children }) {
     const [mobileOpen, setMobileOpen] = useState(false);
 
     useEffect(() => {
-        console.log(`AdminLayout Check -> Status: ${status}, Path: ${pathname}`);
-        if (status === "unauthenticated" && pathname !== "/admin") {
-            console.log("Redirecting unauthenticated user to login");
-            router.push("/admin");
-        } else if (status === "authenticated") {
+        if (status === "loading") return;
+
+        if (status === "unauthenticated") {
+            if (pathname !== "/admin") {
+                router.replace("/admin");
+            }
+            return;
+        }
+
+        if (status === "authenticated") {
             const role = session?.user?.role;
             if (role === "admin") {
                 if (pathname === "/admin") {
-                    console.log("Redirecting authenticated user to dashboard");
-                    router.push("/admin/dashboard");
+                    router.replace("/admin/dashboard");
                 }
             } else if (role === "finance") {
                 if (pathname === "/admin" || pathname === "/admin/dashboard" || pathname === "/admin/leads" || pathname === "/admin/quotation-logs" || pathname === "/admin/blogs" || pathname === "/admin/salespersons") {
-                    console.log("Redirecting finance user to pricing settings");
-                    router.push("/admin/dashboard/pricing-settings");
+                    router.replace("/admin/dashboard/pricing-settings");
                 }
             } else if (role === "salesperson") {
                 if (pathname === "/admin") {
-                    console.log("Salesperson on admin login page: logging out");
-                    signOut({ callbackUrl: "/admin" });
+                    signOut({ redirect: false });
                 } else {
-                    console.log("Access denied: Redirecting non-admin to sales portal");
-                    router.push("/sales/pricing");
+                    router.replace("/sales/pricing");
                 }
             } else if (role) {
-                // If they have a role but it's neither admin, finance nor salesperson, sign them out
                 signOut({ callbackUrl: "/admin" });
             }
-            // If role is undefined, we just wait (NextAuth might be hydrating)
         }
     }, [status, pathname, router, session]);
 
-    if (status === "unauthenticated" && pathname !== "/admin") {
-        return null;
-    }
-
-    if (status === "authenticated" && session?.user?.role !== "admin" && session?.user?.role !== "finance") {
-        return null;
-    }
-
-    if (status === "authenticated" && pathname === "/admin") {
-        return null;
-    }
-
+    // 1. On login page, render login form directly
     if (pathname === "/admin") {
         return <div className="min-h-screen">{children}</div>;
     }
 
+    // 2. While resolving session on protected pages, show loader
     if (status === "loading") {
         return (
             <div className="min-h-screen bg-[#0f172a] flex items-center justify-center">
@@ -98,6 +87,11 @@ export default function AdminLayout({ children }) {
                 </div>
             </div>
         );
+    }
+
+    // 3. If unauthenticated or unauthorized role, render nothing while redirecting
+    if (status === "unauthenticated" || (session?.user?.role !== "admin" && session?.user?.role !== "finance")) {
+        return null;
     }
 
     const isFinanceRole = session?.user?.role === "finance";

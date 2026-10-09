@@ -13,10 +13,15 @@ function formatINR(n) {
     }).format(n || 0);
 }
 
+const cap = s => (s ? s.charAt(0).toUpperCase() + s.slice(1) : '');
+
 const ROOF_TYPES = [
     { v: "concrete", l: "Flat Concrete Roof" },
     { v: "tin", l: "Tin Shade / Metal Roof" },
     { v: "tile", l: "Tile Roof" },
+    { v: "rcc", l: "RCC Roof" },
+    { v: "profile", l: "Industrial Shed / Metal Profile" },
+    { v: "ground", l: "Ground-Mounted" }
 ];
 
 const ALL_STRUCTURE_TYPES = [
@@ -126,7 +131,16 @@ export default async function QuotationPreviewPage({ params }) {
                         </Link>
                         <h1 className="text-sm font-bold">Quotation Legacy PDF Preview</h1>
                     </div>
-                    <span className="text-xs text-white/40">Legacy PDF rendering</span>
+                    <div className="flex items-center gap-3">
+                        <a 
+                            href={`/api/quotation-logs/${log._id}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="px-3.5 py-1.5 rounded-lg bg-[#FECB00] text-slate-900 text-xs font-bold hover:bg-[#FECB00]/90 transition-colors"
+                        >
+                            Download Stored PDF
+                        </a>
+                    </div>
                 </header>
                 <div className="flex-1 w-full bg-[#0f172a] flex items-center justify-center p-4">
                     <iframe 
@@ -145,7 +159,7 @@ export default async function QuotationPreviewPage({ params }) {
                 <div>
                     <h1 className="text-xl font-bold text-red-400">Preview Unavailable</h1>
                     <p className="text-white/50 text-sm mt-2 max-w-md">
-                        This log entry was created before state logging was introduced and does not contain PDF document data.
+                        This log entry does not contain calculator state data or stored PDF.
                     </p>
                     <Link href="/admin/quotation-logs" className="inline-block mt-6 px-4 py-2 rounded-xl bg-white/5 border border-white/10 text-sm font-semibold hover:bg-white/10 transition-colors">
                         Back to Logs
@@ -157,7 +171,7 @@ export default async function QuotationPreviewPage({ params }) {
 
     let state;
     try {
-        state = JSON.parse(log.calcState);
+        state = typeof log.calcState === 'string' ? JSON.parse(log.calcState) : log.calcState;
     } catch (e) {
         return (
             <div className="min-h-screen bg-[#0f172a] text-white flex items-center justify-center p-6 text-center">
@@ -170,36 +184,47 @@ export default async function QuotationPreviewPage({ params }) {
     }
 
     const {
-        clientName,
-        clientPhone,
-        clientLocation,
-        quoteRef,
-        systemKW,
-        projectCategory,
-        connectedLoad,
-        roofType,
-        dgSync,
-        customTerms,
-        dcCableM,
-        invToAcdbCableM,
-        acdbToMainCableM,
-        earthingType,
-        laType,
-        walkwayType,
-        walkwayM,
-        customSafety,
-        discomType,
-        discom,
-        incBos,
-        incEng,
-        incMon,
-        incTrans,
+        clientName = log.clientName || '',
+        clientPhone = log.clientPhone || '',
+        clientLocation = log.clientLocation || '',
+        quoteRef = log.quoteRef || '',
+        systemKW = log.systemKW || 0,
+        systemType = 'ongrid',
+        modules = [],
+        inverters = [],
+        batteries = [],
+        structures = [],
+        projectCategory = log.projectCategory || 'residential',
+        connectedLoad = '',
+        roofType = 'concrete',
+        dgSync = false,
+        customTerms = '',
+        dcCablesList = [],
+        dcCableM = 0,
+        invToAcdbCableM = 0,
+        acdbToMainCableM = 0,
+        earthingType = 'cu_bonded',
+        laType = 'conventional',
+        walkway = false,
+        walkwayType = 'gi',
+        walkwayM = 0,
+        customSafety = 0,
+        conduit = false,
+        conduitUpvcM = 0,
+        cableTrayM = 0,
+        discomType = '',
+        discom = false,
+        incBos = false,
+        incEng = false,
+        incMon = false,
+        incTrans = false,
+        hideItemizedPricing = false,
         advancePercent: stateAdvP,
         dispatchPercent: stateDispP,
         handoverPercent: stateHandP,
-        calc,
-        rates
-    } = state;
+        calc = {},
+        rates = {}
+    } = state || {};
 
     const advP = stateAdvP ?? calc?.advancePercent ?? 10;
     const dispP = stateDispP ?? calc?.dispatchPercent ?? 85;
@@ -208,7 +233,12 @@ export default async function QuotationPreviewPage({ params }) {
     const dispAmt = calc?.dispatchAmount || (calc?.grandTotal ? calc.grandTotal * (dispP / 100) : 0);
     const handAmt = calc?.handoverAmount || (calc?.grandTotal ? calc.grandTotal * (handP / 100) : 0);
 
-    const projectTypeLabel = projectCategory === "residential" ? "RESIDENTIAL OFFER" : projectCategory === "industrial" ? "INDUSTRIAL PROPOSAL" : "UTILITY-SCALE PROPOSAL";
+    const projectTypeLabel = projectCategory === "residential" 
+        ? "RESIDENTIAL SOLAR PROPOSAL" 
+        : projectCategory === "industrial" 
+            ? "INDUSTRIAL / C&I SOLAR PROPOSAL" 
+            : "UTILITY-SCALE SOLAR PROPOSAL";
+    
     const dateStr = new Date(log.createdAt).toLocaleDateString("en-IN", { day: "numeric", month: "long", year: "numeric" });
     const quoteRefStr = quoteRef || `DS/QP/${new Date(log.createdAt).getFullYear()}/${log._id.toString().substring(18).toUpperCase()}`;
     const customTermRows = customTerms ? customTerms.split('\n').filter(t => t.trim()).map((t, idx) => `<li key="${idx}" style="padding:2px 0">${t}</li>`).join('') : '';
@@ -216,59 +246,89 @@ export default async function QuotationPreviewPage({ params }) {
     const modW = (state?.moduleWarranty && state.moduleWarranty.trim()) ? (state.moduleWarranty.toLowerCase().includes('year') ? state.moduleWarranty : `${state.moduleWarranty} Years`) : '25 Years';
     const invW = (state?.inverterWarranty && state.inverterWarranty.trim()) ? (state.inverterWarranty.toLowerCase().includes('year') ? state.inverterWarranty : `${state.inverterWarranty} Years`) : '5 Years';
     const batW = (state?.batteryWarranty && state.batteryWarranty.trim()) ? (state.batteryWarranty.toLowerCase().includes('year') ? state.batteryWarranty : `${state.batteryWarranty} Years`) : '5 Years';
+    
     let dynamicWarrantyTerm = `Warranty: ${modW} performance warranty on solar modules, ${invW} on grid-tie inverters.`;
-    if (systemType === "hybrid" || state?.batteries?.length > 0 || calc?.selectedBatteryDetails?.length > 0) {
+    if (systemType === "hybrid" || (batteries && batteries.length > 0) || (calc?.selectedBatteryDetails && calc.selectedBatteryDetails.length > 0)) {
         dynamicWarrantyTerm += ` ${batW} on battery storage system.`;
     }
 
     const branchKey = state?.issuingBranch || log.issuingBranch || detectBranchOffice(clientLocation) || 'gurgaon';
     const activeOffice = DIVVY_BRANCH_OFFICES[branchKey] || DIVVY_BRANCH_OFFICES.gurgaon;
 
-    // Rebuild Rows identical to client side
+    // ── BUILD ROWS FOR TABLE ────────────────────────────────────────────────
     let rows = [];
     let sno = 1;
 
     // 1. Modules
-    rows.push({
-        sno: sno++,
-        particulars: `<strong>Solar Modules:</strong> ${calc?.selMod?.modelName || "N/A"}<br/><span style="font-size:10px;color:#64748b">Tier-1 High-efficiency PV modules</span>`,
-        qty: systemKW * 1000,
-        unit: 'Wp',
-        rate: calc?.modRate || 0,
-        cost: calc?.moduleCost || 0
-    });
-
-    // 2. Inverters
-    calc?.selectedInverterDetails?.forEach(inv => {
+    if (calc?.selectedModuleDetails?.length > 0) {
+        calc.selectedModuleDetails.forEach(mod => {
+            rows.push({
+                sno: sno++,
+                particulars: `<strong>Solar Modules (${cap(mod.brand)}):</strong> ${mod.modelName || "N/A"}<br/><span style="font-size:9px;color:#64748b">Tier-1 High-efficiency PV modules (${mod.wattage}Wp)</span>`,
+                qty: mod.itemWp,
+                unit: 'Wp',
+                rate: hideItemizedPricing ? 'Included' : formatINR(mod.ratePerWp || 0),
+                cost: hideItemizedPricing ? 'Included' : formatINR(mod.cost || 0)
+            });
+        });
+    } else {
         rows.push({
             sno: sno++,
-            particulars: `<strong>Solar Grid-Tie Inverter:</strong> ${inv.modelName}<br/><span style="font-size:10px;color:#64748b">Multi-MPPT High-efficiency inverter system</span>`,
-            qty: inv.qty,
-            unit: 'Nos',
-            rate: inv.cost / (inv.qty || 1),
-            cost: inv.cost
+            particulars: `<strong>Solar Modules:</strong> ${calc?.selMod?.modelName || "Standard Tier-1"}<br/><span style="font-size:9px;color:#64748b">Tier-1 High-efficiency PV modules</span>`,
+            qty: systemKW * 1000,
+            unit: 'Wp',
+            rate: hideItemizedPricing ? 'Included' : formatINR(calc?.modRate || 0),
+            cost: hideItemizedPricing ? 'Included' : formatINR(calc?.moduleCost || 0)
         });
-    });
+    }
+
+    // 2. Inverters
+    if (calc?.selectedInverterDetails?.length > 0) {
+        calc.selectedInverterDetails.forEach(inv => {
+            rows.push({
+                sno: sno++,
+                particulars: `<strong>Solar Grid-Tie Inverter:</strong> ${inv.modelName}<br/><span style="font-size:9px;color:#64748b">Multi-MPPT High-efficiency inverter system</span>`,
+                qty: inv.qty,
+                unit: 'Nos',
+                rate: hideItemizedPricing ? 'Included' : formatINR(inv.cost / (inv.qty || 1)),
+                cost: hideItemizedPricing ? 'Included' : formatINR(inv.cost)
+            });
+        });
+    }
+
+    // 2b. Batteries (if hybrid)
+    if (calc?.selectedBatteryDetails?.length > 0) {
+        calc.selectedBatteryDetails.forEach(bat => {
+            rows.push({
+                sno: sno++,
+                particulars: `<strong>Battery Storage System (${cap(bat.brand)}):</strong> ${bat.modelName}<br/><span style="font-size:9px;color:#64748b">Deep-cycle energy storage bank</span>`,
+                qty: bat.qty,
+                unit: 'Nos',
+                rate: hideItemizedPricing ? 'Included' : formatINR(bat.cost / (bat.qty || 1)),
+                cost: hideItemizedPricing ? 'Included' : formatINR(bat.cost)
+            });
+        });
+    }
 
     // 3. Panels (ACDB/DCDB)
     if (calc?.acdbCost > 0) {
         rows.push({
             sno: sno++,
-            particulars: `<strong>ACDB Combiner / Panel</strong><br/><span style='font-size:10px;color:#64748b'>L&T / Elmex / Schneider / Reputed Make</span>`,
+            particulars: `<strong>ACDB Combiner / Panel</strong><br/><span style='font-size:9px;color:#64748b'>L&T / Elmex / Schneider / Reputed Make</span>`,
             qty: systemKW,
             unit: 'kW',
-            rate: rates?.acdbRatePerKw || 0,
-            cost: calc.acdbCost
+            rate: hideItemizedPricing ? 'Included' : formatINR(calc?.acdbRate || rates?.acdbRatePerKw || 0),
+            cost: hideItemizedPricing ? 'Included' : formatINR(calc.acdbCost)
         });
     }
     if (calc?.dcdbCost > 0) {
         rows.push({
             sno: sno++,
-            particulars: `<strong>DCDB Combiner / Panel</strong><br/><span style='font-size:10px;color:#64748b'>Reputed Make</span>`,
+            particulars: `<strong>DCDB Combiner / Panel</strong><br/><span style='font-size:9px;color:#64748b'>Reputed Make</span>`,
             qty: systemKW,
             unit: 'kW',
-            rate: rates?.dcdbRatePerKw || 0,
-            cost: calc.dcdbCost
+            rate: hideItemizedPricing ? 'Included' : formatINR(calc?.dcdbRate || rates?.dcdbRatePerKw || 0),
+            cost: hideItemizedPricing ? 'Included' : formatINR(calc.dcdbCost)
         });
     }
 
@@ -277,18 +337,18 @@ export default async function QuotationPreviewPage({ params }) {
         const stLabel = ALL_STRUCTURE_TYPES.find(opt => opt.v === st.type)?.l || st.type || "N/A";
         rows.push({
             sno: sno++,
-            particulars: `<strong>Mounting Structure:</strong> ${stLabel}<br/><span style="font-size:10px;color:#64748b">Wind load sustained structural rails & clamps</span>`,
+            particulars: `<strong>Mounting Structure:</strong> ${stLabel}<br/><span style="font-size:9px;color:#64748b">Wind load sustained structural rails & clamps</span>`,
             qty: st.kw,
             unit: 'kW',
-            rate: st.rate,
-            cost: st.cost
+            rate: hideItemizedPricing ? 'Included' : formatINR(st.rate || 0),
+            cost: hideItemizedPricing ? 'Included' : formatINR(st.cost || 0)
         });
     });
 
     // Structure Accessories
     rows.push({
         sno: sno++,
-        particulars: `<strong>Structure Accessories:</strong> SS 304 Nut Bolts & Fasteners<br/><span style='font-size:10px;color:#64748b'>Anti-corrosion hardware for mechanical integrity</span>`,
+        particulars: `<strong>Structure Accessories:</strong> SS 304 Nut Bolts & Fasteners<br/><span style='font-size:9px;color:#64748b'>Anti-corrosion hardware for mechanical integrity</span>`,
         qty: systemKW,
         unit: 'kW',
         rate: 'Included',
@@ -296,34 +356,48 @@ export default async function QuotationPreviewPage({ params }) {
     });
 
     // Cables
-    if (dcCableM > 0) {
+    if (calc?.selectedDcCablesDetails?.length > 0) {
+        calc.selectedDcCablesDetails.forEach(item => {
+            if (item.meters > 0) {
+                rows.push({
+                    sno: sno++,
+                    particulars: `<strong>DC Solar Cable (${item.brandLabel || 'Polycab'}):</strong> ${item.cableLabel}<br/><span style="font-size:9px;color:#64748b">Tinned copper flexible single-core solar wire</span>`,
+                    qty: item.meters,
+                    unit: 'm',
+                    rate: hideItemizedPricing ? 'Included' : formatINR(item.rate || 0),
+                    cost: hideItemizedPricing ? 'Included' : formatINR(item.cost || 0)
+                });
+            }
+        });
+    } else if (dcCableM > 0) {
         rows.push({
             sno: sno++,
-            particulars: `<strong>DC Solar Cable:</strong> ${calc?.selDcCable?.label || "N/A"}<br/><span style="font-size:10px;color:#64748b">Tinned copper flexible single-core solar wire</span>`,
+            particulars: `<strong>DC Solar Cable:</strong> ${calc?.selDcCable?.label || "Solar DC Cable"}<br/><span style="font-size:9px;color:#64748b">Tinned copper flexible single-core solar wire</span>`,
             qty: dcCableM,
             unit: 'm',
-            rate: calc?.dcRate || 0,
-            cost: calc?.dcCost || 0
+            rate: hideItemizedPricing ? 'Included' : formatINR(calc?.dcRate || 0),
+            cost: hideItemizedPricing ? 'Included' : formatINR(calc?.dcCost || 0)
         });
     }
+
     if (invToAcdbCableM > 0) {
         rows.push({
             sno: sno++,
-            particulars: `<strong>AC Cable (Inv to ACDB):</strong> ${calc?.selInvToAcdbCable?.label || "N/A"}<br/><span style="font-size:10px;color:#64748b">Multicore flexible AC cabling run</span>`,
+            particulars: `<strong>AC Cable (Inv to ACDB):</strong> ${calc?.selInvToAcdbCable?.label || "Multicore AC Cable"}<br/><span style="font-size:9px;color:#64748b">Multicore flexible AC cabling run</span>`,
             qty: invToAcdbCableM,
             unit: 'm',
-            rate: calc?.selInvToAcdbCable?.ratePerMeter || 0,
-            cost: calc?.invToAcdbCost || 0
+            rate: hideItemizedPricing ? 'Included' : formatINR(calc?.selInvToAcdbCable?.ratePerMeter || calc?.invToAcdbRate || 0),
+            cost: hideItemizedPricing ? 'Included' : formatINR(calc?.invToAcdbCost || 0)
         });
     }
     if (acdbToMainCableM > 0) {
         rows.push({
             sno: sno++,
-            particulars: `<strong>AC Cable (ACDB to Main):</strong> ${calc?.selAcdbToMainCable?.label || "N/A"}<br/><span style="font-size:10px;color:#64748b">AC distribution armored/unarmored cable</span>`,
+            particulars: `<strong>AC Cable (ACDB to Main):</strong> ${calc?.selAcdbToMainCable?.label || "Armored/Unarmored AC Cable"}<br/><span style="font-size:9px;color:#64748b">AC distribution cable run</span>`,
             qty: acdbToMainCableM,
             unit: 'm',
-            rate: calc?.selAcdbToMainCable?.ratePerMeter || 0,
-            cost: calc?.acdbToMainCost || 0
+            rate: hideItemizedPricing ? 'Included' : formatINR(calc?.selAcdbToMainCable?.ratePerMeter || calc?.acdbToMainRate || 0),
+            cost: hideItemizedPricing ? 'Included' : formatINR(calc?.acdbToMainCost || 0)
         });
     }
 
@@ -331,61 +405,91 @@ export default async function QuotationPreviewPage({ params }) {
     if (calc?.pitsCount > 0) {
         rows.push({
             sno: sno++,
-            particulars: `<strong>Chemical Earthing Pits:</strong> ${EARTHING_OPTS.find(e => e.v === earthingType)?.l || "Chemical Earthing"}<br/><span style="font-size:10px;color:#64748b">Low-resistance maintenance-free earthing</span>`,
+            particulars: `<strong>Chemical Earthing Pits:</strong> ${EARTHING_OPTS.find(e => e.v === earthingType)?.l || "Chemical Earthing"}<br/><span style="font-size:9px;color:#64748b">Low-resistance maintenance-free earthing</span>`,
             qty: calc.pitsCount,
             unit: 'pits',
-            rate: calc.earthingRate,
-            cost: calc.earthingCost
+            rate: hideItemizedPricing ? 'Included' : formatINR(calc.earthingRate || calc.pitRate || 0),
+            cost: hideItemizedPricing ? 'Included' : formatINR(calc.earthingCost || calc.pitsCost || 0)
+        });
+    }
+    if (calc?.earthingWireCost > 0) {
+        rows.push({
+            sno: sno++,
+            particulars: `<strong>Earthing Conductor:</strong> ${calc?.earthingLabel || 'Dedicated Equipment Grounding'}<br/><span style="font-size:9px;color:#64748b">Safety grounding run</span>`,
+            qty: calc.earthingWireMeters || 0,
+            unit: 'm',
+            rate: hideItemizedPricing ? 'Included' : formatINR(calc.earthingWireRate || 0),
+            cost: hideItemizedPricing ? 'Included' : formatINR(calc.earthingWireCost || 0)
         });
     }
     if (calc?.laCount > 0) {
         rows.push({
             sno: sno++,
-            particulars: `<strong>Lightning Protection:</strong> ${laType === "ese" ? "ESE Active" : "Conventional"}<br/><span style="font-size:10px;color:#64748b">Safety shield against high-voltage lightning surges</span>`,
+            particulars: `<strong>Lightning Protection:</strong> ${laType === "ese" ? "ESE Active" : "Conventional"}<br/><span style="font-size:9px;color:#64748b">Safety shield against lightning surges</span>`,
             qty: calc.laCount,
             unit: 'units',
-            rate: laType === "conventional" ? (rates?.laConventionalRate || 0) : (rates?.laEseRate || 0),
-            cost: calc.laCost
+            rate: hideItemizedPricing ? 'Included' : formatINR(calc.laUnitRate || (laType === "conventional" ? (rates?.laConventionalRate || 0) : (rates?.laEseRate || 0))),
+            cost: hideItemizedPricing ? 'Included' : formatINR(calc.laCost)
         });
     }
     if (walkwayM > 0) {
         rows.push({
             sno: sno++,
-            particulars: `<strong>Roof Walkway:</strong> ${walkwayType === "gi" ? "GI Walkway" : "FRP Walkway"}<br/><span style="font-size:10px;color:#64748b">Safe pathway on roof for O&M visits</span>`,
+            particulars: `<strong>Roof Walkway:</strong> ${walkwayType === "gi" ? "GI Walkway" : "FRP Walkway"}<br/><span style="font-size:9px;color:#64748b">Safe pathway on roof for O&M visits</span>`,
             qty: walkwayM,
             unit: 'm',
-            rate: walkwayType === "gi" ? (rates?.walkwayGiRate || 0) : (rates?.walkwayFrpRate || 0),
-            cost: calc.walkCost
+            rate: hideItemizedPricing ? 'Included' : formatINR(calc.walkRate || (walkwayType === "gi" ? (rates?.walkwayGiRate || 0) : (rates?.walkwayFrpRate || 0))),
+            cost: hideItemizedPricing ? 'Included' : formatINR(calc.walkCost)
         });
     }
     if (customSafety > 0) {
         rows.push({
             sno: sno++,
-            particulars: `<strong>Safety Lifeline</strong><br/><span style='font-size:10px;color:#64748b'>Anchor lifeline system for cleaning personnel</span>`,
+            particulars: `<strong>Safety Lifeline</strong><br/><span style='font-size:9px;color:#64748b'>Anchor lifeline system for cleaning personnel</span>`,
             qty: customSafety,
             unit: 'm',
-            rate: rates?.safetyLineRate || 0,
-            cost: calc.safetyCost
+            rate: hideItemizedPricing ? 'Included' : formatINR(calc.safetyLineRate || rates?.safetyLineRate || 0),
+            cost: hideItemizedPricing ? 'Included' : formatINR(calc.safetyCost)
+        });
+    }
+    if (calc?.conduitUpvcCost > 0) {
+        rows.push({
+            sno: sno++,
+            particulars: `<strong>Cable Conduiting:</strong> Rigid uPVC Conduit Pipe<br/><span style='font-size:9px;color:#64748b'>UV-resistant heavy-duty protective cable sleeve</span>`,
+            qty: calc.conduitUpvcMeters || conduitUpvcM,
+            unit: 'm',
+            rate: hideItemizedPricing ? 'Included' : formatINR(calc.conduitUpvcRate || 0),
+            cost: hideItemizedPricing ? 'Included' : formatINR(calc.conduitUpvcCost)
+        });
+    }
+    if (calc?.cableTrayCost > 0) {
+        rows.push({
+            sno: sno++,
+            particulars: `<strong>Cable Tray:</strong> GI Perforated / Ladder Cable Tray<br/><span style='font-size:9px;color:#64748b'>Galvanized heavy-duty cable routing channel</span>`,
+            qty: calc.cableTrayMeters || cableTrayM,
+            unit: 'm',
+            rate: hideItemizedPricing ? 'Included' : formatINR(calc.cableTrayRate || 0),
+            cost: hideItemizedPricing ? 'Included' : formatINR(calc.cableTrayCost)
         });
     }
     if (calc?.mc4Cost > 0) {
         rows.push({
             sno: sno++,
-            particulars: `<strong>MC4 Connectors</strong><br/><span style='font-size:10px;color:#64748b'>Waterproof module string connector links</span>`,
+            particulars: `<strong>MC4 Connectors</strong><br/><span style='font-size:9px;color:#64748b'>Waterproof module string connector links</span>`,
             qty: calc.mc4Pairs,
             unit: 'pairs',
-            rate: rates?.mc4ConnectorRate || 0,
-            cost: calc.mc4Cost
+            rate: hideItemizedPricing ? 'Included' : formatINR(calc.mc4Rate || rates?.mc4ConnectorRate || 0),
+            cost: hideItemizedPricing ? 'Included' : formatINR(calc.mc4Cost)
         });
     }
     if (calc?.mc4BranchCost > 0) {
         rows.push({
             sno: sno++,
-            particulars: `<strong>Branch (Y) Connectors</strong><br/><span style='font-size:10px;color:#64748b'>Parallel string configuration connectors</span>`,
+            particulars: `<strong>Branch (Y) Connectors</strong><br/><span style='font-size:9px;color:#64748b'>Parallel string configuration connectors</span>`,
             qty: calc.mc4BranchQty,
             unit: 'nos',
-            rate: rates?.branchConnectorRate || 0,
-            cost: calc.mc4BranchCost
+            rate: hideItemizedPricing ? 'Included' : formatINR(calc.branchRate || rates?.branchConnectorRate || 0),
+            cost: hideItemizedPricing ? 'Included' : formatINR(calc.mc4BranchCost)
         });
     }
 
@@ -403,7 +507,7 @@ export default async function QuotationPreviewPage({ params }) {
     if (incEng) {
         rows.push({
             sno: sno++,
-            particulars: `<strong>Engineering & Supervision</strong><br/><span style='font-size:10px;color:#64748b'>String designing, Shadow Analysis, electrical design</span>`,
+            particulars: `<strong>Engineering & Supervision</strong><br/><span style='font-size:9px;color:#64748b'>String designing, Shadow Analysis, electrical design</span>`,
             qty: systemKW,
             unit: 'kWp',
             rate: 'Included',
@@ -413,7 +517,7 @@ export default async function QuotationPreviewPage({ params }) {
     if (incMon) {
         rows.push({
             sno: sno++,
-            particulars: `<strong>Remote Monitoring Access</strong><br/><span style='font-size:10px;color:#64748b'>Continuous monitoring through data logger device</span>`,
+            particulars: `<strong>Remote Monitoring Access</strong><br/><span style='font-size:9px;color:#64748b'>Continuous monitoring through data logger device</span>`,
             qty: 1,
             unit: 'Set',
             rate: 'Included',
@@ -423,7 +527,7 @@ export default async function QuotationPreviewPage({ params }) {
     if (incTrans) {
         rows.push({
             sno: sno++,
-            particulars: `<strong>Transportation & Freight</strong><br/><span style='font-size:10px;color:#64748b'>Till site loading and unloading</span>`,
+            particulars: `<strong>Transportation & Freight</strong><br/><span style='font-size:9px;color:#64748b'>Till site loading and unloading</span>`,
             qty: 1,
             unit: 'Job',
             rate: 'Included',
@@ -433,11 +537,11 @@ export default async function QuotationPreviewPage({ params }) {
     if (discom) {
         rows.push({
             sno: sno++,
-            particulars: `<strong>DISCOM Liaising & Net Metering</strong><br/><span style='font-size:10px;color:#64748b'>Net-metering approval process with local electricity authority</span>`,
+            particulars: `<strong>DISCOM Liaising & Net Metering</strong><br/><span style='font-size:9px;color:#64748b'>Net-metering approval process with local electricity authority</span>`,
             qty: 1,
             unit: 'job',
-            rate: discomType === 'single_phase' ? (rates?.discomSinglePhaseCost||0) : discomType === 'three_phase' ? (rates?.discomThreePhaseCost||0) : discomType === 'lt' ? (rates?.discomLtCost||0) : (rates?.discomHtCost||0),
-            cost: calc.discomCost
+            rate: hideItemizedPricing ? 'Included' : formatINR(calc.discomCost || 0),
+            cost: hideItemizedPricing ? 'Included' : formatINR(calc.discomCost || 0)
         });
     }
     rows.push({
@@ -445,8 +549,8 @@ export default async function QuotationPreviewPage({ params }) {
         particulars: `<strong>Installation & Commissioning:</strong> On-site mechanics, engineering execution, panel staging and commissioning`,
         qty: systemKW,
         unit: 'kW',
-        rate: rates?.installationRate || 0,
-        cost: calc.installCost
+        rate: hideItemizedPricing ? 'Included' : formatINR(calc.installRate || rates?.installationRate || 0),
+        cost: hideItemizedPricing ? 'Included' : formatINR(calc.installCost || 0)
     });
 
     return (
@@ -465,12 +569,24 @@ export default async function QuotationPreviewPage({ params }) {
                         <p className="text-[10px] text-white/50">{clientName || 'N/A'} — {systemKW} kW ({projectCategory})</p>
                     </div>
                 </div>
-                <a
-                    href="javascript:window.print()"
-                    className="px-4 py-2 rounded-xl bg-[#FECB00] text-slate-900 text-xs font-bold hover:bg-[#FECB00]/90 transition-all shadow-lg hover:scale-105"
-                >
-                    Print / Save PDF
-                </a>
+                <div className="flex items-center gap-3">
+                    {log?.hasPDF && (
+                        <a
+                            href={`/api/quotation-logs/${log._id}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="px-3.5 py-2 rounded-xl bg-white/10 border border-white/20 text-white text-xs font-bold hover:bg-white/20 transition-all shadow-md"
+                        >
+                            Download Stored PDF
+                        </a>
+                    )}
+                    <a
+                        href="javascript:window.print()"
+                        className="px-4 py-2 rounded-xl bg-[#FECB00] text-slate-900 text-xs font-bold hover:bg-[#FECB00]/90 transition-all shadow-lg hover:scale-105"
+                    >
+                        Print / Save PDF
+                    </a>
+                </div>
             </header>
 
             {/* Print Area */}
@@ -504,16 +620,19 @@ export default async function QuotationPreviewPage({ params }) {
                             <p><strong>Site Location:</strong> {clientLocation || "N/A"}</p>
                             <p><strong>Quotation Prepared By:</strong> {log?.salespersonName || "Divvy Solar Representative"}{log?.salespersonPhone ? ` | Mob: ${log.salespersonPhone}` : ""}</p>
                             <p><strong>Connected Grid Load:</strong> {connectedLoad ? connectedLoad + " kW" : "N/A"}</p>
-                            <p><strong>Type of Roof:</strong> {ROOF_TYPES.find(r => r.v === roofType)?.l || "N/A"}</p>
+                            <p><strong>Type of Roof:</strong> {ROOF_TYPES.find(r => r.v === roofType)?.l || roofType || "N/A"}</p>
                             <p><strong>DG Synchronization:</strong> {dgSync ? "Required" : "Not Required"}</p>
                         </div>
                         <div className="info-box">
                             <h3>Technical Specifications</h3>
                             <p><strong>Proposed Capacity:</strong> {systemKW} kWp (Solar PV Plant)</p>
-                            <p><strong>Solar Modules:</strong> {calc?.selMod?.modelName || "N/A"}{calc?.selMod?.wattage ? " (" + calc.selMod.wattage + "Wp)" : ""}</p>
+                            <p><strong>Solar Modules:</strong> {calc?.selectedModuleDetails?.length > 0 ? calc.selectedModuleDetails.map(m => `${m.modelName} (${m.wattage}Wp)`).join(', ') : (calc?.selMod?.modelName || "N/A")}</p>
                             <p><strong>Inverter Model:</strong> {calc?.selectedInverterDetails?.map(inv => inv.modelName + " (x" + inv.qty + ")").join(", ") || "N/A"}</p>
+                            {calc?.selectedBatteryDetails?.length > 0 && (
+                                <p><strong>Battery Bank:</strong> {calc.selectedBatteryDetails.map(bat => `${bat.modelName} (x${bat.qty})`).join(", ")}</p>
+                            )}
                             <p><strong>Mounting Structure:</strong> {calc?.selectedStructures?.map(st => (ALL_STRUCTURE_TYPES.find(opt => opt.v === st.type)?.l || st.type || "") + " (" + st.kw + "kW)").join(", ") || "N/A"}</p>
-                            {dcCableM > 0 && <p><strong>DC Cable Run:</strong> {dcCableM}m of {calc?.selDcCable?.label || ""}</p>}
+                            {dcCableM > 0 && <p><strong>DC Cable Run:</strong> {dcCableM}m of Solar DC Wire</p>}
                             {invToAcdbCableM > 0 && <p><strong>AC Cable (Inv-ACDB):</strong> {invToAcdbCableM}m of {calc?.selInvToAcdbCable?.label || ""}</p>}
                             {acdbToMainCableM > 0 && <p><strong>AC Cable (ACDB-Main):</strong> {acdbToMainCableM}m of {calc?.selAcdbToMainCable?.label || ""}</p>}
                         </div>
@@ -538,12 +657,8 @@ export default async function QuotationPreviewPage({ params }) {
                                     <td dangerouslySetInnerHTML={{ __html: row.particulars }} />
                                     <td style={{ textAlign: 'center' }}>{row.qty}</td>
                                     <td style={{ textAlign: 'center' }}>{row.unit}</td>
-                                    <td style={{ textAlign: 'right' }}>
-                                        {typeof row.rate === 'number' ? formatINR(row.rate) : row.rate}
-                                    </td>
-                                    <td style={{ textAlign: 'right' }}>
-                                        {typeof row.cost === 'number' ? formatINR(row.cost) : row.cost}
-                                    </td>
+                                    <td style={{ textAlign: 'right' }}>{row.rate}</td>
+                                    <td style={{ textAlign: 'right' }}>{row.cost}</td>
                                 </tr>
                             ))}
                         </tbody>
@@ -556,15 +671,21 @@ export default async function QuotationPreviewPage({ params }) {
                                 <span>Base Project Cost:</span>
                                 <span><strong>{formatINR(calc?.baseTotal)}</strong></span>
                             </div>
+                            {calc?.discountAmount > 0 && (
+                                <div className="totals-row" style={{ color: '#16a34a' }}>
+                                    <span>Special Discount ({calc.effectiveDiscountPercent || 0}%):</span>
+                                    <span>- {formatINR(calc.discountAmount)}</span>
+                                </div>
+                            )}
                             <div className="totals-row">
-                                <span>GST (8.90%):</span>
+                                <span>GST ({calc?.gstPercent ? Number(calc.gstPercent).toFixed(2) : '8.90'}%):</span>
                                 <span>{formatINR(calc?.gst)}</span>
                             </div>
                             <div className="totals-grand">
                                 <span>Grand Total (Net Value):</span>
-                                <span>{formatINR(calc?.grandTotal)}</span>
+                                <span>{formatINR(calc?.grandTotal || log.grandTotal)}</span>
                             </div>
-                            <p className="totals-note">Average cost per watt: ₹{calc?.perWp?.toFixed(2)}/Wp (incl. GST)</p>
+                            <p className="totals-note">Average cost per watt: ₹{calc?.perWp ? calc.perWp.toFixed(2) : ((log.grandTotal || 0) / ((systemKW || 1) * 1000)).toFixed(2)}/Wp (incl. GST)</p>
                         </div>
                     </div>
 
@@ -625,33 +746,33 @@ export default async function QuotationPreviewPage({ params }) {
                 </div>
             </div>
 
-            {/* Custom CSS specifically matching your exact print guidelines */}
+            {/* Custom CSS matching PDF & print preview */}
             <style dangerouslySetInnerHTML={{ __html: `
                 .page {
                     width: 794px;
-                    padding: 32px 36px;
+                    padding: 28px 32px;
                     background: #ffffff;
                 }
                 .hdr {
                     display: flex;
                     justify-content: space-between;
                     align-items: center;
-                    border-bottom: 2.5px solid #eab308;
-                    padding-bottom: 16px;
-                    margin-bottom: 24px;
+                    border-bottom: 2px solid #eab308;
+                    padding-bottom: 12px;
+                    margin-bottom: 16px;
                 }
                 .hdr-logo img {
-                    width: 190px;
+                    width: 175px;
                     height: auto;
                     display: block;
                 }
                 .hdr-mid {
                     flex: 1;
                     text-align: center;
-                    padding: 0 16px;
+                    padding: 0 12px;
                 }
                 .hdr-mid h1 {
-                    font-size: 14px;
+                    font-size: 13px;
                     font-weight: 800;
                     color: #1e3a8a;
                     text-transform: uppercase;
@@ -659,13 +780,13 @@ export default async function QuotationPreviewPage({ params }) {
                     margin: 0;
                 }
                 .hdr-mid .addr1 {
-                    font-size: 9px;
+                    font-size: 8.5px;
                     font-weight: 700;
                     color: #1e293b;
-                    margin-top: 4px;
+                    margin-top: 3px;
                 }
                 .hdr-mid .addr2 {
-                    font-size: 8.5px;
+                    font-size: 8px;
                     color: #64748b;
                     margin-top: 2px;
                 }
@@ -674,63 +795,63 @@ export default async function QuotationPreviewPage({ params }) {
                     text-align: right;
                 }
                 .hdr-right .type {
-                    font-size: 11px;
+                    font-size: 10px;
                     font-weight: 900;
                     color: #eab308;
                     text-transform: uppercase;
                 }
                 .hdr-right p {
-                    font-size: 9px;
+                    font-size: 8.5px;
                     color: #64748b;
-                    margin-top: 4px;
+                    margin-top: 3px;
                     margin-bottom: 0;
                 }
                 .info-grid {
                     display: grid;
                     grid-template-columns: 1fr 1fr;
-                    gap: 20px;
-                    margin-bottom: 20px;
+                    gap: 16px;
+                    margin-bottom: 16px;
                 }
                 .info-box {
                     border: 1px solid #cbd5e1;
                     background: #f8fafc;
                     border-radius: 6px;
-                    padding: 12px;
+                    padding: 10px;
                 }
                 .info-box h3 {
-                    font-size: 10px;
+                    font-size: 9.5px;
                     font-weight: 800;
                     color: #1e3a8a;
                     text-transform: uppercase;
                     letter-spacing: 0.5px;
-                    border-bottom: 2px solid #eab308;
-                    padding-bottom: 6px;
+                    border-bottom: 1.5px solid #eab308;
+                    padding-bottom: 4px;
                     margin-top: 0;
-                    margin-bottom: 8px;
+                    margin-bottom: 6px;
                 }
                 .info-box p {
-                    font-size: 11px;
+                    font-size: 9.5px;
                     color: #334155;
-                    margin-bottom: 3px;
+                    margin-bottom: 2px;
                 }
                 table {
                     width: 100%;
                     border-collapse: collapse;
-                    margin-bottom: 20px;
+                    margin-bottom: 16px;
                 }
                 th {
-                    font-size: 10px;
+                    font-size: 9px;
                     font-weight: 700;
                     color: #fff;
                     background: #1e3a8a;
                     text-transform: uppercase;
-                    padding: 8px 12px;
+                    padding: 6px 8px;
                     border: 1px solid #1e3a8a;
                 }
                 td {
-                    font-size: 11px;
+                    font-size: 9px;
                     color: #334155;
-                    padding: 8px 12px;
+                    padding: 6px 8px;
                     border: 1px solid #cbd5e1;
                     vertical-align: top;
                 }
@@ -740,56 +861,56 @@ export default async function QuotationPreviewPage({ params }) {
                 .totals-wrap {
                     display: flex;
                     justify-content: flex-end;
-                    margin-bottom: 20px;
+                    margin-bottom: 16px;
                 }
                 .totals {
                     width: 50%;
-                    border: 2px solid #eab308;
+                    border: 1.5px solid #eab308;
                     background: #fefcf0;
                     border-radius: 6px;
-                    padding: 12px 16px;
+                    padding: 10px 14px;
                 }
                 .totals-row {
                     display: flex;
                     justify-content: space-between;
-                    font-size: 11px;
+                    font-size: 10px;
                     color: #334155;
-                    padding: 3px 0;
+                    padding: 2.5px 0;
                 }
                 .totals-grand {
                     display: flex;
                     justify-content: space-between;
-                    font-size: 13px;
+                    font-size: 12px;
                     font-weight: 900;
                     color: #1e3a8a;
-                    border-top: 2px solid #eab308;
-                    padding-top: 8px;
-                    margin-top: 6px;
+                    border-top: 1.5px solid #eab308;
+                    padding-top: 6px;
+                    margin-top: 4px;
                 }
                 .totals-note {
-                    font-size: 8.5px;
+                    font-size: 8px;
                     color: #64748b;
                     text-align: right;
-                    margin-top: 4px;
+                    margin-top: 3px;
                     margin-bottom: 0;
                     font-weight: 600;
                 }
                 .bottom-grid {
                     display: grid;
                     grid-template-columns: 1fr 1fr;
-                    gap: 24px;
-                    padding-top: 16px;
+                    gap: 20px;
+                    padding-top: 12px;
                     border-top: 1px solid #e2e8f0;
-                    margin-bottom: 32px;
+                    margin-bottom: 24px;
                 }
                 .bottom-grid h4 {
-                    font-size: 10px;
+                    font-size: 9.5px;
                     font-weight: 800;
                     color: #1e3a8a;
                     text-transform: uppercase;
                     letter-spacing: 0.5px;
                     margin-top: 0;
-                    margin-bottom: 10px;
+                    margin-bottom: 8px;
                 }
                 .payment-list {
                     list-style: none;
@@ -799,57 +920,57 @@ export default async function QuotationPreviewPage({ params }) {
                 .payment-list li {
                     display: flex;
                     justify-content: space-between;
-                    font-size: 11px;
+                    font-size: 9px;
                     color: #334155;
-                    font-weight: 500;
-                    padding: 3px 0;
+                    padding: 2.5px 0;
+                    border-bottom: 1px dashed #cbd5e1;
                 }
                 .terms-list {
-                    list-style: decimal;
-                    padding-left: 16px;
+                    padding-left: 14px;
                     margin: 0;
+                    font-size: 8.5px;
+                    color: #475569;
+                    line-height: 1.4;
                 }
                 .terms-list li {
-                    font-size: 10px;
-                    color: #475569;
-                    padding: 2px 0;
-                    line-height: 1.5;
+                    margin-bottom: 2px;
                 }
                 .footer {
                     display: flex;
                     justify-content: space-between;
                     padding-top: 24px;
-                    border-top: 1px solid #cbd5e1;
                 }
                 .sig {
-                    width: 40%;
+                    width: 220px;
                     text-align: center;
                 }
                 .sig-line {
-                    border-top: 1px solid #94a3b8;
-                    padding-top: 8px;
-                    font-size: 10px;
-                    color: #64748b;
-                    font-weight: 600;
+                    border-top: 1.5px solid #64748b;
+                    padding-top: 6px;
+                    font-size: 9px;
+                    color: #334155;
                 }
-
                 @media print {
+                    @page {
+                        size: A4 portrait;
+                        margin: 0;
+                    }
+                    body {
+                        background: #ffffff !important;
+                        color: #000000 !important;
+                        margin: 0 !important;
+                        padding: 0 !important;
+                    }
                     .no-print {
                         display: none !important;
                     }
-                    body {
-                        background: white !important;
-                        color: black !important;
-                    }
                     .page {
-                        border: none !important;
-                        box-shadow: none !important;
-                        padding: 0 !important;
                         width: 100% !important;
-                    }
-                    @page {
-                        size: A4;
-                        margin: 15mm;
+                        max-width: 100% !important;
+                        margin: 0 !important;
+                        padding: 20px 24px !important;
+                        box-shadow: none !important;
+                        border-radius: 0 !important;
                     }
                 }
             `}} />
