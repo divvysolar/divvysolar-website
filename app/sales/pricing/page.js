@@ -108,7 +108,7 @@ const STRUCTURE_TYPES_MAP = {
   ],
   gi: [
     { v: "gi", l: "GI Structure" },
-    { v: "hot_dip_gi", l: "Hot-dip GI" },
+    { v: "hot_dip_gi", l: "Elevated GI" },
   ],
   alu: [
     { v: "alu_monorail", l: "Aluminium Monorail" },
@@ -116,7 +116,6 @@ const STRUCTURE_TYPES_MAP = {
   ],
   ground: [
     { v: "ground_gi", l: "GI Structure" },
-    { v: "ground_hot_dip", l: "Hot-dip GI" },
     { v: "ground_galvalume", l: "Galvalume" }
   ]
 };
@@ -418,6 +417,10 @@ export default function PricingCalculatorPage() {
   const [isOverrideSafety, setIsOverrideSafety] = useState(false);
   const [customSafety, setCustomSafety] = useState("");
 
+  const [conduit, setConduit] = useState(false);
+  const [conduitUpvcM, setConduitUpvcM] = useState("");
+  const [cableTrayM, setCableTrayM] = useState("");
+
   const [mc4Pairs, setMc4Pairs] = useState("");
   const [mc4BranchQty, setMc4BranchQty] = useState("");
 
@@ -428,6 +431,11 @@ export default function PricingCalculatorPage() {
   const [advancePercent, setAdvancePercent] = useState("");
   const [dispatchPercent, setDispatchPercent] = useState("");
   const [handoverPercent, setHandoverPercent] = useState("");
+
+  // Warranties (Customizable per quotation)
+  const [moduleWarranty, setModuleWarranty] = useState("25 Years");
+  const [inverterWarranty, setInverterWarranty] = useState("5 Years");
+  const [batteryWarranty, setBatteryWarranty] = useState("5 Years");
 
   // Print Inclusions
   const [incBos, setIncBos] = useState(true);
@@ -499,31 +507,31 @@ export default function PricingCalculatorPage() {
 
   // Auto-filter out brands with no active models in stock (supports dynamically added brands from Admin)
   const allModuleBrandKeys = rates?.modules 
-    ? Array.from(new Set([...ACTIVE_MODULE_BRANDS, ...Object.keys(rates.modules).filter(k => k !== 'typeAdder' && !k.startsWith('$'))]))
+    ? Object.keys(rates.modules).filter(k => k !== 'typeAdder' && !k.startsWith('$'))
     : ACTIVE_MODULE_BRANDS;
   const filteredModuleBrands = rates ? allModuleBrandKeys.filter(brand => {
     const models = rates.modules?.[brand] || [];
     return Array.isArray(models) && models.length > 0 && models.some(m => m.inStock !== false);
-  }) : ACTIVE_MODULE_BRANDS;
-  const visibleModuleBrands = filteredModuleBrands.length > 0 ? filteredModuleBrands : ACTIVE_MODULE_BRANDS;
+  }) : allModuleBrandKeys;
+  const visibleModuleBrands = filteredModuleBrands.length > 0 ? filteredModuleBrands : allModuleBrandKeys;
 
   const allInverterBrandKeys = rates?.inverters 
-    ? Array.from(new Set([...ACTIVE_INVERTER_BRANDS, ...Object.keys(rates.inverters).filter(k => !k.startsWith('$'))]))
+    ? Object.keys(rates.inverters).filter(k => !k.startsWith('$'))
     : ACTIVE_INVERTER_BRANDS;
   const filteredInverterBrands = rates ? allInverterBrandKeys.filter(brand => {
     const models = rates.inverters?.[brand] || [];
     return Array.isArray(models) && models.length > 0 && models.some(m => m.inStock !== false);
-  }) : ACTIVE_INVERTER_BRANDS;
-  const visibleInverterBrands = filteredInverterBrands.length > 0 ? filteredInverterBrands : ACTIVE_INVERTER_BRANDS;
+  }) : allInverterBrandKeys;
+  const visibleInverterBrands = filteredInverterBrands.length > 0 ? filteredInverterBrands : allInverterBrandKeys;
 
   const allBatteryBrandKeys = rates?.batteries 
-    ? Array.from(new Set([...ACTIVE_BATTERY_BRANDS, ...Object.keys(rates.batteries).filter(k => !k.startsWith('$'))]))
+    ? Object.keys(rates.batteries).filter(k => !k.startsWith('$'))
     : ACTIVE_BATTERY_BRANDS;
   const filteredBatteryBrands = rates ? allBatteryBrandKeys.filter(brand => {
     const models = rates.batteries?.[brand] || [];
     return Array.isArray(models) && models.length > 0 && models.some(m => m.inStock !== false);
-  }) : ACTIVE_BATTERY_BRANDS;
-  const visibleBatteryBrands = filteredBatteryBrands.length > 0 ? filteredBatteryBrands : ACTIVE_BATTERY_BRANDS;
+  }) : allBatteryBrandKeys;
+  const visibleBatteryBrands = filteredBatteryBrands.length > 0 ? filteredBatteryBrands : allBatteryBrandKeys;
 
   const totalModKW = modules.reduce((sum, m) => {
     const avail = rates?.modules?.[m.brand] || [];
@@ -606,7 +614,17 @@ export default function PricingCalculatorPage() {
       inverters.some(i => i.model && (Number(i.qty) > 0 || i.qty)) || 
       modules.some(m => m.model && Number(m.qty) > 0) || 
       structures.some(s => Number(s.kw) > 0) ||
-      batteries.some(b => b.model && (Number(b.qty) > 0 || b.qty));
+      batteries.some(b => b.model && (Number(b.qty) > 0 || b.qty)) ||
+      (conduit && (Number(conduitUpvcM) > 0 || Number(cableTrayM) > 0)) ||
+      (walkway && Number(walkwayM) > 0) ||
+      (safetyLine && Number(customSafety) > 0) ||
+      (earthing && (customPits > 0 || Number(earthingWireM) > 0)) ||
+      dcCablesList.some(d => Number(d.meters) > 0) ||
+      Number(invToAcdbCableM) > 0 ||
+      Number(acdbToMainCableM) > 0 ||
+      Number(mc4Pairs) > 0 ||
+      Number(mc4BranchQty) > 0 ||
+      discom || acdb || dcdb;
     if (!rates || !hasAnySelection) return null;
     const wp = plantKW * 1000;
 
@@ -771,6 +789,16 @@ export default function PricingCalculatorPage() {
     const safetyLineRate = rawSafetyRate * markupMultiplier;
     const safetyCost = safetyM * safetyLineRate;
 
+    const rawConduitUpvcRate = rates.conduitUpvcRate ?? 65;
+    const conduitUpvcRate = rawConduitUpvcRate * markupMultiplier;
+    const conduitUpvcMeters = (conduit && Number(conduitUpvcM) > 0) ? Number(conduitUpvcM) : 0;
+    const conduitUpvcCost = conduitUpvcRate * conduitUpvcMeters;
+
+    const rawCableTrayRate = rates.cableTrayRate ?? 280;
+    const cableTrayRate = rawCableTrayRate * markupMultiplier;
+    const cableTrayMeters = (conduit && Number(cableTrayM) > 0) ? Number(cableTrayM) : 0;
+    const cableTrayCost = cableTrayRate * cableTrayMeters;
+
     const rawAcdbRate = rates.acdbRatePerKw || 0;
     const acdbRate = rawAcdbRate * markupMultiplier;
     const acdbCost = acdb ? acdbRate * plantKW : 0;
@@ -805,7 +833,7 @@ export default function PricingCalculatorPage() {
     const installCost = installRate * plantKW;
 
     // Total markedUpBase is now mathematically the exact sum of all marked-up components
-    const markedUpBase = moduleCost + invCost + batteryCost + structCost + dcCost + acCost + earthingCost + laCost + walkCost + safetyCost + mc4Cost + mc4BranchCost + acdbCost + dcdbCost + discomCost + installCost;
+    const markedUpBase = moduleCost + invCost + batteryCost + structCost + dcCost + acCost + earthingCost + laCost + walkCost + safetyCost + conduitUpvcCost + cableTrayCost + mc4Cost + mc4BranchCost + acdbCost + dcdbCost + discomCost + installCost;
 
     const rawHardwareCost = markedUpBase / markupMultiplier;
     const marginAmount = markedUpBase - rawHardwareCost;
@@ -830,7 +858,8 @@ export default function PricingCalculatorPage() {
 
     return {
       moduleCost, invCost, batteryCost, structCost, dcCost, acCost, earthingCost, laCost,
-      walkCost, safetyCost, discomCost, installCost, mc4Cost, installRate,
+      walkCost, safetyCost, conduitUpvcCost, conduitUpvcRate, conduitUpvcMeters, cableTrayCost, cableTrayRate, cableTrayMeters,
+      discomCost, installCost, mc4Cost, installRate,
       rawHardwareCost, marginAmount, markedUpBase, effectiveDiscountPercent, discountAmount,
       baseTotal, gstRate, gstPercent, gst, grandTotal, perWp, effectiveKW: plantKW,
       advancePercent: advP, dispatchPercent: dispP, handoverPercent: handP, advanceAmount, dispatchAmount, handoverAmount,
@@ -852,84 +881,90 @@ export default function PricingCalculatorPage() {
     const buildItemizedRows = () => {
       let rows = "";
       let sno = 1;
-      const snoCell = () => `<td style="border:1px solid #cbd5e1;padding:8px 12px;font-size:11px;text-align:center;color:#334155;vertical-align:top">${sno++}</td>`;
-      const cell = (content, align = "left") => `<td style="border:1px solid #cbd5e1;padding:8px 12px;font-size:11px;text-align:${align};color:#334155;vertical-align:top">${content}</td>`;
+      const snoCell = () => `<td style="border:1px solid #cbd5e1;padding:4px 6px;font-size:8.5px;text-align:center;color:#334155;vertical-align:top;font-weight:600">${sno++}</td>`;
+      const cell = (content, align = "left") => `<td style="border:1px solid #cbd5e1;padding:4px 6px;font-size:8.5px;text-align:${align};color:#334155;vertical-align:top">${content}</td>`;
 
       if (calc.selectedModuleDetails?.length > 0) {
         calc.selectedModuleDetails.forEach(mod => {
-          rows += `<tr>${snoCell()}${cell(`<strong>Solar Modules (${cap(mod.brand)}):</strong> ${mod.modelName || "N/A"}<br/><span style="font-size:10px;color:#64748b">Tier-1 High-efficiency PV modules (${mod.wattage}Wp)</span>`)}${cell(mod.itemWp, "center")}${cell("Wp", "center")}${cell("&#8377;" + (mod.ratePerWp || 0).toFixed(2), "right")}${cell(fmtINR(mod.cost), "right")}</tr>`;
+          rows += `<tr>${snoCell()}${cell(`<strong>Solar Modules (${cap(mod.brand)}):</strong> ${mod.modelName || "N/A"}<br/><span style="font-size:8px;color:#64748b">Tier-1 High-efficiency PV modules (${mod.wattage}Wp)</span>`)}${cell(mod.itemWp, "center")}${cell("Wp", "center")}${cell("&#8377;" + (mod.ratePerWp || 0).toFixed(2), "right")}${cell(fmtINR(mod.cost), "right")}</tr>`;
         });
       } else {
-        rows += `<tr>${snoCell()}${cell(`<strong>Solar Modules:</strong> Not Selected<br/><span style="font-size:10px;color:#64748b">Tier-1 High-efficiency PV modules</span>`)}${cell((effectiveSystemKW || 0) * 1000, "center")}${cell("Wp", "center")}${cell("&#8377;0.00", "right")}${cell(fmtINR(0), "right")}</tr>`;
+        rows += `<tr>${snoCell()}${cell(`<strong>Solar Modules:</strong> Not Selected<br/><span style="font-size:8px;color:#64748b">Tier-1 High-efficiency PV modules</span>`)}${cell((effectiveSystemKW || 0) * 1000, "center")}${cell("Wp", "center")}${cell("&#8377;0.00", "right")}${cell(fmtINR(0), "right")}</tr>`;
       }
 
       calc.selectedInverterDetails?.forEach(inv => {
-        rows += `<tr>${snoCell()}${cell(`<strong>Solar Grid-Tie Inverter:</strong> ${inv.modelName}<br/><span style="font-size:10px;color:#64748b">Multi-MPPT High-efficiency inverter system</span>`)}${cell(inv.qty, "center")}${cell("Nos", "center")}${cell("&#8377;" + (inv.cost / (inv.qty || 1)).toFixed(2), "right")}${cell(fmtINR(inv.cost), "right")}</tr>`;
+        rows += `<tr>${snoCell()}${cell(`<strong>Solar Grid-Tie Inverter:</strong> ${inv.modelName}<br/><span style="font-size:8px;color:#64748b">Multi-MPPT High-efficiency inverter system</span>`)}${cell(inv.qty, "center")}${cell("Nos", "center")}${cell("&#8377;" + (inv.cost / (inv.qty || 1)).toFixed(2), "right")}${cell(fmtINR(inv.cost), "right")}</tr>`;
       });
 
       calc.selectedBatteryDetails?.forEach(bat => {
-        rows += `<tr>${snoCell()}${cell(`<strong>Battery Storage System (${cap(bat.brand)}):</strong> ${bat.modelName}<br/><span style="font-size:10px;color:#64748b">Deep-cycle energy storage bank</span>`)}${cell(bat.qty, "center")}${cell("Nos", "center")}${cell("&#8377;" + (bat.cost / (bat.qty || 1)).toFixed(2), "right")}${cell(fmtINR(bat.cost), "right")}</tr>`;
+        rows += `<tr>${snoCell()}${cell(`<strong>Battery Storage System (${cap(bat.brand)}):</strong> ${bat.modelName}<br/><span style="font-size:8px;color:#64748b">Deep-cycle energy storage bank</span>`)}${cell(bat.qty, "center")}${cell("Nos", "center")}${cell("&#8377;" + (bat.cost / (bat.qty || 1)).toFixed(2), "right")}${cell(fmtINR(bat.cost), "right")}</tr>`;
       });
 
-      if (calc.acdbCost > 0) rows += `<tr>${snoCell()}${cell("<strong>ACDB Combiner / Panel</strong><br/><span style='font-size:10px;color:#64748b'>L&amp;T / Elmex / Schneider / Reputed Make</span>")}${cell(effectiveSystemKW, "center")}${cell("kW", "center")}${cell("&#8377;" + (calc.acdbRate || 0).toFixed(2), "right")}${cell(fmtINR(calc.acdbCost), "right")}</tr>`;
-      if (calc.dcdbCost > 0) rows += `<tr>${snoCell()}${cell("<strong>DCDB Combiner / Panel</strong><br/><span style='font-size:10px;color:#64748b'>Reputed Make</span>")}${cell(effectiveSystemKW, "center")}${cell("kW", "center")}${cell("&#8377;" + (calc.dcdbRate || 0).toFixed(2), "right")}${cell(fmtINR(calc.dcdbCost), "right")}</tr>`;
+      if (calc.acdbCost > 0) rows += `<tr>${snoCell()}${cell("<strong>ACDB Combiner / Panel</strong><br/><span style='font-size:8px;color:#64748b'>L&amp;T / Elmex / Schneider / Reputed Make</span>")}${cell(effectiveSystemKW, "center")}${cell("kW", "center")}${cell("&#8377;" + (calc.acdbRate || 0).toFixed(2), "right")}${cell(fmtINR(calc.acdbCost), "right")}</tr>`;
+      if (calc.dcdbCost > 0) rows += `<tr>${snoCell()}${cell("<strong>DCDB Combiner / Panel</strong><br/><span style='font-size:8px;color:#64748b'>Reputed Make</span>")}${cell(effectiveSystemKW, "center")}${cell("kW", "center")}${cell("&#8377;" + (calc.dcdbRate || 0).toFixed(2), "right")}${cell(fmtINR(calc.dcdbCost), "right")}</tr>`;
 
       calc.selectedStructures?.forEach(st => {
         const stLabel = ALL_STRUCTURE_TYPES.find(opt => opt.v === st.type)?.l || st.type || "N/A";
-        rows += `<tr>${snoCell()}${cell(`<strong>Mounting Structure:</strong> ${stLabel}<br/><span style="font-size:10px;color:#64748b">Wind load sustained structural rails &amp; clamps</span>`)}${cell(st.kw, "center")}${cell("kW", "center")}${cell("&#8377;" + (st.rate || 0).toFixed(2), "right")}${cell(fmtINR(st.cost), "right")}</tr>`;
+        rows += `<tr>${snoCell()}${cell(`<strong>Mounting Structure:</strong> ${stLabel}<br/><span style="font-size:8px;color:#64748b">Wind load sustained structural rails &amp; clamps</span>`)}${cell(st.kw, "center")}${cell("kW", "center")}${cell("&#8377;" + (st.rate || 0).toFixed(2), "right")}${cell(fmtINR(st.cost), "right")}</tr>`;
       });
 
-      rows += `<tr>${snoCell()}${cell("<strong>Structure Accessories:</strong> SS 304 Nut Bolts &amp; Fasteners<br/><span style='font-size:10px;color:#64748b'>Anti-corrosion hardware for mechanical integrity</span>")}${cell(effectiveSystemKW, "center")}${cell("kW", "center")}${cell("Included", "right")}${cell("Included", "right")}</tr>`;
+      rows += `<tr>${snoCell()}${cell("<strong>Structure Accessories:</strong> SS 304 Nut Bolts &amp; Fasteners<br/><span style='font-size:8px;color:#64748b'>Anti-corrosion hardware for mechanical integrity</span>")}${cell(effectiveSystemKW, "center")}${cell("kW", "center")}${cell("Included", "right")}${cell("Included", "right")}</tr>`;
 
       if (calc.selectedDcCablesDetails?.length > 0) {
         calc.selectedDcCablesDetails.forEach(item => {
           if (item.meters > 0) {
-            rows += `<tr>${snoCell()}${cell(`<strong>DC Solar Cable (${item.brandLabel}):</strong> ${item.cableLabel}<br/><span style="font-size:10px;color:#64748b">Tinned copper flexible single-core solar wire</span>`)}${cell(item.meters, "center")}${cell("m", "center")}${cell("&#8377;" + (item.rate || 0).toFixed(2), "right")}${cell(fmtINR(item.cost), "right")}</tr>`;
+            rows += `<tr>${snoCell()}${cell(`<strong>DC Solar Cable (${item.brandLabel}):</strong> ${item.cableLabel}<br/><span style="font-size:8px;color:#64748b">Tinned copper flexible single-core solar wire</span>`)}${cell(item.meters, "center")}${cell("m", "center")}${cell("&#8377;" + (item.rate || 0).toFixed(2), "right")}${cell(fmtINR(item.cost), "right")}</tr>`;
           }
         });
       }
-      if (invToAcdbCableM > 0) rows += `<tr>${snoCell()}${cell(`<strong>AC Cable - Inv to ACDB (${invAcdbBrandLabel}):</strong> ${calc.selInvToAcdbCable?.label || "N/A"}<br/><span style="font-size:10px;color:#64748b">Multicore flexible AC cabling run</span>`)}${cell(invToAcdbCableM, "center")}${cell("m", "center")}${cell("&#8377;" + (calc.invToAcdbRate || 0).toFixed(2), "right")}${cell(fmtINR(calc.invToAcdbCost), "right")}</tr>`;
-      if (acdbToMainCableM > 0) rows += `<tr>${snoCell()}${cell(`<strong>AC Cable - ACDB to Main (${acdbMainBrandLabel}):</strong> ${calc.selAcdbToMainCable?.label || "N/A"}<br/><span style="font-size:10px;color:#64748b">AC distribution cable run</span>`)}${cell(acdbToMainCableM, "center")}${cell("m", "center")}${cell("&#8377;" + (calc.acdbToMainRate || 0).toFixed(2), "right")}${cell(fmtINR(calc.acdbToMainCost), "right")}</tr>`;
-      if (calc.pitsCount > 0) rows += `<tr>${snoCell()}${cell(`<strong>Chemical Earthing Pits:</strong> Copper Chemical Pits<br/><span style="font-size:10px;color:#64748b">Low-resistance maintenance-free earthing</span>`)}${cell(calc.pitsCount, "center")}${cell("pits", "center")}${cell("&#8377;" + (calc.pitRate || 0).toFixed(2), "right")}${cell(fmtINR(calc.pitsCost), "right")}</tr>`;
-      if (calc.earthingWireMeters > 0) rows += `<tr>${snoCell()}${cell(`<strong>Earthing Conductor / Wire:</strong> ${calc.earthingLabel}<br/><span style="font-size:10px;color:#64748b">Dedicated equipment safety grounding run</span>`)}${cell(calc.earthingWireMeters, "center")}${cell("m", "center")}${cell("&#8377;" + (calc.earthingWireRate || 0).toFixed(2), "right")}${cell(fmtINR(calc.earthingWireCost), "right")}</tr>`;
-      if (calc.laCount > 0) rows += `<tr>${snoCell()}${cell(`<strong>Lightning Protection:</strong> ${laType === "ese" ? "ESE Active" : "Conventional"}<br/><span style="font-size:10px;color:#64748b">Safety shield against high-voltage lightning surges</span>`)}${cell(calc.laCount, "center")}${cell("units", "center")}${cell("&#8377;" + (calc.laUnitRate || 0).toFixed(2), "right")}${cell(fmtINR(calc.laCost), "right")}</tr>`;
-      if (walkway && Number(walkwayM) > 0) rows += `<tr>${snoCell()}${cell(`<strong>Roof Walkway:</strong> ${walkwayType === "gi" ? "GI Walkway" : "FRP Walkway"}<br/><span style="font-size:10px;color:#64748b">Safe pathway on roof for O&amp;M visits</span>`)}${cell(walkwayM, "center")}${cell("m", "center")}${cell("&#8377;" + (calc.walkRate || 0).toFixed(2), "right")}${cell(fmtINR(calc.walkCost), "right")}</tr>`;
-      if (customSafety > 0) rows += `<tr>${snoCell()}${cell("<strong>Safety Lifeline</strong><br/><span style='font-size:10px;color:#64748b'>Anchor lifeline system for cleaning personnel</span>")}${cell(customSafety, "center")}${cell("m", "center")}${cell("&#8377;" + (calc.safetyLineRate || 0).toFixed(2), "right")}${cell(fmtINR(calc.safetyCost), "right")}</tr>`;
-      if (calc.mc4Cost > 0) rows += `<tr>${snoCell()}${cell("<strong>MC4 Connectors</strong><br/><span style='font-size:10px;color:#64748b'>Waterproof module string connector links</span>")}${cell(calc.mc4Pairs, "center")}${cell("pairs", "center")}${cell("&#8377;" + (calc.mc4Rate || 0).toFixed(2), "right")}${cell(fmtINR(calc.mc4Cost), "right")}</tr>`;
-      if (calc.mc4BranchCost > 0) rows += `<tr>${snoCell()}${cell("<strong>Branch (Y) Connectors</strong><br/><span style='font-size:10px;color:#64748b'>Parallel string configuration connectors</span>")}${cell(calc.mc4BranchQty, "center")}${cell("nos", "center")}${cell("&#8377;" + (calc.branchRate || 0).toFixed(2), "right")}${cell(fmtINR(calc.mc4BranchCost), "right")}</tr>`;
+      if (invToAcdbCableM > 0) rows += `<tr>${snoCell()}${cell(`<strong>AC Cable - Inv to ACDB (${invAcdbBrandLabel}):</strong> ${calc.selInvToAcdbCable?.label || "N/A"}<br/><span style="font-size:8px;color:#64748b">Multicore flexible AC cabling run</span>`)}${cell(invToAcdbCableM, "center")}${cell("m", "center")}${cell("&#8377;" + (calc.invToAcdbRate || 0).toFixed(2), "right")}${cell(fmtINR(calc.invToAcdbCost), "right")}</tr>`;
+      if (acdbToMainCableM > 0) rows += `<tr>${snoCell()}${cell(`<strong>AC Cable - ACDB to Main (${acdbMainBrandLabel}):</strong> ${calc.selAcdbToMainCable?.label || "N/A"}<br/><span style="font-size:8px;color:#64748b">AC distribution cable run</span>`)}${cell(acdbToMainCableM, "center")}${cell("m", "center")}${cell("&#8377;" + (calc.acdbToMainRate || 0).toFixed(2), "right")}${cell(fmtINR(calc.acdbToMainCost), "right")}</tr>`;
+      if (calc.pitsCount > 0) rows += `<tr>${snoCell()}${cell(`<strong>Chemical Earthing Pits:</strong> Copper Chemical Pits<br/><span style="font-size:8px;color:#64748b">Low-resistance maintenance-free earthing</span>`)}${cell(calc.pitsCount, "center")}${cell("pits", "center")}${cell("&#8377;" + (calc.pitRate || 0).toFixed(2), "right")}${cell(fmtINR(calc.pitsCost), "right")}</tr>`;
+      if (calc.earthingWireMeters > 0) rows += `<tr>${snoCell()}${cell(`<strong>Earthing Conductor / Wire:</strong> ${calc.earthingLabel}<br/><span style="font-size:8px;color:#64748b">Dedicated equipment safety grounding run</span>`)}${cell(calc.earthingWireMeters, "center")}${cell("m", "center")}${cell("&#8377;" + (calc.earthingWireRate || 0).toFixed(2), "right")}${cell(fmtINR(calc.earthingWireCost), "right")}</tr>`;
+      if (calc.laCount > 0) rows += `<tr>${snoCell()}${cell(`<strong>Lightning Protection:</strong> ${laType === "ese" ? "ESE Active" : "Conventional"}<br/><span style="font-size:8px;color:#64748b">Safety shield against high-voltage lightning surges</span>`)}${cell(calc.laCount, "center")}${cell("units", "center")}${cell("&#8377;" + (calc.laUnitRate || 0).toFixed(2), "right")}${cell(fmtINR(calc.laCost), "right")}</tr>`;
+      if (walkway && Number(walkwayM) > 0) rows += `<tr>${snoCell()}${cell(`<strong>Roof Walkway:</strong> ${walkwayType === "gi" ? "GI Walkway" : "FRP Walkway"}<br/><span style="font-size:8px;color:#64748b">Safe pathway on roof for O&amp;M visits</span>`)}${cell(walkwayM, "center")}${cell("m", "center")}${cell("&#8377;" + (calc.walkRate || 0).toFixed(2), "right")}${cell(fmtINR(calc.walkCost), "right")}</tr>`;
+      if (customSafety > 0) rows += `<tr>${snoCell()}${cell("<strong>Safety Lifeline</strong><br/><span style='font-size:8px;color:#64748b'>Anchor lifeline system for cleaning personnel</span>")}${cell(customSafety, "center")}${cell("m", "center")}${cell("&#8377;" + (calc.safetyLineRate || 0).toFixed(2), "right")}${cell(fmtINR(calc.safetyCost), "right")}</tr>`;
+      if (calc.conduitUpvcCost > 0) rows += `<tr>${snoCell()}${cell("<strong>Cable Conduiting:</strong> Rigid uPVC Conduit Pipe<br/><span style='font-size:8px;color:#64748b'>UV-resistant heavy-duty protective cable sleeve</span>")}${cell(calc.conduitUpvcMeters, "center")}${cell("m", "center")}${cell("&#8377;" + (calc.conduitUpvcRate || 0).toFixed(2), "right")}${cell(fmtINR(calc.conduitUpvcCost), "right")}</tr>`;
+      if (calc.cableTrayCost > 0) rows += `<tr>${snoCell()}${cell("<strong>Cable Tray:</strong> GI Perforated / Ladder Cable Tray<br/><span style='font-size:8px;color:#64748b'>Galvanized heavy-duty cable routing channel</span>")}${cell(calc.cableTrayMeters, "center")}${cell("m", "center")}${cell("&#8377;" + (calc.cableTrayRate || 0).toFixed(2), "right")}${cell(fmtINR(calc.cableTrayCost), "right")}</tr>`;
+      if (calc.mc4Cost > 0) rows += `<tr>${snoCell()}${cell("<strong>MC4 Connectors</strong><br/><span style='font-size:8px;color:#64748b'>Waterproof module string connector links</span>")}${cell(calc.mc4Pairs, "center")}${cell("pairs", "center")}${cell("&#8377;" + (calc.mc4Rate || 0).toFixed(2), "right")}${cell(fmtINR(calc.mc4Cost), "right")}</tr>`;
+      if (calc.mc4BranchCost > 0) rows += `<tr>${snoCell()}${cell("<strong>Branch (Y) Connectors</strong><br/><span style='font-size:8px;color:#64748b'>Parallel string configuration connectors</span>")}${cell(calc.mc4BranchQty, "center")}${cell("nos", "center")}${cell("&#8377;" + (calc.branchRate || 0).toFixed(2), "right")}${cell(fmtINR(calc.mc4BranchCost), "right")}</tr>`;
       if (incBos) rows += `<tr>${snoCell()}${cell("<strong>BOS &amp; Accessories:</strong> Cable Lugs, Tape, Cable tie &amp; Conduit Pipe")}${cell(effectiveSystemKW, "center")}${cell("kWp", "center")}${cell("Included", "right")}${cell("Included", "right")}</tr>`;
-      if (incEng) rows += `<tr>${snoCell()}${cell("<strong>Engineering &amp; Supervision</strong><br/><span style='font-size:10px;color:#64748b'>String designing, Shadow Analysis, electrical design</span>")}${cell(effectiveSystemKW, "center")}${cell("kWp", "center")}${cell("Included", "right")}${cell("Included", "right")}</tr>`;
-      if (incMon) rows += `<tr>${snoCell()}${cell("<strong>Remote Monitoring Access</strong><br/><span style='font-size:10px;color:#64748b'>Continuous monitoring through data logger device</span>")}${cell(1, "center")}${cell("Set", "center")}${cell("Included", "right")}${cell("Included", "right")}</tr>`;
-      if (incTrans) rows += `<tr>${snoCell()}${cell("<strong>Transportation &amp; Freight</strong><br/><span style='font-size:10px;color:#64748b'>Till site loading and unloading</span>")}${cell(1, "center")}${cell("Job", "center")}${cell("Included", "right")}${cell("Included", "right")}</tr>`;
-      if (discom) rows += `<tr>${snoCell()}${cell("<strong>DISCOM Liaising &amp; Net Metering</strong><br/><span style='font-size:10px;color:#64748b'>Net-metering approval process with local electricity authority</span>")}${cell(1, "center")}${cell("job", "center")}${cell("&#8377;" + (calc.discomCost || 0).toFixed(2), "right")}${cell(fmtINR(calc.discomCost), "right")}</tr>`;
+      if (incEng) rows += `<tr>${snoCell()}${cell("<strong>Engineering &amp; Supervision</strong><br/><span style='font-size:8px;color:#64748b'>String designing, Shadow Analysis, electrical design</span>")}${cell(effectiveSystemKW, "center")}${cell("kWp", "center")}${cell("Included", "right")}${cell("Included", "right")}</tr>`;
+      if (incMon) rows += `<tr>${snoCell()}${cell("<strong>Remote Monitoring Access</strong><br/><span style='font-size:8px;color:#64748b'>Continuous monitoring through data logger device</span>")}${cell(1, "center")}${cell("Set", "center")}${cell("Included", "right")}${cell("Included", "right")}</tr>`;
+      if (incTrans) rows += `<tr>${snoCell()}${cell("<strong>Transportation &amp; Freight</strong><br/><span style='font-size:8px;color:#64748b'>Till site loading and unloading</span>")}${cell(1, "center")}${cell("Job", "center")}${cell("Included", "right")}${cell("Included", "right")}</tr>`;
+      if (discom) rows += `<tr>${snoCell()}${cell("<strong>DISCOM Liaising &amp; Net Metering</strong><br/><span style='font-size:8px;color:#64748b'>Net-metering approval process with local electricity authority</span>")}${cell(1, "center")}${cell("job", "center")}${cell("&#8377;" + (calc.discomCost || 0).toFixed(2), "right")}${cell(fmtINR(calc.discomCost), "right")}</tr>`;
       const installTypeLabel = roofType === "rcc" ? "Rooftop RCC" : roofType === "profile" ? "Shed" : roofType === "ground" ? "Ground-Mounted" : "Standard";
       rows += `<tr>${snoCell()}${cell(`<strong>Installation &amp; Commissioning (${installTypeLabel}):</strong> On-site mechanics, engineering execution, panel staging and commissioning`)}${cell(effectiveSystemKW, "center")}${cell("kW", "center")}${cell("&#8377;" + (calc.installRate || 0).toFixed(2), "right")}${cell(fmtINR(calc.installCost), "right")}</tr>`;
       return rows;
     };
 
+    const modW = (moduleWarranty && moduleWarranty.trim()) ? (moduleWarranty.toLowerCase().includes('year') ? moduleWarranty : `${moduleWarranty} Years`) : '25 Years';
+    const invW = (inverterWarranty && inverterWarranty.trim()) ? (inverterWarranty.toLowerCase().includes('year') ? inverterWarranty : `${inverterWarranty} Years`) : '5 Years';
+    const batW = (batteryWarranty && batteryWarranty.trim()) ? (batteryWarranty.toLowerCase().includes('year') ? batteryWarranty : `${batteryWarranty} Years`) : '5 Years';
+
     const buildTurnkeyRows = () => {
       let rows = "";
       let sno = 1;
-      const snoCell = () => `<td style="border:1px solid #cbd5e1;padding:7px 10px;font-size:10.5px;text-align:center;color:#334155;vertical-align:top;font-weight:600">${sno++}</td>`;
-      const cell = (content, align = "left") => `<td style="border:1px solid #cbd5e1;padding:7px 10px;font-size:10.5px;text-align:${align};color:#334155;vertical-align:top">${content}</td>`;
+      const snoCell = () => `<td style="border:1px solid #cbd5e1;padding:4px 6px;font-size:8.5px;text-align:center;color:#334155;vertical-align:top;font-weight:600">${sno++}</td>`;
+      const cell = (content, align = "left") => `<td style="border:1px solid #cbd5e1;padding:4px 6px;font-size:8.5px;text-align:${align};color:#334155;vertical-align:top">${content}</td>`;
 
       // 1. Modules
       if (calc.selectedModuleDetails?.length > 0) {
         calc.selectedModuleDetails.forEach(mod => {
-          rows += `<tr>${snoCell()}${cell("<strong>Solar PV Modules</strong>")}${cell(`Tier-1 High Efficiency PV Modules (${mod.wattage}Wp, ${mod.tech || 'Mono PERC/TopCon'})`)}${cell(`${cap(mod.brand)} / Reputed Tier-1`)}${cell("Nos", "center")}${cell(mod.panels || mod.qty, "center")}</tr>`;
+          rows += `<tr>${snoCell()}${cell("<strong>Solar PV Modules</strong>")}${cell(`Tier-1 High Efficiency PV Modules (${mod.wattage}Wp, ${mod.tech || 'Mono PERC/TopCon'})`)}${cell(`${cap(mod.brand)} / Reputed Tier-1 (${modW} Warranty)`)}${cell("Nos", "center")}${cell(mod.panels || mod.qty, "center")}</tr>`;
         });
       } else {
-        rows += `<tr>${snoCell()}${cell("<strong>Solar PV Modules</strong>")}${cell("Tier-1 High Efficiency Solar PV Modules")}${cell("Tier-1 Make")}${cell("Wp", "center")}${cell((effectiveSystemKW || 0) * 1000, "center")}</tr>`;
+        rows += `<tr>${snoCell()}${cell("<strong>Solar PV Modules</strong>")}${cell(`Tier-1 High Efficiency Solar PV Modules (${modW} Warranty)`)}${cell("Tier-1 Make")}${cell("Wp", "center")}${cell((effectiveSystemKW || 0) * 1000, "center")}</tr>`;
       }
 
       // 2. Inverters
       calc.selectedInverterDetails?.forEach(inv => {
-        rows += `<tr>${snoCell()}${cell("<strong>Solar Inverter</strong>")}${cell(`Grid-Tie / Hybrid Multi-MPPT Inverter System (${inv.modelName})`)}${cell(`${cap(inv.brand)} / Tier-1`)}${cell("Nos", "center")}${cell(inv.qty, "center")}</tr>`;
+        rows += `<tr>${snoCell()}${cell("<strong>Solar Inverter</strong>")}${cell(`Grid-Tie / Hybrid Multi-MPPT Inverter System (${inv.modelName})`)}${cell(`${cap(inv.brand)} / Tier-1 (${invW} Warranty)`)}${cell("Nos", "center")}${cell(inv.qty, "center")}</tr>`;
       });
 
       // 3. Batteries (if hybrid)
       calc.selectedBatteryDetails?.forEach(bat => {
-        rows += `<tr>${snoCell()}${cell("<strong>Battery Storage Bank</strong>")}${cell(`Deep-Cycle Solar Battery Bank (${bat.modelName})`)}${cell(cap(bat.brand))}${cell("Nos", "center")}${cell(bat.qty, "center")}</tr>`;
+        rows += `<tr>${snoCell()}${cell("<strong>Battery Storage Bank</strong>")}${cell(`Deep-Cycle Solar Battery Bank (${bat.modelName})`)}${cell(`${cap(bat.brand)} (${batW} Warranty)`)}${cell("Nos", "center")}${cell(bat.qty, "center")}</tr>`;
       });
 
       // 4. ACDB
@@ -995,6 +1030,14 @@ export default function PricingCalculatorPage() {
         rows += `<tr>${snoCell()}${cell("<strong>Safety Lifeline System</strong>")}${cell("Stainless steel lifeline wire rope with roof anchor brackets")}${cell("Standard Make")}${cell("Mtr", "center")}${cell(customSafety, "center")}</tr>`;
       }
 
+      // 15b. Conduiting & Cable Trays
+      if (calc.conduitUpvcCost > 0) {
+        rows += `<tr>${snoCell()}${cell("<strong>Cable Conduiting</strong>")}${cell("Rigid heavy-duty UV-stabilized uPVC Conduit Pipe")}${cell("ISI / Reputed Make")}${cell("Mtr", "center")}${cell(calc.conduitUpvcMeters, "center")}</tr>`;
+      }
+      if (calc.cableTrayCost > 0) {
+        rows += `<tr>${snoCell()}${cell("<strong>Cable Tray System</strong>")}${cell("Galvanized GI Perforated / Ladder Cable Tray with Coupler Plates")}${cell("Standard Structural Grade")}${cell("Mtr", "center")}${cell(calc.cableTrayMeters, "center")}</tr>`;
+      }
+
       // 16. MC4 Connectors
       if (calc.mc4Cost > 0 || calc.mc4BranchCost > 0) {
         const totalMc4 = (Number(calc.mc4Pairs) || 0) + (Number(calc.mc4BranchQty) || 0);
@@ -1042,46 +1085,62 @@ export default function PricingCalculatorPage() {
           : "UTILITY-SCALE SOLAR PROPOSAL";
       const dateStr = new Date().toLocaleDateString("en-IN", { day: "numeric", month: "long", year: "numeric" });
       const quoteRefStr = activeQuoteRef;
+      let dynamicWarrantyTerm = `Warranty: ${modW} performance warranty on solar modules, ${invW} on grid-tie inverters.`;
+      if (systemType === "hybrid" || batteries.some(b => b.brand && b.model)) {
+        dynamicWarrantyTerm += ` ${batW} on battery storage system.`;
+      }
+
       const rawStdTerms = rates?.standardTerms || 'Payment Mode: Milestone Payments (Bank Transfer / RTGS / Cheque)\nEstimated Delivery: 4 to 6 weeks from structural layout approval and receipt of advance.\nGrid integration approvals (Net Metering) timeline varies according to State DISCOM.\nQuotation validity: 15 days from the date of issuance.\nWarranty: 25 years performance warranty on solar modules, 5 years on grid-tie inverters.';
-      const standardTermRows = rawStdTerms.split('\n').filter(t => t.trim()).map(t => `<li style="padding:2px 0">${t}</li>`).join('');
-      const customTermRows = customTerms ? customTerms.split('\n').filter(t => t.trim()).map(t => `<li style="padding:2px 0">${t}</li>`).join('') : '';
+      const rawTermsArr = rawStdTerms.split('\n').filter(t => t.trim());
+      const hasWarrantyLine = rawTermsArr.some(t => t.trim().toLowerCase().startsWith('warranty:'));
+      let processedTerms = rawTermsArr.map(t => {
+        if (t.trim().toLowerCase().startsWith('warranty:')) {
+          return dynamicWarrantyTerm;
+        }
+        return t;
+      });
+      if (!hasWarrantyLine) {
+        processedTerms.push(dynamicWarrantyTerm);
+      }
+      const standardTermRows = processedTerms.map(t => `<li style="padding:1.5px 0">${t}</li>`).join('');
+      const customTermRows = customTerms ? customTerms.split('\n').filter(t => t.trim()).map(t => `<li style="padding:1.5px 0">${t}</li>`).join('') : '';
       const logoUrl = window.location.origin + "/divvy_photo.png";
 
       const css = `
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body { font-family: Arial, Helvetica, sans-serif; background: #fff; color: #334155; -webkit-print-color-adjust: exact; }
-        .page { width: 794px; background: #fff; padding: 32px 36px; }
-        .hdr { display: flex; justify-content: space-between; align-items: center; border-bottom: 2.5px solid #eab308; padding-bottom: 16px; margin-bottom: 24px; }
-        .hdr-logo img { width: 190px; height: auto; display: block; }
-        .hdr-mid { flex: 1; text-align: center; padding: 0 16px; }
-        .hdr-mid h1 { font-size: 15px; font-weight: 800; color: #1e3a8a; text-transform: uppercase; letter-spacing: 0.5px; }
-        .hdr-mid .addr1 { font-size: 9px; font-weight: 700; color: #1e293b; margin-top: 4px; }
-        .hdr-mid .addr2 { font-size: 8.5px; color: #64748b; margin-top: 2px; }
-        .hdr-right { width: 180px; text-align: right; }
-        .hdr-right .type { font-size: 11px; font-weight: 900; color: #eab308; text-transform: uppercase; }
-        .hdr-right p { font-size: 9px; color: #64748b; margin-top: 4px; }
-        .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px; }
-        .info-box { border: 1px solid #cbd5e1; background: #f8fafc; border-radius: 6px; padding: 12px; }
-        .info-box h3 { font-size: 10px; font-weight: 800; color: #1e3a8a; text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 2px solid #eab308; padding-bottom: 6px; margin-bottom: 8px; }
-        .info-box p { font-size: 11px; color: #334155; margin-bottom: 3px; }
-        table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
-        th { font-size: 10px; font-weight: 700; color: #fff; background: #1e3a8a; text-transform: uppercase; padding: 8px 12px; border: 1px solid #1e3a8a; }
-        td { font-size: 11px; color: #334155; padding: 8px 12px; border: 1px solid #cbd5e1; vertical-align: top; }
+        .page { width: 794px; background: #fff; padding: 20px 28px; }
+        .hdr { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #eab308; padding-bottom: 8px; margin-bottom: 10px; }
+        .hdr-logo img { width: 165px; height: auto; display: block; }
+        .hdr-mid { flex: 1; text-align: center; padding: 0 10px; }
+        .hdr-mid h1 { font-size: 13.5px; font-weight: 800; color: #1e3a8a; text-transform: uppercase; letter-spacing: 0.5px; }
+        .hdr-mid .addr1 { font-size: 8px; font-weight: 700; color: #1e293b; margin-top: 2px; }
+        .hdr-mid .addr2 { font-size: 7.5px; color: #64748b; margin-top: 1px; }
+        .hdr-right { width: 170px; text-align: right; }
+        .hdr-right .type { font-size: 10px; font-weight: 900; color: #eab308; text-transform: uppercase; }
+        .hdr-right p { font-size: 8px; color: #64748b; margin-top: 2px; }
+        .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px; }
+        .info-box { border: 1px solid #cbd5e1; background: #f8fafc; border-radius: 6px; padding: 6px 8px; }
+        .info-box h3 { font-size: 9px; font-weight: 800; color: #1e3a8a; text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 1.5px solid #eab308; padding-bottom: 3px; margin-bottom: 4px; }
+        .info-box p { font-size: 8.5px; color: #334155; margin-bottom: 1.5px; line-height: 1.3; }
+        table { width: 100%; border-collapse: collapse; margin-bottom: 8px; }
+        th { font-size: 8.5px; font-weight: 700; color: #fff; background: #1e3a8a; text-transform: uppercase; padding: 5px 6px; border: 1px solid #1e3a8a; }
+        td { font-size: 8.5px; color: #334155; padding: 3.5px 6px; border: 1px solid #cbd5e1; vertical-align: top; line-height: 1.25; }
         tr:nth-child(even) td { background: #f8fafc; }
-        .totals-wrap { display: flex; justify-content: flex-end; margin-bottom: 20px; }
-        .totals { width: 55%; border: 2px solid #eab308; background: #fefcf0; border-radius: 6px; padding: 12px 16px; }
-        .totals-row { display: flex; justify-content: space-between; font-size: 11px; color: #334155; padding: 3px 0; }
-        .totals-grand { display: flex; justify-content: space-between; font-size: 13px; font-weight: 900; color: #1e3a8a; border-top: 2px solid #eab308; padding-top: 8px; margin-top: 6px; }
-        .totals-note { font-size: 8.5px; color: #64748b; text-align: right; margin-top: 4px; font-weight: 600; }
-        .bottom-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; padding-top: 16px; border-top: 1px solid #e2e8f0; margin-bottom: 32px; }
-        .bottom-grid h4 { font-size: 10px; font-weight: 800; color: #1e3a8a; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 10px; }
+        .totals-wrap { display: flex; justify-content: flex-end; margin-bottom: 8px; }
+        .totals { width: 50%; border: 1.5px solid #eab308; background: #fefcf0; border-radius: 6px; padding: 6px 10px; }
+        .totals-row { display: flex; justify-content: space-between; font-size: 8.5px; color: #334155; padding: 1.5px 0; }
+        .totals-grand { display: flex; justify-content: space-between; font-size: 11px; font-weight: 900; color: #1e3a8a; border-top: 1.5px solid #eab308; padding-top: 4px; margin-top: 3px; }
+        .totals-note { font-size: 7.5px; color: #64748b; text-align: right; margin-top: 2px; font-weight: 600; }
+        .bottom-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; padding-top: 8px; border-top: 1px solid #e2e8f0; margin-bottom: 10px; }
+        .bottom-grid h4 { font-size: 9px; font-weight: 800; color: #1e3a8a; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; }
         .payment-list { list-style: none; }
-        .payment-list li { display: flex; justify-content: space-between; font-size: 11px; color: #334155; font-weight: 500; padding: 3px 0; }
-        .terms-list { list-style: decimal; padding-left: 16px; }
-        .terms-list li { font-size: 10px; color: #475569; padding: 2px 0; line-height: 1.5; }
-        .footer { display: flex; justify-content: space-between; padding-top: 24px; border-top: 1px solid #cbd5e1; }
-        .sig { width: 40%; text-align: center; }
-        .sig-line { border-top: 1px solid #94a3b8; padding-top: 8px; font-size: 10px; color: #64748b; font-weight: 600; }
+        .payment-list li { display: flex; justify-content: space-between; font-size: 8.5px; color: #334155; font-weight: 500; padding: 1.5px 0; }
+        .terms-list { list-style: decimal; padding-left: 14px; }
+        .terms-list li { font-size: 8px; color: #475569; padding: 1px 0; line-height: 1.35; }
+        .footer { display: flex; justify-content: space-between; padding-top: 8px; border-top: 1px solid #cbd5e1; }
+        .sig { width: 38%; text-align: center; }
+        .sig-line { border-top: 1px solid #94a3b8; padding-top: 4px; font-size: 8.5px; color: #64748b; font-weight: 600; }
       `;
 
       const activeOffice = DIVVY_BRANCH_OFFICES[issuingBranch] || DIVVY_BRANCH_OFFICES.gurgaon;
@@ -1090,12 +1149,12 @@ export default function PricingCalculatorPage() {
         <table>
           <thead>
             <tr>
-              <th style="width:40px;text-align:center">S.No</th>
+              <th style="width:36px;text-align:center">S.No</th>
               <th style="text-align:left">Particulars / Components</th>
-              <th style="width:80px;text-align:center">Qty / Size</th>
-              <th style="width:50px;text-align:center">Unit</th>
-              <th style="width:100px;text-align:right">Unit Rate</th>
-              <th style="width:120px;text-align:right">Total (INR)</th>
+              <th style="width:70px;text-align:center">Qty / Size</th>
+              <th style="width:45px;text-align:center">Unit</th>
+              <th style="width:90px;text-align:right">Unit Rate</th>
+              <th style="width:110px;text-align:right">Total (INR)</th>
             </tr>
           </thead>
           <tbody>${buildItemizedRows()}</tbody>
@@ -1114,40 +1173,40 @@ export default function PricingCalculatorPage() {
         <table>
           <thead>
             <tr>
-              <th style="width:36px;text-align:center">S.No</th>
-              <th style="width:160px;text-align:left">Material</th>
+              <th style="width:32px;text-align:center">S.No</th>
+              <th style="width:150px;text-align:left">Material</th>
               <th style="text-align:left">Technical Specifications</th>
-              <th style="width:130px;text-align:left">Make / Brand</th>
-              <th style="width:45px;text-align:center">Units</th>
-              <th style="width:45px;text-align:center">Qty</th>
+              <th style="width:150px;text-align:left">Make / Brand</th>
+              <th style="width:40px;text-align:center">Units</th>
+              <th style="width:40px;text-align:center">Qty</th>
             </tr>
           </thead>
           <tbody>${buildTurnkeyRows()}</tbody>
         </table>
-        <table style="width:100%;border-collapse:collapse;margin-top:16px;margin-bottom:10px">
+        <table style="width:100%;border-collapse:collapse;margin-top:10px;margin-bottom:6px">
           <thead>
             <tr style="background:#1e3a8a;color:#fff">
-              <th style="width:40px;text-align:center;padding:8px 10px;font-size:10px;border:1px solid #1e3a8a">S.No</th>
-              <th style="text-align:left;padding:8px 10px;font-size:10px;border:1px solid #1e3a8a">Purchase Order For</th>
-              <th style="width:120px;text-align:right;padding:8px 10px;font-size:10px;border:1px solid #1e3a8a">Taxable Value</th>
-              <th style="width:110px;text-align:right;padding:8px 10px;font-size:10px;border:1px solid #1e3a8a">GST @ ${calc.gstPercent}%</th>
-              <th style="width:130px;text-align:right;padding:8px 10px;font-size:10px;border:1px solid #1e3a8a">Total Amount</th>
+              <th style="width:32px;text-align:center;padding:5px 6px;font-size:8.5px;border:1px solid #1e3a8a">S.No</th>
+              <th style="text-align:left;padding:5px 6px;font-size:8.5px;border:1px solid #1e3a8a">Purchase Order For</th>
+              <th style="width:110px;text-align:right;padding:5px 6px;font-size:8.5px;border:1px solid #1e3a8a">Taxable Value</th>
+              <th style="width:95px;text-align:right;padding:5px 6px;font-size:8.5px;border:1px solid #1e3a8a">GST @ ${calc.gstPercent}%</th>
+              <th style="width:115px;text-align:right;padding:5px 6px;font-size:8.5px;border:1px solid #1e3a8a">Total Amount</th>
             </tr>
           </thead>
           <tbody>
             <tr>
-              <td style="border:1px solid #cbd5e1;padding:10px;font-size:11px;text-align:center;color:#334155;font-weight:bold">1</td>
-              <td style="border:1px solid #cbd5e1;padding:10px;font-size:11px;text-align:left;color:#0f172a;font-weight:600">
+              <td style="border:1px solid #cbd5e1;padding:6px;font-size:9px;text-align:center;color:#334155;font-weight:bold">1</td>
+              <td style="border:1px solid #cbd5e1;padding:6px;font-size:9px;text-align:left;color:#0f172a;font-weight:600">
                 Complete Supply, Installation, Testing &amp; Commissioning of ${effectiveSystemKW || 0} kWp Solar PV System @ &#8377;${Math.round(calc.perWp * 1000).toLocaleString('en-IN')}/- Per kWp
-                ${calc.discountAmount > 0 ? `<div style="font-size:9.5px;color:#16a34a;font-weight:normal;margin-top:2px">Special discount of ${calc.effectiveDiscountPercent}% applied</div>` : ''}
+                ${calc.discountAmount > 0 ? `<div style="font-size:8px;color:#16a34a;font-weight:normal;margin-top:1px">Special discount of ${calc.effectiveDiscountPercent}% applied</div>` : ''}
               </td>
-              <td style="border:1px solid #cbd5e1;padding:10px;font-size:11px;text-align:right;color:#334155;font-weight:bold">${fmtINR(calc.baseTotal)}</td>
-              <td style="border:1px solid #cbd5e1;padding:10px;font-size:11px;text-align:right;color:#334155;font-weight:bold">${fmtINR(calc.gst)}</td>
-              <td style="border:1px solid #cbd5e1;padding:10px;font-size:12px;text-align:right;color:#1e3a8a;font-weight:900">${fmtINR(calc.grandTotal)}</td>
+              <td style="border:1px solid #cbd5e1;padding:6px;font-size:9px;text-align:right;color:#334155;font-weight:bold">${fmtINR(calc.baseTotal)}</td>
+              <td style="border:1px solid #cbd5e1;padding:6px;font-size:9px;text-align:right;color:#334155;font-weight:bold">${fmtINR(calc.gst)}</td>
+              <td style="border:1px solid #cbd5e1;padding:6px;font-size:10px;text-align:right;color:#1e3a8a;font-weight:900">${fmtINR(calc.grandTotal)}</td>
             </tr>
           </tbody>
         </table>
-        <div style="background:#fefcf0;border:1.5px solid #eab308;padding:8px 14px;border-radius:6px;margin-bottom:20px;font-size:10px;font-weight:800;color:#1e3a8a;text-align:center;letter-spacing:0.3px">
+        <div style="background:#fefcf0;border:1px solid #eab308;padding:5px 10px;border-radius:4px;margin-bottom:10px;font-size:8.5px;font-weight:800;color:#1e3a8a;text-align:center;letter-spacing:0.3px">
           (${inWords(Math.round(calc.grandTotal)).toUpperCase()} ONLY INCLUSIVE GST)
         </div>
       `;
@@ -1209,7 +1268,7 @@ export default function PricingCalculatorPage() {
                 ${standardTermRows}
               </ul>
               ${customTerms && customTerms.trim() ? `
-                <h4 style="margin-top:12px;color:#1e3a8a">Exact Client Requirements</h4>
+                <h4 style="margin-top:8px;color:#1e3a8a">Exact Client Requirements</h4>
                 <ul class="terms-list" style="color:#0f172a;font-weight:600">
                   ${customTermRows}
                 </ul>
@@ -1221,7 +1280,7 @@ export default function PricingCalculatorPage() {
               <div class="sig-line">
                 Authorized Signatory<br/>
                 <strong>${salespersonName || "Divvy Solar Representative"}</strong>
-                ${salespersonPhone ? `<div style="font-size:9px;color:#64748b;margin-top:2px">Mob: ${salespersonPhone}</div>` : ""}
+                ${salespersonPhone ? `<div style="font-size:8px;color:#64748b;margin-top:1px">Mob: ${salespersonPhone}</div>` : ""}
               </div>
             </div>
             <div class="sig"><div class="sig-line">Accepted and Agreed<br/><strong>Client Representative</strong></div></div>
@@ -1259,21 +1318,26 @@ export default function PricingCalculatorPage() {
 
       if (document.body.contains(iframe)) document.body.removeChild(iframe);
 
-      const imgData = canvas.toDataURL("image/jpeg", 0.85);
+      const imgData = canvas.toDataURL("image/jpeg", 0.9);
       const pdf = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
       const pdfW = pdf.internal.pageSize.getWidth();
       const pdfH = pdf.internal.pageSize.getHeight();
       const imgHeightMm = (canvas.height * pdfW) / canvas.width;
 
-      let heightLeft = imgHeightMm;
-      let position = 0;
-      pdf.addImage(imgData, "JPEG", 0, position, pdfW, imgHeightMm);
-      heightLeft -= pdfH;
-      while (heightLeft > 0) {
-        position = heightLeft - imgHeightMm;
-        pdf.addPage();
-        pdf.addImage(imgData, "JPEG", 0, position, pdfW, imgHeightMm);
-        heightLeft -= pdfH;
+      if (imgHeightMm <= pdfH + 4) {
+        // Fits on a single, crisp A4 page without page splits
+        pdf.addImage(imgData, "JPEG", 0, 0, pdfW, Math.min(imgHeightMm, pdfH));
+      } else {
+        // Clean multi-page pagination
+        let heightLeft = imgHeightMm;
+        let page = 0;
+        while (heightLeft > 5) {
+          if (page > 0) pdf.addPage();
+          const position = -(page * pdfH);
+          pdf.addImage(imgData, "JPEG", 0, position, pdfW, imgHeightMm);
+          heightLeft -= pdfH;
+          page++;
+        }
       }
 
       const pdfBase64 = pdf.output('datauristring');
@@ -1317,6 +1381,9 @@ export default function PricingCalculatorPage() {
         walkwayType: walkwayType || 'gi',
         walkwayM: Number(walkwayM) || 0,
         customSafety: Number(customSafety) || 0,
+        conduit: !!conduit,
+        conduitUpvcM: Number(conduitUpvcM) || 0,
+        cableTrayM: Number(cableTrayM) || 0,
         discomType: discomType || '',
         discom: !!discom,
         incBos: !!incBos,
@@ -1325,6 +1392,9 @@ export default function PricingCalculatorPage() {
         incTrans: !!incTrans,
         incNuts: !!incNuts,
         hideItemizedPricing: !!hideItemizedPricing,
+        moduleWarranty: moduleWarranty || '25 Years',
+        inverterWarranty: inverterWarranty || '5 Years',
+        batteryWarranty: batteryWarranty || '5 Years',
         advancePercent: Number(advancePercent) || 10,
         dispatchPercent: Number(dispatchPercent) || 85,
         handoverPercent: Number(handoverPercent) || 5,
@@ -1637,6 +1707,16 @@ export default function PricingCalculatorPage() {
               </button>
             </div>
 
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pb-2 border-b border-white/5">
+              <Inp
+                label="Module Performance Warranty"
+                id="module-warranty"
+                value={moduleWarranty}
+                onChange={setModuleWarranty}
+                placeholder="e.g. 25 Years / 30 Years"
+              />
+            </div>
+
             {/* Multi-Module List */}
             <div className="space-y-4">
               {modules.map((mod, index) => {
@@ -1796,6 +1876,17 @@ export default function PricingCalculatorPage() {
                 + Add Inverter
               </button>
             </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pb-2 border-b border-white/5">
+              <Inp
+                label="Inverter Warranty"
+                id="inverter-warranty"
+                value={inverterWarranty}
+                onChange={setInverterWarranty}
+                placeholder="e.g. 5 Years / 7 Years / 10 Years"
+              />
+            </div>
+
             <div className="space-y-4">
               {inverters.map((inv, index) => {
                 const availModels = inv.brand && rates?.inverters?.[inv.brand]
@@ -1845,6 +1936,16 @@ export default function PricingCalculatorPage() {
                 >
                   + Add Battery
                 </button>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pb-2 border-b border-white/5">
+                <Inp
+                  label="Battery Warranty"
+                  id="battery-warranty"
+                  value={batteryWarranty}
+                  onChange={setBatteryWarranty}
+                  placeholder="e.g. 5 Years / 10 Years"
+                />
               </div>
               <div className="space-y-4">
                 {batteries.map((bat, index) => {
@@ -2223,6 +2324,35 @@ export default function PricingCalculatorPage() {
                 )}
               </div>
 
+              {/* Conduiting & Cable Trays */}
+              <div className="p-4 rounded-xl bg-white/3 border border-white/5 space-y-3">
+                <Chk label="Conduiting / Cable Trays Required" id="conduit-check" checked={conduit} onChange={setConduit} />
+                {conduit && (
+                  <div className="pt-2 space-y-2.5">
+                    <Inp 
+                      label="uPVC Conduit Pipe (Meters)" 
+                      id="conduit-upvc-m" 
+                      value={conduitUpvcM} 
+                      onChange={setConduitUpvcM} 
+                      type="number" 
+                      min={0} 
+                      unit="m" 
+                      placeholder="e.g. 30" 
+                    />
+                    <Inp 
+                      label="GI Cable Tray (Meters)" 
+                      id="cable-tray-m" 
+                      value={cableTrayM} 
+                      onChange={setCableTrayM} 
+                      type="number" 
+                      min={0} 
+                      unit="m" 
+                      placeholder="e.g. 15" 
+                    />
+                  </div>
+                )}
+              </div>
+
               {/* MC4 & Branch Connectors */}
               <div className="p-4 rounded-xl bg-white/3 border border-white/5 space-y-4">
                 <p className="text-xs font-bold text-white/50 uppercase tracking-wider">MC4 Connectors</p>
@@ -2394,24 +2524,17 @@ export default function PricingCalculatorPage() {
               />
               <div className="flex justify-between text-[10px] text-white/40 font-medium">
                 <span>0% (Standard Rate)</span>
-                <span className="text-[#FECB00]/70">Cap set by Finance Team: {calc?.maxDiscountPercent || 5}%</span>
+                <span className="text-[#FECB00]/70">Max Limit: {calc?.maxDiscountPercent || 5}%</span>
               </div>
             </div>
           </div>
 
           {/* Cost Breakdown Preview Sticky Card */}
           <div className="rounded-2xl border border-white/10 bg-white/5 p-6 space-y-6 sticky top-6">
-            <div className="flex items-center justify-between pb-2 border-b border-white/10 flex-wrap gap-2">
-              <h3 className="text-lg font-bold text-white flex items-center gap-2">
-                <DocumentArrowDownIcon className="w-5 h-5 text-[#FECB00]" />
-                Cost Breakdown Preview
-              </h3>
-              {calc && (
-                <span className={`text-[10px] px-2.5 py-0.5 rounded-full font-bold border uppercase tracking-wider ${calc.isIndustrial ? 'bg-cyan-500/15 text-cyan-300 border-cyan-500/30' : 'bg-[#FECB00]/15 text-[#FECB00] border-[#FECB00]/30'}`}>
-                  {calc.isIndustrial ? `Industrial (${calc.appliedProfitMarginPercent}% Margin)` : `Residential (${calc.appliedProfitMarginPercent}% Margin)`}
-                </span>
-              )}
-            </div>
+            <h3 className="text-lg font-bold text-white flex items-center gap-2 pb-2 border-b border-white/10">
+              <DocumentArrowDownIcon className="w-5 h-5 text-[#FECB00]" />
+              Cost Breakdown Preview
+            </h3>
 
             {!calc ? (
               <p className="text-sm text-white/40">Enter system size and configure components to see quotation.</p>
@@ -2454,6 +2577,8 @@ export default function PricingCalculatorPage() {
                     { l: `Lightning Arrestor (${calc.laCount} units, ${cap(laType)})`, v: calc.laCost },
                     { l: `Walkway (${walkwayM}m, ${walkwayType === "gi" ? "GI" : "FRP"})`, v: calc.walkCost },
                     { l: `Safety Line (${customSafety}m)`, v: calc.safetyCost },
+                    ...(calc.conduitUpvcCost > 0 ? [{ l: `uPVC Conduit Pipe (${calc.conduitUpvcMeters}m)`, v: calc.conduitUpvcCost }] : []),
+                    ...(calc.cableTrayCost > 0 ? [{ l: `GI Cable Tray (${calc.cableTrayMeters}m)`, v: calc.cableTrayCost }] : []),
                     ...(calc.acdbCost ? [{ l: `ACDB Combiner`, v: calc.acdbCost }] : []),
                     ...(calc.dcdbCost ? [{ l: `DCDB Combiner`, v: calc.dcdbCost }] : []),
                     ...(calc.mc4Cost ? [{ l: `MC4 Connectors`, v: calc.mc4Cost }] : []),
@@ -3026,7 +3151,7 @@ export default function PricingCalculatorPage() {
                             <td className="text-xs text-slate-700 px-2.5 py-1.5 border border-slate-300 text-center font-semibold">{sno++}</td>
                             <td className="text-xs text-slate-800 px-2.5 py-1.5 border border-slate-300 font-bold">Solar PV Modules</td>
                             <td className="text-xs text-slate-700 px-2.5 py-1.5 border border-slate-300">Tier-1 High Efficiency PV Modules ({mod.wattage}Wp, {mod.tech || 'Mono PERC/TopCon'})</td>
-                            <td className="text-xs text-slate-700 px-2.5 py-1.5 border border-slate-300">{cap(mod.brand)} / Reputed Tier-1</td>
+                            <td className="text-xs text-slate-700 px-2.5 py-1.5 border border-slate-300">{cap(mod.brand)} / Reputed Tier-1 ({moduleWarranty || "25 Years"} Warranty)</td>
                             <td className="text-xs text-slate-700 px-2.5 py-1.5 border border-slate-300 text-center">Nos</td>
                             <td className="text-xs text-slate-700 px-2.5 py-1.5 border border-slate-300 text-center font-bold">{mod.panels || mod.qty}</td>
                           </tr>
@@ -3034,7 +3159,7 @@ export default function PricingCalculatorPage() {
                           <tr className="hover:bg-slate-50">
                             <td className="text-xs text-slate-700 px-2.5 py-1.5 border border-slate-300 text-center font-semibold">{sno++}</td>
                             <td className="text-xs text-slate-800 px-2.5 py-1.5 border border-slate-300 font-bold">Solar PV Modules</td>
-                            <td className="text-xs text-slate-700 px-2.5 py-1.5 border border-slate-300">Tier-1 High Efficiency Solar PV Modules</td>
+                            <td className="text-xs text-slate-700 px-2.5 py-1.5 border border-slate-300">Tier-1 High Efficiency Solar PV Modules ({moduleWarranty || "25 Years"} Warranty)</td>
                             <td className="text-xs text-slate-700 px-2.5 py-1.5 border border-slate-300">Tier-1 Make</td>
                             <td className="text-xs text-slate-700 px-2.5 py-1.5 border border-slate-300 text-center">Wp</td>
                             <td className="text-xs text-slate-700 px-2.5 py-1.5 border border-slate-300 text-center font-bold">{(effectiveSystemKW || 0) * 1000}</td>
@@ -3045,7 +3170,7 @@ export default function PricingCalculatorPage() {
                             <td className="text-xs text-slate-700 px-2.5 py-1.5 border border-slate-300 text-center font-semibold">{sno++}</td>
                             <td className="text-xs text-slate-800 px-2.5 py-1.5 border border-slate-300 font-bold">Solar Inverter</td>
                             <td className="text-xs text-slate-700 px-2.5 py-1.5 border border-slate-300">Grid-Tie / Hybrid Multi-MPPT Inverter System ({inv.modelName})</td>
-                            <td className="text-xs text-slate-700 px-2.5 py-1.5 border border-slate-300">{cap(inv.brand)} / Tier-1</td>
+                            <td className="text-xs text-slate-700 px-2.5 py-1.5 border border-slate-300">{cap(inv.brand)} / Tier-1 ({inverterWarranty || "5 Years"} Warranty)</td>
                             <td className="text-xs text-slate-700 px-2.5 py-1.5 border border-slate-300 text-center">Nos</td>
                             <td className="text-xs text-slate-700 px-2.5 py-1.5 border border-slate-300 text-center font-bold">{inv.qty}</td>
                           </tr>
@@ -3055,7 +3180,7 @@ export default function PricingCalculatorPage() {
                             <td className="text-xs text-slate-700 px-2.5 py-1.5 border border-slate-300 text-center font-semibold">{sno++}</td>
                             <td className="text-xs text-slate-800 px-2.5 py-1.5 border border-slate-300 font-bold">Battery Storage Bank</td>
                             <td className="text-xs text-slate-700 px-2.5 py-1.5 border border-slate-300">Deep-Cycle Solar Battery Bank ({bat.modelName})</td>
-                            <td className="text-xs text-slate-700 px-2.5 py-1.5 border border-slate-300">{cap(bat.brand)}</td>
+                            <td className="text-xs text-slate-700 px-2.5 py-1.5 border border-slate-300">{cap(bat.brand)} ({batteryWarranty || "5 Years"} Warranty)</td>
                             <td className="text-xs text-slate-700 px-2.5 py-1.5 border border-slate-300 text-center">Nos</td>
                             <td className="text-xs text-slate-700 px-2.5 py-1.5 border border-slate-300 text-center font-bold">{bat.qty}</td>
                           </tr>
@@ -3313,15 +3438,32 @@ export default function PricingCalculatorPage() {
             <div>
               <h4 className="text-xs font-bold text-[#1e3a8a] uppercase mb-2 tracking-wider">Terms &amp; Conditions</h4>
               <ul className="text-[10px] text-slate-600 list-disc list-inside space-y-1">
-                {(rates?.standardTerms ? rates.standardTerms.split('\n') : [
-                  "Payment Mode: Milestone Payments (Bank Transfer / RTGS / Cheque)",
-                  "Estimated Delivery: 4 to 6 weeks from structural layout approval and receipt of advance.",
-                  "Grid integration approvals (Net Metering) timeline varies according to State DISCOM.",
-                  "Quotation validity: 15 days from the date of issuance.",
-                  "Warranty: 25 years performance warranty on solar modules, 5 years on grid-tie inverters."
-                ]).filter(t => t.trim()).map((term, i) => (
-                  <li key={`std-${i}`}>{term}</li>
-                ))}
+                {(() => {
+                  const modW = (moduleWarranty && moduleWarranty.trim()) ? (moduleWarranty.toLowerCase().includes('year') ? moduleWarranty : `${moduleWarranty} Years`) : '25 Years';
+                  const invW = (inverterWarranty && inverterWarranty.trim()) ? (inverterWarranty.toLowerCase().includes('year') ? inverterWarranty : `${inverterWarranty} Years`) : '5 Years';
+                  let dynamicWarrantyTerm = `Warranty: ${modW} performance warranty on solar modules, ${invW} on grid-tie inverters.`;
+                  if (systemType === "hybrid" || batteries.some(b => b.brand && b.model)) {
+                    const batW = (batteryWarranty && batteryWarranty.trim()) ? (batteryWarranty.toLowerCase().includes('year') ? batteryWarranty : `${batteryWarranty} Years`) : '5 Years';
+                    dynamicWarrantyTerm += ` ${batW} on battery storage system.`;
+                  }
+                  const rawTerms = rates?.standardTerms ? rates.standardTerms.split('\n') : [
+                    "Payment Mode: Milestone Payments (Bank Transfer / RTGS / Cheque)",
+                    "Estimated Delivery: 4 to 6 weeks from structural layout approval and receipt of advance.",
+                    "Grid integration approvals (Net Metering) timeline varies according to State DISCOM.",
+                    "Quotation validity: 15 days from the date of issuance.",
+                    "Warranty: 25 years performance warranty on solar modules, 5 years on grid-tie inverters."
+                  ];
+                  const rawList = rawTerms.filter(t => t.trim());
+                  const hasWarranty = rawList.some(t => t.trim().toLowerCase().startsWith('warranty:'));
+                  let list = rawList.map(t => {
+                    if (t.trim().toLowerCase().startsWith('warranty:')) {
+                      return dynamicWarrantyTerm;
+                    }
+                    return t;
+                  });
+                  if (!hasWarranty) list.push(dynamicWarrantyTerm);
+                  return list.map((term, i) => <li key={`std-${i}`}>{term}</li>);
+                })()}
               </ul>
 
               {customTerms && customTerms.trim() && (

@@ -74,6 +74,9 @@ const PricingRateSchema = new mongoose.Schema(
         walkwayGiRate: { type: Number, default: 0 },      // ₹ per meter (GI walkway)
         walkwayFrpRate: { type: Number, default: 0 },     // ₹ per meter (FRP walkway)
 
+        conduitUpvcRate: { type: Number, default: 65 },   // ₹ per meter (uPVC Conduit Pipe)
+        cableTrayRate: { type: Number, default: 280 },    // ₹ per meter (GI Cable Tray)
+
         safetyLineRate: { type: Number, default: 0 },     // ₹ per meter safety line
         safetyLinePerKW: { type: Number, default: 2 },    // meters needed per kW
 
