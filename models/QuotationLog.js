@@ -79,5 +79,8 @@ const QuotationLogSchema = new mongoose.Schema(
     }
 );
 
+QuotationLogSchema.index({ createdAt: -1 });
+QuotationLogSchema.index({ salespersonId: 1, createdAt: -1 });
+
 export default mongoose.models.QuotationLog ||
     mongoose.model('QuotationLog', QuotationLogSchema);
