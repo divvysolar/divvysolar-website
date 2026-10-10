@@ -31,7 +31,7 @@ const Footer = () => {
             title: 'Regional Office',
             lines: [
                 'Plot no 14, Phase-VII (ADJ), Focal Point',
-                'Gobindgarh, Ludhiana 411010'
+                'Gobindgarh, Ludhiana 141010'
             ],
         },
     ];
