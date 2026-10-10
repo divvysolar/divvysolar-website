@@ -447,7 +447,7 @@ export default function PricingCalculatorPage() {
   const [hideItemizedPricing, setHideItemizedPricing] = useState(false);
 
   const [discom, setDiscom] = useState(false);
-  const [discomType, setDiscomType] = useState("lt_three");
+  const [discomType, setDiscomType] = useState("");
   const [customTerms, setCustomTerms] = useState("");
   const [pdfLoading, setPdfLoading] = useState(false);
   const [quoteRefLoading, setQuoteRefLoading] = useState(false);
@@ -816,11 +816,11 @@ export default function PricingCalculatorPage() {
     const mc4BranchCost = (Number(mc4BranchQty) || 0) * branchRate;
 
     let rawDiscomCost = 0;
-    if (discom) {
-      if (discomType === "single_phase") rawDiscomCost = rates.discomSinglePhaseCost || 0;
-      else if (discomType === "three_phase") rawDiscomCost = rates.discomThreePhaseCost || 0;
-      else if (discomType === "lt") rawDiscomCost = rates.discomLtCost || 0;
-      else if (discomType === "ht") rawDiscomCost = rates.discomHtCost || 0;
+    if (discom && discomType) {
+      if (discomType === "single_phase") rawDiscomCost = rates?.discomSinglePhaseCost || 0;
+      else if (discomType === "three_phase") rawDiscomCost = rates?.discomThreePhaseCost || 0;
+      else if (discomType === "lt") rawDiscomCost = rates?.discomLtCost || 0;
+      else if (discomType === "ht") rawDiscomCost = rates?.discomHtCost || 0;
     }
     const discomCost = rawDiscomCost * markupMultiplier;
 
@@ -2388,14 +2388,23 @@ export default function PricingCalculatorPage() {
 
             <div className="pt-4 border-t border-white/5">
               <div className="p-4 rounded-xl bg-white/3 border border-white/5 space-y-3 max-w-md">
-                <Chk label="DISCOM approval & Net Metering" id="discom-check" checked={discom} onChange={setDiscom} />
+                <Chk 
+                  label="DISCOM approval & Net Metering" 
+                  id="discom-check" 
+                  checked={discom} 
+                  onChange={(v) => {
+                    setDiscom(v);
+                    if (!v) setDiscomType("");
+                  }} 
+                />
                 {discom && (
                   <div className="pt-2">
-                    <Sel label="Connection Type" id="discom-type" value={discomType} onChange={setDiscomType}>
+                    <Sel label="Connection Type" id="discom-type" value={discomType || ""} onChange={setDiscomType}>
+                      <option value="" className="bg-[#0f172a]">-- Select Connection Type --</option>
                       <option value="single_phase" className="bg-[#0f172a]">Single Phase</option>
                       <option value="three_phase" className="bg-[#0f172a]">Three Phase</option>
-                      <option value="lt" className="bg-[#0f172a]">LT</option>
-                      <option value="ht" className="bg-[#0f172a]">HT</option>
+                      <option value="lt" className="bg-[#0f172a]">LT Connection</option>
+                      <option value="ht" className="bg-[#0f172a]">HT Connection</option>
                     </Sel>
                   </div>
                 )}
@@ -2583,7 +2592,10 @@ export default function PricingCalculatorPage() {
                     ...(calc.dcdbCost ? [{ l: `DCDB Combiner`, v: calc.dcdbCost }] : []),
                     ...(calc.mc4Cost ? [{ l: `MC4 Connectors`, v: calc.mc4Cost }] : []),
                     ...(calc.mc4BranchCost ? [{ l: `Branch (Y) Connectors`, v: calc.mc4BranchCost }] : []),
-                    { l: `DISCOM / Net Metering (${discomType === 'single_phase' ? 'Single Phase' : discomType === 'three_phase' ? 'Three Phase' : discomType === 'lt' ? 'LT' : 'HT'})`, v: calc.discomCost },
+                    ...(calc.discomCost > 0 ? [{ 
+                      l: `DISCOM / Net Metering (${discomType === 'three_phase' ? 'Three Phase' : discomType === 'lt' ? 'LT' : discomType === 'ht' ? 'HT' : discomType === 'single_phase' ? 'Single Phase' : 'Net Metering'})`, 
+                      v: calc.discomCost 
+                    }] : []),
                     { l: "Installation & Commissioning", v: calc.installCost },
                   ].filter(i => i.v > 0).map(i => (
                     <div key={i.l} className="flex justify-between items-start gap-4">

@@ -23,7 +23,7 @@ const ConsultationInfo = () => {
         {
             type: 'REGIONAL OFFICE',
             city: 'Ludhiana, PB',
-            address: 'Plot no 14, Phase-VII (ADJ), Focal Point, Gobindgarh, Ludhiana 411010',
+            address: 'Plot no 14, Phase-VII (ADJ), Focal Point, Gobindgarh, Ludhiana 141010',
             url: 'https://www.google.com/maps/search/?api=1&query=Plot+no+14+Phase+VII+Focal+Point+Ludhiana+Munish+Forging'
         }
     ];
