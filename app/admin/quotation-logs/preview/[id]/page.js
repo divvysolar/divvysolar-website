@@ -380,7 +380,20 @@ export default async function QuotationPreviewPage({ params }) {
         });
     }
 
-    if (invToAcdbCableM > 0) {
+    if (calc?.selectedInvToAcdbDetails?.length > 0) {
+        calc.selectedInvToAcdbDetails.forEach((item, idx) => {
+            if (item.meters > 0) {
+                rows.push({
+                    sno: sno++,
+                    particulars: `<strong>AC Solar Cable - Inv to ACDB${calc.selectedInvToAcdbDetails.filter(x => x.meters > 0).length > 1 ? ` #${idx + 1}` : ''} (${item.brandLabel || 'Polycab'}):</strong> ${item.cableLabel || "Multicore AC Cable"}<br/><span style="font-size:9px;color:#64748b">Multicore flexible AC cabling run</span>`,
+                    qty: item.meters,
+                    unit: 'm',
+                    rate: hideItemizedPricing ? 'Included' : formatINR(item.rate || 0),
+                    cost: hideItemizedPricing ? 'Included' : formatINR(item.cost || 0)
+                });
+            }
+        });
+    } else if (invToAcdbCableM > 0) {
         rows.push({
             sno: sno++,
             particulars: `<strong>AC Cable (Inv to ACDB):</strong> ${calc?.selInvToAcdbCable?.label || "Multicore AC Cable"}<br/><span style="font-size:9px;color:#64748b">Multicore flexible AC cabling run</span>`,
@@ -390,7 +403,21 @@ export default async function QuotationPreviewPage({ params }) {
             cost: hideItemizedPricing ? 'Included' : formatINR(calc?.invToAcdbCost || 0)
         });
     }
-    if (acdbToMainCableM > 0) {
+
+    if (calc?.selectedAcdbToMainDetails?.length > 0) {
+        calc.selectedAcdbToMainDetails.forEach((item, idx) => {
+            if (item.meters > 0) {
+                rows.push({
+                    sno: sno++,
+                    particulars: `<strong>AC Solar Cable - ACDB to Main${calc.selectedAcdbToMainDetails.filter(x => x.meters > 0).length > 1 ? ` #${idx + 1}` : ''} (${item.brandLabel || 'Polycab'}):</strong> ${item.cableLabel || "Armored/Unarmored AC Cable"}<br/><span style="font-size:9px;color:#64748b">AC distribution cable run</span>`,
+                    qty: item.meters,
+                    unit: 'm',
+                    rate: hideItemizedPricing ? 'Included' : formatINR(item.rate || 0),
+                    cost: hideItemizedPricing ? 'Included' : formatINR(item.cost || 0)
+                });
+            }
+        });
+    } else if (acdbToMainCableM > 0) {
         rows.push({
             sno: sno++,
             particulars: `<strong>AC Cable (ACDB to Main):</strong> ${calc?.selAcdbToMainCable?.label || "Armored/Unarmored AC Cable"}<br/><span style="font-size:9px;color:#64748b">AC distribution cable run</span>`,

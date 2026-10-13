@@ -82,7 +82,10 @@ export async function GET(request) {
     try {
         const session = await getServerSession(authOptions);
 
-        if (!session || (session.user?.role !== 'admin' && session.user?.role !== 'finance')) {
+        const isPrivileged = session?.user?.role === 'admin' || session?.user?.role === 'finance';
+        const isSalesperson = session?.user?.role === 'salesperson';
+
+        if (!session || (!isPrivileged && !isSalesperson)) {
             return NextResponse.json(
                 { success: false, message: 'Unauthorized' },
                 { status: 401 }
@@ -93,13 +96,32 @@ export async function GET(request) {
         const page = Math.max(1, parseInt(searchParams.get('page') || '1', 10));
         const limit = Math.min(200, parseInt(searchParams.get('limit') || '50', 10));
         const salespersonId = searchParams.get('salespersonId') || '';
+        const q = searchParams.get('q')?.trim() || '';
         const from = searchParams.get('from') || '';
         const to = searchParams.get('to') || '';
 
         await connectToDatabase();
 
         const filter = {};
-        if (salespersonId) filter.salespersonId = salespersonId;
+
+        // Privacy rule: Salesperson can ONLY ever query their own logs
+        if (isSalesperson) {
+            filter.salespersonId = session.user.id;
+        } else if (salespersonId) {
+            filter.salespersonId = salespersonId;
+        }
+
+        // Text search across Client Name, Phone, Location & Quote Ref
+        if (q) {
+            const regex = new RegExp(q, 'i');
+            filter.$or = [
+                { clientName: regex },
+                { clientPhone: regex },
+                { quoteRef: regex },
+                { clientLocation: regex },
+            ];
+        }
+
         if (from || to) {
             filter.createdAt = {};
             if (from) filter.createdAt.$gte = new Date(from);

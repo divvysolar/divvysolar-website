@@ -1,6 +1,7 @@
 "use client";
 import { useState, useEffect, useCallback, useRef } from "react";
 import { useSession } from "next-auth/react";
+import { useSearchParams, useRouter } from "next/navigation";
 import html2canvas from "html2canvas";
 import { jsPDF } from "jspdf";
 import {
@@ -16,6 +17,8 @@ import {
   ArrowPathIcon,
   BuildingOffice2Icon,
   MapPinIcon,
+  PencilSquareIcon,
+  XMarkIcon,
 } from "@heroicons/react/24/outline";
 
 export const DIVVY_BRANCH_OFFICES = {
@@ -284,7 +287,7 @@ const DynamicCableSelector = ({ label, cables, selectedId, onChange, brand = "po
   const currentBrandObj = CABLE_BRANDS.find(b => b.v === brand) || CABLE_BRANDS[0];
 
   return (
-    <div className="space-y-3 bg-white/5 border border-white/10 p-3.5 rounded-xl">
+    <div className="space-y-3">
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
         <Sel label="Cable Brand" id={`${label}-brand`} value={brand} onChange={onBrandChange}>
           {CABLE_BRANDS.map(b => (
@@ -390,13 +393,13 @@ export default function PricingCalculatorPage() {
     { id: Date.now(), brand: "polycab", cableId: "", meters: "" }
   ]);
 
-  const [invToAcdbCableBrand, setInvToAcdbCableBrand] = useState("polycab");
-  const [invToAcdbCableId, setInvToAcdbCableId] = useState("");
-  const [invToAcdbCableM, setInvToAcdbCableM] = useState("");
+  const [invToAcdbCablesList, setInvToAcdbCablesList] = useState([
+    { id: Date.now(), brand: "polycab", cableId: "", meters: "" }
+  ]);
 
-  const [acdbToMainCableBrand, setAcdbToMainCableBrand] = useState("polycab");
-  const [acdbToMainCableId, setAcdbToMainCableId] = useState("");
-  const [acdbToMainCableM, setAcdbToMainCableM] = useState("");
+  const [acdbToMainCablesList, setAcdbToMainCablesList] = useState([
+    { id: Date.now() + 1, brand: "polycab", cableId: "", meters: "" }
+  ]);
 
   const [earthing, setEarthing] = useState(false);
   const [earthingType, setEarthingType] = useState("copper_wire");
@@ -452,6 +455,127 @@ export default function PricingCalculatorPage() {
   const [pdfLoading, setPdfLoading] = useState(false);
   const [quoteRefLoading, setQuoteRefLoading] = useState(false);
 
+  // Edit Mode Integration
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  const editId = searchParams?.get("edit");
+  const [editingLogId, setEditingLogId] = useState(null);
+  const [loadingEdit, setLoadingEdit] = useState(false);
+
+  // Load Quotation for Editing (when ?edit=ID is present in URL)
+  useEffect(() => {
+    if (!editId) {
+      setEditingLogId(null);
+      return;
+    }
+
+    let isMounted = true;
+    const loadEditQuotation = async () => {
+      setLoadingEdit(true);
+      try {
+        const res = await fetch(`/api/quotation-logs/${editId}/state`);
+        const json = await res.json();
+        if (isMounted && json.success && json.state) {
+          const s = json.state;
+          setEditingLogId(editId);
+          if (s.clientName !== undefined) setClientName(s.clientName);
+          if (s.clientPhone !== undefined) setClientPhone(s.clientPhone);
+          if (s.clientLocation !== undefined) setClientLocation(s.clientLocation);
+          if (s.quoteRef) setQuoteRef(s.quoteRef);
+          if (s.systemKW !== undefined) setSystemKW(s.systemKW ? String(s.systemKW) : "");
+          if (s.issuingBranch) setIssuingBranch(s.issuingBranch);
+          if (s.projectCategory) setProjectCategory(s.projectCategory);
+          if (s.systemType) setSystemType(s.systemType);
+          if (s.connectedLoad !== undefined) setConnectedLoad(s.connectedLoad);
+          if (s.roofType !== undefined) setRoofType(s.roofType);
+          if (s.dgSync !== undefined) setDgSync(!!s.dgSync);
+          if (s.customTerms !== undefined) setCustomTerms(s.customTerms);
+
+          if (Array.isArray(s.modules) && s.modules.length > 0) setModules(s.modules);
+          if (Array.isArray(s.inverters) && s.inverters.length > 0) setInverters(s.inverters);
+          if (Array.isArray(s.batteries)) setBatteries(s.batteries);
+          if (Array.isArray(s.structures) && s.structures.length > 0) setStructures(s.structures);
+
+          if (Array.isArray(s.dcCablesList) && s.dcCablesList.length > 0) setDcCablesList(s.dcCablesList);
+          if (Array.isArray(s.invToAcdbCablesList) && s.invToAcdbCablesList.length > 0) {
+            setInvToAcdbCablesList(s.invToAcdbCablesList);
+          } else if (s.invToAcdbCableM !== undefined) {
+            setInvToAcdbCablesList([{ id: Date.now(), brand: s.invToAcdbCableBrand || "polycab", cableId: s.invToAcdbCableId || "", meters: s.invToAcdbCableM }]);
+          }
+
+          if (Array.isArray(s.acdbToMainCablesList) && s.acdbToMainCablesList.length > 0) {
+            setAcdbToMainCablesList(s.acdbToMainCablesList);
+          } else if (s.acdbToMainCableM !== undefined) {
+            setAcdbToMainCablesList([{ id: Date.now() + 1, brand: s.acdbToMainCableBrand || "polycab", cableId: s.acdbToMainCableId || "", meters: s.acdbToMainCableM }]);
+          }
+
+          if (s.earthingType) setEarthingType(s.earthingType);
+          if (s.earthingWireSize) setEarthingWireSize(s.earthingWireSize);
+          if (s.earthingWireM !== undefined) {
+            setEarthingWireM(s.earthingWireM);
+            setEarthing(Number(s.earthingWireM) > 0 || Number(s.customPits) > 0);
+          }
+          if (s.customPits !== undefined) {
+            setCustomPits(s.customPits);
+            setIsOverridePits(Number(s.customPits) > 0);
+            if (Number(s.customPits) > 0) setEarthing(true);
+          }
+          if (s.laType) setLaType(s.laType);
+          if (s.customLA !== undefined) {
+            setCustomLA(s.customLA);
+            setIsOverrideLA(Number(s.customLA) > 0);
+          }
+
+          if (s.walkway !== undefined) setWalkway(!!s.walkway);
+          if (s.walkwayType) setWalkwayType(s.walkwayType);
+          if (s.walkwayM !== undefined) setWalkwayM(s.walkwayM);
+
+          if (s.safetyLine !== undefined) setSafetyLine(!!s.safetyLine);
+          if (s.customSafety !== undefined) {
+            setCustomSafety(s.customSafety);
+            setIsOverrideSafety(Number(s.customSafety) > 0);
+          }
+
+          if (s.conduit !== undefined) setConduit(!!s.conduit);
+          if (s.conduitUpvcM !== undefined) setConduitUpvcM(s.conduitUpvcM);
+          if (s.cableTrayM !== undefined) setCableTrayM(s.cableTrayM);
+
+          if (s.mc4Pairs !== undefined) setMc4Pairs(s.mc4Pairs);
+          if (s.mc4BranchQty !== undefined) setMc4BranchQty(s.mc4BranchQty);
+
+          if (s.acdb !== undefined) setAcdb(!!s.acdb);
+          if (s.dcdb !== undefined) setDcdb(!!s.dcdb);
+
+          if (s.discom !== undefined) setDiscom(!!s.discom);
+          if (s.discomType !== undefined) setDiscomType(s.discomType);
+
+          if (s.discountPercent !== undefined) setDiscountPercent(s.discountPercent);
+          if (s.advancePercent !== undefined) setAdvancePercent(s.advancePercent);
+          if (s.dispatchPercent !== undefined) setDispatchPercent(s.dispatchPercent);
+          if (s.handoverPercent !== undefined) setHandoverPercent(s.handoverPercent);
+
+          if (s.moduleWarranty) setModuleWarranty(s.moduleWarranty);
+          if (s.inverterWarranty) setInverterWarranty(s.inverterWarranty);
+          if (s.batteryWarranty) setBatteryWarranty(s.batteryWarranty);
+
+          if (s.incBos !== undefined) setIncBos(!!s.incBos);
+          if (s.incEng !== undefined) setIncEng(!!s.incEng);
+          if (s.incMon !== undefined) setIncMon(!!s.incMon);
+          if (s.incTrans !== undefined) setIncTrans(!!s.incTrans);
+          if (s.incNuts !== undefined) setIncNuts(!!s.incNuts);
+          if (s.hideItemizedPricing !== undefined) setHideItemizedPricing(!!s.hideItemizedPricing);
+        }
+      } catch (err) {
+        console.error("Failed to load quotation for edit:", err);
+      } finally {
+        if (isMounted) setLoadingEdit(false);
+      }
+    };
+
+    loadEditQuotation();
+    return () => { isMounted = false; };
+  }, [editId]);
+
   const fetchRates = useCallback(async () => {
     try {
       const res = await fetch("/api/pricing/rates");
@@ -481,12 +605,16 @@ export default function PricingCalculatorPage() {
 
   useEffect(() => {
     fetchRates();
-    fetchNextQuoteRef();
+    if (!editId) {
+      fetchNextQuoteRef();
+    }
 
-    const onFocus = () => fetchNextQuoteRef();
+    const onFocus = () => {
+      if (!editId) fetchNextQuoteRef();
+    };
     window.addEventListener("focus", onFocus);
     return () => window.removeEventListener("focus", onFocus);
-  }, [fetchRates, fetchNextQuoteRef]);
+  }, [fetchRates, fetchNextQuoteRef, editId]);
 
   // Sync cables & default overrides when rates are loaded
   useEffect(() => {
@@ -494,15 +622,21 @@ export default function PricingCalculatorPage() {
       if (rates.dcCables?.length && dcCablesList.length > 0 && !dcCablesList[0].cableId) {
         setDcCablesList(prev => prev.map((item, idx) => idx === 0 && !item.cableId ? { ...item, cableId: rates.dcCables[0]._id } : item));
       }
-      if (rates.acCables?.length && !invToAcdbCableId) setInvToAcdbCableId(rates.acCables[0]._id);
-      if (rates.acCables?.length && !acdbToMainCableId) setAcdbToMainCableId(rates.acCables[0]._id);
+      if (rates.acCables?.length) {
+        if (invToAcdbCablesList.length > 0 && !invToAcdbCablesList[0].cableId) {
+          setInvToAcdbCablesList(prev => prev.map((item, idx) => idx === 0 && !item.cableId ? { ...item, cableId: rates.acCables[0]._id } : item));
+        }
+        if (acdbToMainCablesList.length > 0 && !acdbToMainCablesList[0].cableId) {
+          setAcdbToMainCablesList(prev => prev.map((item, idx) => idx === 0 && !item.cableId ? { ...item, cableId: rates.acCables[0]._id } : item));
+        }
+      }
       if (rates.financialSettings) {
         if (advancePercent === "") setAdvancePercent(rates.financialSettings.advancePaymentPercent ?? 10);
         if (dispatchPercent === "") setDispatchPercent(rates.financialSettings.dispatchPaymentPercent ?? 85);
         if (handoverPercent === "") setHandoverPercent(rates.financialSettings.handoverPaymentPercent ?? 5);
       }
     }
-  }, [rates, invToAcdbCableId, acdbToMainCableId]);
+  }, [rates]);
 
 
   // Auto-filter out brands with no active models in stock (supports dynamically added brands from Admin)
@@ -620,8 +754,8 @@ export default function PricingCalculatorPage() {
       (safetyLine && Number(customSafety) > 0) ||
       (earthing && (customPits > 0 || Number(earthingWireM) > 0)) ||
       dcCablesList.some(d => Number(d.meters) > 0) ||
-      Number(invToAcdbCableM) > 0 ||
-      Number(acdbToMainCableM) > 0 ||
+      invToAcdbCablesList.some(d => Number(d.meters) > 0) ||
+      acdbToMainCablesList.some(d => Number(d.meters) > 0) ||
       Number(mc4Pairs) > 0 ||
       Number(mc4BranchQty) > 0 ||
       discom || acdb || dcdb;
@@ -734,15 +868,47 @@ export default function PricingCalculatorPage() {
     });
     const dcCost = selectedDcCablesDetails.reduce((sum, item) => sum + item.cost, 0);
 
-    const selInvToAcdbCable = rates.acCables?.find(c => c._id === invToAcdbCableId) || rates.acCables?.[0];
-    const rawInvToAcdbRate = selInvToAcdbCable?.ratePerMeter || 0;
-    const invToAcdbRate = rawInvToAcdbRate * markupMultiplier;
-    const invToAcdbCost = invToAcdbRate * invToAcdbCableM;
+    const selectedInvToAcdbDetails = invToAcdbCablesList.map((item, idx) => {
+      const cable = rates.acCables?.find(c => c._id === item.cableId) || rates.acCables?.[0];
+      const rawRate = cable?.ratePerMeter || 0;
+      const rate = rawRate * markupMultiplier;
+      const meters = Number(item.meters) || 0;
+      const cost = rate * meters;
+      const brandObj = CABLE_BRANDS.find(b => b.v === item.brand) || CABLE_BRANDS[0];
+      return {
+        id: item.id || idx,
+        brand: item.brand,
+        brandLabel: brandObj?.l || cap(item.brand),
+        cableId: item.cableId,
+        cableLabel: cable?.label || "AC Cable",
+        rate,
+        meters,
+        cost
+      };
+    });
+    const invToAcdbCost = selectedInvToAcdbDetails.reduce((sum, item) => sum + item.cost, 0);
+    const invToAcdbCableM = selectedInvToAcdbDetails.reduce((sum, item) => sum + item.meters, 0);
 
-    const selAcdbToMainCable = rates.acCables?.find(c => c._id === acdbToMainCableId) || rates.acCables?.[0];
-    const rawAcdbToMainRate = selAcdbToMainCable?.ratePerMeter || 0;
-    const acdbToMainRate = rawAcdbToMainRate * markupMultiplier;
-    const acdbToMainCost = acdbToMainRate * acdbToMainCableM;
+    const selectedAcdbToMainDetails = acdbToMainCablesList.map((item, idx) => {
+      const cable = rates.acCables?.find(c => c._id === item.cableId) || rates.acCables?.[0];
+      const rawRate = cable?.ratePerMeter || 0;
+      const rate = rawRate * markupMultiplier;
+      const meters = Number(item.meters) || 0;
+      const cost = rate * meters;
+      const brandObj = CABLE_BRANDS.find(b => b.v === item.brand) || CABLE_BRANDS[0];
+      return {
+        id: item.id || idx,
+        brand: item.brand,
+        brandLabel: brandObj?.l || cap(item.brand),
+        cableId: item.cableId,
+        cableLabel: cable?.label || "AC Cable",
+        rate,
+        meters,
+        cost
+      };
+    });
+    const acdbToMainCost = selectedAcdbToMainDetails.reduce((sum, item) => sum + item.cost, 0);
+    const acdbToMainCableM = selectedAcdbToMainDetails.reduce((sum, item) => sum + item.meters, 0);
 
     const acCost = invToAcdbCost + acdbToMainCost;
 
@@ -865,20 +1031,18 @@ export default function PricingCalculatorPage() {
       advancePercent: advP, dispatchPercent: dispP, handoverPercent: handP, advanceAmount, dispatchAmount, handoverAmount,
       maxDiscountPercent, isIndustrial, appliedProfitMarginPercent: profitMarginPercent, appliedMaxDiscountPercent: maxDiscountPercent,
       pitsCount, pitsCost, pitRate, earthingWireCost, earthingWireRate, earthingWireMeters,
-      laCount, selectedModuleDetails, selectedInverterDetails, selectedBatteryDetails, selectedDcCablesDetails, selInvToAcdbCable, selAcdbToMainCable, selectedStructures, invToAcdbCost, acdbToMainCost, acdbCost, dcdbCost, mc4BranchCost, mc4Pairs, mc4BranchQty, earthingLabel,
-      invToAcdbRate, acdbToMainRate, acdbRate, dcdbRate, mc4Rate, branchRate, laUnitRate, walkRate, safetyLineRate,
-      invToAcdbCableBrand, acdbToMainCableBrand
+      laCount, selectedModuleDetails, selectedInverterDetails, selectedBatteryDetails, selectedDcCablesDetails, selectedInvToAcdbDetails, selectedAcdbToMainDetails, selectedStructures, invToAcdbCost, acdbToMainCost, invToAcdbCableM, acdbToMainCableM, acdbCost, dcdbCost, mc4BranchCost, mc4Pairs, mc4BranchQty, earthingLabel,
+      acdbCost, dcdbCost, mc4Rate, branchRate, laUnitRate, walkRate, safetyLineRate
     };
   })();
   const handleDownloadPDF = async () => {
     if (!calc) return;
     setPdfLoading(true);
 
-    const fmtINR = n => new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR", maximumFractionDigits: 0 }).format(n || 0);
-    const invAcdbBrandLabel = CABLE_BRANDS.find(b => b.v === invToAcdbCableBrand)?.l || cap(invToAcdbCableBrand);
-    const acdbMainBrandLabel = CABLE_BRANDS.find(b => b.v === acdbToMainCableBrand)?.l || cap(acdbToMainCableBrand);
+    try {
+      const fmtINR = n => new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR", maximumFractionDigits: 0 }).format(n || 0);
 
-    const buildItemizedRows = () => {
+      const buildItemizedRows = () => {
       let rows = "";
       let sno = 1;
       const snoCell = () => `<td style="border:1px solid #cbd5e1;padding:4px 6px;font-size:8.5px;text-align:center;color:#334155;vertical-align:top;font-weight:600">${sno++}</td>`;
@@ -917,8 +1081,22 @@ export default function PricingCalculatorPage() {
           }
         });
       }
-      if (invToAcdbCableM > 0) rows += `<tr>${snoCell()}${cell(`<strong>AC Cable - Inv to ACDB (${invAcdbBrandLabel}):</strong> ${calc.selInvToAcdbCable?.label || "N/A"}<br/><span style="font-size:8px;color:#64748b">Multicore flexible AC cabling run</span>`)}${cell(invToAcdbCableM, "center")}${cell("m", "center")}${cell("&#8377;" + (calc.invToAcdbRate || 0).toFixed(2), "right")}${cell(fmtINR(calc.invToAcdbCost), "right")}</tr>`;
-      if (acdbToMainCableM > 0) rows += `<tr>${snoCell()}${cell(`<strong>AC Cable - ACDB to Main (${acdbMainBrandLabel}):</strong> ${calc.selAcdbToMainCable?.label || "N/A"}<br/><span style="font-size:8px;color:#64748b">AC distribution cable run</span>`)}${cell(acdbToMainCableM, "center")}${cell("m", "center")}${cell("&#8377;" + (calc.acdbToMainRate || 0).toFixed(2), "right")}${cell(fmtINR(calc.acdbToMainCost), "right")}</tr>`;
+      if (calc.selectedInvToAcdbDetails?.length > 0) {
+        calc.selectedInvToAcdbDetails.forEach((item, idx) => {
+          if (item.meters > 0) {
+            const itemTag = calc.selectedInvToAcdbDetails.filter(x => x.meters > 0).length > 1 ? ` #${idx + 1}` : '';
+            rows += `<tr>${snoCell()}${cell(`<strong>AC Cable - Inv to ACDB${itemTag} (${item.brandLabel}):</strong> ${item.cableLabel}<br/><span style="font-size:8px;color:#64748b">Multicore flexible AC cabling run</span>`)}${cell(item.meters, "center")}${cell("m", "center")}${cell("&#8377;" + (item.rate || 0).toFixed(2), "right")}${cell(fmtINR(item.cost), "right")}</tr>`;
+          }
+        });
+      }
+      if (calc.selectedAcdbToMainDetails?.length > 0) {
+        calc.selectedAcdbToMainDetails.forEach((item, idx) => {
+          if (item.meters > 0) {
+            const itemTag = calc.selectedAcdbToMainDetails.filter(x => x.meters > 0).length > 1 ? ` #${idx + 1}` : '';
+            rows += `<tr>${snoCell()}${cell(`<strong>AC Cable - ACDB to Main${itemTag} (${item.brandLabel}):</strong> ${item.cableLabel}<br/><span style="font-size:8px;color:#64748b">AC distribution cable run</span>`)}${cell(item.meters, "center")}${cell("m", "center")}${cell("&#8377;" + (item.rate || 0).toFixed(2), "right")}${cell(fmtINR(item.cost), "right")}</tr>`;
+          }
+        });
+      }
       if (calc.pitsCount > 0) rows += `<tr>${snoCell()}${cell(`<strong>Chemical Earthing Pits:</strong> Copper Chemical Pits<br/><span style="font-size:8px;color:#64748b">Low-resistance maintenance-free earthing</span>`)}${cell(calc.pitsCount, "center")}${cell("pits", "center")}${cell("&#8377;" + (calc.pitRate || 0).toFixed(2), "right")}${cell(fmtINR(calc.pitsCost), "right")}</tr>`;
       if (calc.earthingWireMeters > 0) rows += `<tr>${snoCell()}${cell(`<strong>Earthing Conductor / Wire:</strong> ${calc.earthingLabel}<br/><span style="font-size:8px;color:#64748b">Dedicated equipment safety grounding run</span>`)}${cell(calc.earthingWireMeters, "center")}${cell("m", "center")}${cell("&#8377;" + (calc.earthingWireRate || 0).toFixed(2), "right")}${cell(fmtINR(calc.earthingWireCost), "right")}</tr>`;
       if (calc.laCount > 0) rows += `<tr>${snoCell()}${cell(`<strong>Lightning Protection:</strong> ${laType === "ese" ? "ESE Active" : "Conventional"}<br/><span style="font-size:8px;color:#64748b">Safety shield against high-voltage lightning surges</span>`)}${cell(calc.laCount, "center")}${cell("units", "center")}${cell("&#8377;" + (calc.laUnitRate || 0).toFixed(2), "right")}${cell(fmtINR(calc.laCost), "right")}</tr>`;
@@ -996,13 +1174,23 @@ export default function PricingCalculatorPage() {
       }
 
       // 9. AC Cables (Inv to ACDB)
-      if (invToAcdbCableM > 0) {
-        rows += `<tr>${snoCell()}${cell("<strong>AC Solar Cable (Inv to ACDB)</strong>")}${cell(calc.selInvToAcdbCable?.label || "Multicore flexible AC cabling run")}${cell(invAcdbBrandLabel)}${cell("Mtr", "center")}${cell(invToAcdbCableM, "center")}</tr>`;
+      if (calc.selectedInvToAcdbDetails?.length > 0) {
+        calc.selectedInvToAcdbDetails.forEach((item, idx) => {
+          if (item.meters > 0) {
+            const itemTag = calc.selectedInvToAcdbDetails.filter(x => x.meters > 0).length > 1 ? ` #${idx + 1}` : '';
+            rows += `<tr>${snoCell()}${cell(`<strong>AC Solar Cable (Inv to ACDB${itemTag})</strong>`)}${cell(item.cableLabel || "Multicore flexible AC cabling run")}${cell(item.brandLabel)}${cell("Mtr", "center")}${cell(item.meters, "center")}</tr>`;
+          }
+        });
       }
 
       // 10. AC Cables (ACDB to Main)
-      if (acdbToMainCableM > 0) {
-        rows += `<tr>${snoCell()}${cell("<strong>AC Solar Cable (ACDB to Main)</strong>")}${cell(calc.selAcdbToMainCable?.label || "Multicore distribution AC cable")}${cell(acdbMainBrandLabel)}${cell("Mtr", "center")}${cell(acdbToMainCableM, "center")}</tr>`;
+      if (calc.selectedAcdbToMainDetails?.length > 0) {
+        calc.selectedAcdbToMainDetails.forEach((item, idx) => {
+          if (item.meters > 0) {
+            const itemTag = calc.selectedAcdbToMainDetails.filter(x => x.meters > 0).length > 1 ? ` #${idx + 1}` : '';
+            rows += `<tr>${snoCell()}${cell(`<strong>AC Solar Cable (ACDB to Main${itemTag})</strong>`)}${cell(item.cableLabel || "Multicore distribution AC cable")}${cell(item.brandLabel)}${cell("Mtr", "center")}${cell(item.meters, "center")}</tr>`;
+          }
+        });
       }
 
       // 11. Chemical Earthing Pits
@@ -1076,8 +1264,7 @@ export default function PricingCalculatorPage() {
       return rows;
     };
 
-    try {
-      const activeQuoteRef = (quoteRef && quoteRef.trim()) || `DS/QP/${new Date().getFullYear()}/0001`;
+    const activeQuoteRef = (quoteRef && quoteRef.trim()) || `DS/QP/${new Date().getFullYear()}/0001`;
       const projectTypeLabel = projectCategory === "residential"
         ? "RESIDENTIAL SOLAR PROPOSAL"
         : projectCategory === "industrial"
@@ -1246,8 +1433,8 @@ export default function PricingCalculatorPage() {
               <p><strong>Inverter Model:</strong> ${calc.selectedInverterDetails?.map(inv => inv.modelName + " (x" + inv.qty + ")").join(", ") || "N/A"}</p>
               <p><strong>Mounting Structure:</strong> ${calc.selectedStructures?.map(st => (ALL_STRUCTURE_TYPES.find(opt => opt.v === st.type)?.l || st.type || "") + " (" + st.kw + "kW)").join(", ") || "N/A"}</p>
               ${calc.selectedDcCablesDetails?.filter(item => item.meters > 0).length > 0 ? `<p><strong>DC Cable Run:</strong> ${calc.selectedDcCablesDetails.filter(item => item.meters > 0).map(item => `${item.meters}m of ${item.cableLabel} (${item.brandLabel})`).join(", ")}</p>` : ""}
-              ${invToAcdbCableM > 0 ? `<p><strong>AC Cable (Inv-ACDB):</strong> ${invToAcdbCableM}m of ${calc.selInvToAcdbCable?.label || ""} (${invAcdbBrandLabel})</p>` : ""}
-              ${acdbToMainCableM > 0 ? `<p><strong>AC Cable (ACDB-Main):</strong> ${acdbToMainCableM}m of ${calc.selAcdbToMainCable?.label || ""} (${acdbMainBrandLabel})</p>` : ""}
+              ${calc.selectedInvToAcdbDetails?.filter(item => item.meters > 0).length > 0 ? `<p><strong>AC Cable (Inv-ACDB):</strong> ${calc.selectedInvToAcdbDetails.filter(item => item.meters > 0).map(item => `${item.meters}m of ${item.cableLabel} (${item.brandLabel})`).join(", ")}</p>` : ""}
+              ${calc.selectedAcdbToMainDetails?.filter(item => item.meters > 0).length > 0 ? `<p><strong>AC Cable (ACDB-Main):</strong> ${calc.selectedAcdbToMainDetails.filter(item => item.meters > 0).map(item => `${item.meters}m of ${item.cableLabel} (${item.brandLabel})`).join(", ")}</p>` : ""}
               ${walkway && Number(walkwayM) > 0 ? `<p><strong>Roof Walkway:</strong> ${walkwayM}m of ${walkwayType === "gi" ? "GI Walkway" : "FRP Walkway"}</p>` : ""}
               ${calc.pitsCount > 0 ? `<p><strong>Earthing System:</strong> ${calc.pitsCount} Pits of ${calc.earthingLabel}</p>` : ""}
             </div>
@@ -1373,8 +1560,10 @@ export default function PricingCalculatorPage() {
         customTerms: customTerms || '',
         dcCablesList: dcCablesList || [],
         dcCableM: dcCablesList.reduce((sum, item) => sum + (Number(item.meters) || 0), 0),
-        invToAcdbCableM: Number(invToAcdbCableM) || 0,
-        acdbToMainCableM: Number(acdbToMainCableM) || 0,
+        invToAcdbCablesList: invToAcdbCablesList || [],
+        invToAcdbCableM: invToAcdbCablesList.reduce((sum, item) => sum + (Number(item.meters) || 0), 0),
+        acdbToMainCablesList: acdbToMainCablesList || [],
+        acdbToMainCableM: acdbToMainCablesList.reduce((sum, item) => sum + (Number(item.meters) || 0), 0),
         earthingType: earthingType || '',
         laType: laType || '',
         walkway: !!walkway,
@@ -1404,8 +1593,11 @@ export default function PricingCalculatorPage() {
       };
 
       try {
-        const logRes = await fetch('/api/quotation-logs', {
-          method: 'POST',
+        const endpoint = editingLogId ? `/api/quotation-logs/${editingLogId}` : '/api/quotation-logs';
+        const method = editingLogId ? 'PUT' : 'POST';
+
+        const logRes = await fetch(endpoint, {
+          method,
           credentials: 'include',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -1426,14 +1618,16 @@ export default function PricingCalculatorPage() {
         });
 
         if (logRes.ok) {
-          // Auto-fetch next quote reference number for future proposal
-          fetchNextQuoteRef();
+          if (!editingLogId) {
+            // Auto-fetch next quote reference number for future proposal
+            fetchNextQuoteRef();
+          }
           // Show a brief success toast
           const toast = document.createElement('div');
-          toast.textContent = '✓ Quotation logged successfully';
+          toast.textContent = editingLogId ? '✓ Quotation updated & downloaded successfully' : '✓ Quotation logged successfully';
           toast.style.cssText = 'position:fixed;bottom:24px;right:24px;z-index:9999;background:#16a34a;color:#fff;padding:10px 20px;border-radius:10px;font-size:13px;font-weight:600;box-shadow:0 4px 20px rgba(0,0,0,0.3);animation:fadeIn .3s ease';
           document.body.appendChild(toast);
-          setTimeout(() => toast.remove(), 3000);
+          setTimeout(() => toast.remove(), 3500);
         } else {
           const errText = await logRes.text().catch(() => '');
           console.error('[QuotationLog] Server error:', logRes.status, errText);
@@ -1585,6 +1779,45 @@ export default function PricingCalculatorPage() {
           </button>
         )}
       </div>
+
+      {/* Edit Mode Notice Banner */}
+      {editingLogId && (
+        <div className="p-4 rounded-2xl bg-[#FECB00]/15 border-2 border-[#FECB00]/40 flex items-center justify-between flex-wrap gap-4 no-print shadow-xl">
+          <div className="flex items-center gap-3.5">
+            <div className="w-10 h-10 rounded-xl bg-[#FECB00] text-[#0a1122] flex items-center justify-center font-bold shadow-md">
+              <PencilSquareIcon className="w-6 h-6 stroke-[2.5]" />
+            </div>
+            <div>
+              <div className="flex items-center gap-2 flex-wrap">
+                <span className="text-white font-black text-base">Editing Quotation: {quoteRef}</span>
+                <span className="text-[10px] uppercase font-bold px-2 py-0.5 rounded-full bg-[#FECB00] text-[#0a1122]">
+                  Edit Mode Active
+                </span>
+              </div>
+              <p className="text-white/70 text-xs mt-0.5">
+                Loaded proposal for <strong>{clientName || "Client"}</strong> ({systemKW || 0} kWp). Make your revisions below and click "Download Quotation PDF" to save updates.
+              </p>
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={() => {
+              window.location.href = "/sales/pricing";
+            }}
+            className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold bg-white/10 hover:bg-white/20 text-white transition-all border border-white/10"
+          >
+            <XMarkIcon className="w-4 h-4" />
+            <span>Cancel Edit &amp; New Quote</span>
+          </button>
+        </div>
+      )}
+
+      {loadingEdit && (
+        <div className="p-6 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center gap-3 no-print">
+          <div className="w-5 h-5 rounded-full border-2 border-[#FECB00]/20 border-t-[#FECB00] animate-spin" />
+          <span className="text-white/60 text-sm font-medium">Loading saved quotation data...</span>
+        </div>
+      )}
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 no-print">
         {/* LEFT: Dynamic Config Form */}
@@ -2184,28 +2417,144 @@ export default function PricingCalculatorPage() {
                 </div>
               </div>
 
-              {/* Inverter to ACDB */}
+              {/* Inverter to ACDB Multi-Item Support */}
               <div className="p-4 sm:p-5 rounded-2xl bg-white/[0.03] border border-white/10 flex flex-col justify-between space-y-4">
                 <div className="space-y-3">
-                  <div>
-                    <p className="text-sm font-bold text-white/80">Inverter to ACDB (AC)</p>
-                    <p className="text-[11px] text-white/40">Inverter to AC distribution board</p>
+                  <div className="flex items-center justify-between flex-wrap gap-2">
+                    <div>
+                      <p className="text-sm font-bold text-white/80">Inverter to ACDB (AC)</p>
+                      <p className="text-[11px] text-white/40">Inverter to AC distribution board</p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setInvToAcdbCablesList([...invToAcdbCablesList, { id: Date.now(), brand: "polycab", cableId: rates?.acCables?.[0]?._id || "", meters: "" }])}
+                      className="px-2.5 py-1 rounded-lg border border-[#FECB00]/30 text-[#FECB00] text-xs font-bold hover:bg-[#FECB00]/10 transition-colors"
+                    >
+                      + Add AC Cable
+                    </button>
                   </div>
-                  <DynamicCableSelector label="Inv-ACDB" cables={rates?.acCables} selectedId={invToAcdbCableId} onChange={setInvToAcdbCableId} brand={invToAcdbCableBrand} onBrandChange={setInvToAcdbCableBrand} />
+
+                  <div className="space-y-3">
+                    {invToAcdbCablesList.map((item, index) => {
+                      return (
+                        <div key={item.id || index} className="space-y-3 bg-white/5 border border-white/10 p-3.5 rounded-xl relative">
+                          {invToAcdbCablesList.length > 1 && (
+                            <button
+                              type="button"
+                              onClick={() => setInvToAcdbCablesList(invToAcdbCablesList.filter((_, i) => i !== index))}
+                              className="absolute top-2 right-2 text-white/30 hover:text-red-400 p-1 text-sm font-bold leading-none z-10"
+                              title="Remove this AC cable run"
+                            >
+                              ×
+                            </button>
+                          )}
+                          <div className="text-[11px] font-bold text-[#FECB00]/80 uppercase tracking-wider">
+                            Inv to ACDB Run #{index + 1}
+                          </div>
+                          <DynamicCableSelector
+                            label={`inv-acdb-${index}`}
+                            cables={rates?.acCables}
+                            selectedId={item.cableId}
+                            onChange={v => {
+                              const updated = [...invToAcdbCablesList];
+                              updated[index] = { ...updated[index], cableId: v };
+                              setInvToAcdbCablesList(updated);
+                            }}
+                            brand={item.brand}
+                            onBrandChange={v => {
+                              const updated = [...invToAcdbCablesList];
+                              updated[index] = { ...updated[index], brand: v };
+                              setInvToAcdbCablesList(updated);
+                            }}
+                          />
+                          <Inp
+                            label="Run Length"
+                            id={`inv-acdb-run-${index}`}
+                            value={item.meters}
+                            onChange={v => {
+                              const updated = [...invToAcdbCablesList];
+                              updated[index] = { ...updated[index], meters: v };
+                              setInvToAcdbCablesList(updated);
+                            }}
+                            type="number"
+                            min={0}
+                            unit="m"
+                          />
+                        </div>
+                      );
+                    })}
+                  </div>
                 </div>
-                <Inp label="Run Length" id="inv-acdb-run" value={invToAcdbCableM} onChange={setInvToAcdbCableM} type="number" min={0} unit="m" />
               </div>
 
-              {/* ACDB to Main */}
+              {/* ACDB to Main Multi-Item Support */}
               <div className="p-4 sm:p-5 rounded-2xl bg-white/[0.03] border border-white/10 flex flex-col justify-between space-y-4">
                 <div className="space-y-3">
-                  <div>
-                    <p className="text-sm font-bold text-white/80">ACDB to Main (AC)</p>
-                    <p className="text-[11px] text-white/40">ACDB to main LT panel / meter</p>
+                  <div className="flex items-center justify-between flex-wrap gap-2">
+                    <div>
+                      <p className="text-sm font-bold text-white/80">ACDB to Main (AC)</p>
+                      <p className="text-[11px] text-white/40">ACDB to main LT panel / meter</p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setAcdbToMainCablesList([...acdbToMainCablesList, { id: Date.now() + 1, brand: "polycab", cableId: rates?.acCables?.[0]?._id || "", meters: "" }])}
+                      className="px-2.5 py-1 rounded-lg border border-[#FECB00]/30 text-[#FECB00] text-xs font-bold hover:bg-[#FECB00]/10 transition-colors"
+                    >
+                      + Add AC Cable
+                    </button>
                   </div>
-                  <DynamicCableSelector label="ACDB-Main" cables={rates?.acCables} selectedId={acdbToMainCableId} onChange={setAcdbToMainCableId} brand={acdbToMainCableBrand} onBrandChange={setAcdbToMainCableBrand} />
+
+                  <div className="space-y-3">
+                    {acdbToMainCablesList.map((item, index) => {
+                      return (
+                        <div key={item.id || index} className="space-y-3 bg-white/5 border border-white/10 p-3.5 rounded-xl relative">
+                          {acdbToMainCablesList.length > 1 && (
+                            <button
+                              type="button"
+                              onClick={() => setAcdbToMainCablesList(acdbToMainCablesList.filter((_, i) => i !== index))}
+                              className="absolute top-2 right-2 text-white/30 hover:text-red-400 p-1 text-sm font-bold leading-none z-10"
+                              title="Remove this AC cable run"
+                            >
+                              ×
+                            </button>
+                          )}
+                          <div className="text-[11px] font-bold text-[#FECB00]/80 uppercase tracking-wider">
+                            ACDB to Main Run #{index + 1}
+                          </div>
+                          <DynamicCableSelector
+                            label={`acdb-main-${index}`}
+                            cables={rates?.acCables}
+                            selectedId={item.cableId}
+                            onChange={v => {
+                              const updated = [...acdbToMainCablesList];
+                              updated[index] = { ...updated[index], cableId: v };
+                              setAcdbToMainCablesList(updated);
+                            }}
+                            brand={item.brand}
+                            onBrandChange={v => {
+                              const updated = [...acdbToMainCablesList];
+                              updated[index] = { ...updated[index], brand: v };
+                              setAcdbToMainCablesList(updated);
+                            }}
+                          />
+                          <Inp
+                            label="Run Length"
+                            id={`acdb-main-run-${index}`}
+                            value={item.meters}
+                            onChange={v => {
+                              const updated = [...acdbToMainCablesList];
+                              updated[index] = { ...updated[index], meters: v };
+                              setAcdbToMainCablesList(updated);
+                            }}
+                            type="number"
+                            min={0}
+                            unit="m"
+                          />
+                        </div>
+                      );
+                    })}
+                  </div>
                 </div>
-                <Inp label="Run Length" id="acdb-main-run" value={acdbToMainCableM} onChange={setAcdbToMainCableM} type="number" min={0} unit="m" />
               </div>
             </div>
           </section>
@@ -2579,8 +2928,14 @@ export default function PricingCalculatorPage() {
                       l: `DC Cabling #${idx + 1} (${item.brandLabel} · ${item.cableLabel}, ${item.meters}m)`,
                       v: item.cost
                     })) || []),
-                    { l: `AC Cabling: Inv to ACDB (${CABLE_BRANDS.find(b => b.v === invToAcdbCableBrand)?.l || cap(invToAcdbCableBrand)} · ${calc.selInvToAcdbCable?.label || "None"}, ${invToAcdbCableM}m)`, v: calc.invToAcdbCost },
-                    { l: `AC Cabling: ACDB to Main (${CABLE_BRANDS.find(b => b.v === acdbToMainCableBrand)?.l || cap(acdbToMainCableBrand)} · ${calc.selAcdbToMainCable?.label || "None"}, ${acdbToMainCableM}m)`, v: calc.acdbToMainCost },
+                    ...(calc.selectedInvToAcdbDetails?.filter(item => item.cost > 0).map((item, idx) => ({
+                      l: `AC Cabling: Inv to ACDB${calc.selectedInvToAcdbDetails.filter(x => x.cost > 0).length > 1 ? ` #${idx + 1}` : ''} (${item.brandLabel} · ${item.cableLabel}, ${item.meters}m)`,
+                      v: item.cost
+                    })) || []),
+                    ...(calc.selectedAcdbToMainDetails?.filter(item => item.cost > 0).map((item, idx) => ({
+                      l: `AC Cabling: ACDB to Main${calc.selectedAcdbToMainDetails.filter(x => x.cost > 0).length > 1 ? ` #${idx + 1}` : ''} (${item.brandLabel} · ${item.cableLabel}, ${item.meters}m)`,
+                      v: item.cost
+                    })) || []),
                     ...(calc.pitsCost > 0 ? [{ l: `Chemical Earthing (${calc.pitsCount} pits)`, v: calc.pitsCost }] : []),
                     ...(calc.earthingWireCost > 0 ? [{ l: `Earthing Wire (${calc.earthingLabel}, ${calc.earthingWireMeters}m)`, v: calc.earthingWireCost }] : []),
                     { l: `Lightning Arrestor (${calc.laCount} units, ${cap(laType)})`, v: calc.laCost },
@@ -2743,8 +3098,16 @@ export default function PricingCalculatorPage() {
                   <strong>DC Cable Run:</strong> {calc.selectedDcCablesDetails.filter(item => item.meters > 0).map(item => `${item.meters}m of ${item.cableLabel} (${item.brandLabel})`).join(", ")}
                 </p>
               )}
-              <p className="text-xs text-slate-700"><strong>AC Cable (Inv-ACDB):</strong> {invToAcdbCableM}m of {calc.selInvToAcdbCable?.label || "N/A"} ({CABLE_BRANDS.find(b => b.v === invToAcdbCableBrand)?.l || cap(invToAcdbCableBrand)})</p>
-              <p className="text-xs text-slate-700"><strong>AC Cable (ACDB-Main):</strong> {acdbToMainCableM}m of {calc.selAcdbToMainCable?.label || "N/A"} ({CABLE_BRANDS.find(b => b.v === acdbToMainCableBrand)?.l || cap(acdbToMainCableBrand)})</p>
+              {calc.selectedInvToAcdbDetails?.filter(item => item.meters > 0).length > 0 && (
+                <p className="text-xs text-slate-700">
+                  <strong>AC Cable (Inv-ACDB):</strong> {calc.selectedInvToAcdbDetails.filter(item => item.meters > 0).map(item => `${item.meters}m of ${item.cableLabel} (${item.brandLabel})`).join(", ")}
+                </p>
+              )}
+              {calc.selectedAcdbToMainDetails?.filter(item => item.meters > 0).length > 0 && (
+                <p className="text-xs text-slate-700">
+                  <strong>AC Cable (ACDB-Main):</strong> {calc.selectedAcdbToMainDetails.filter(item => item.meters > 0).map(item => `${item.meters}m of ${item.cableLabel} (${item.brandLabel})`).join(", ")}
+                </p>
+              )}
               {walkway && Number(walkwayM) > 0 && (
                 <p className="text-xs text-slate-700"><strong>Roof Walkway:</strong> {walkwayM}m of {walkwayType === "gi" ? "GI Walkway" : "FRP Walkway"}</p>
               )}
@@ -2903,32 +3266,32 @@ export default function PricingCalculatorPage() {
                             </tr>
                           );
                         })}
-                        {invToAcdbCableM > 0 && (
-                          <tr className="hover:bg-slate-50">
+                        {calc.selectedInvToAcdbDetails?.filter(item => item.meters > 0).map((item, idx) => (
+                          <tr key={`print-inv-acdb-${idx}`} className="hover:bg-slate-50">
                             <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-center">{sno++}</td>
                             <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300">
-                              <strong>AC Solar Cable - Inv to ACDB ({CABLE_BRANDS.find(b => b.v === invToAcdbCableBrand)?.l || cap(invToAcdbCableBrand)}):</strong> {calc.selInvToAcdbCable?.label || "N/A"} <br />
+                              <strong>AC Solar Cable - Inv to ACDB{calc.selectedInvToAcdbDetails.filter(x => x.meters > 0).length > 1 ? ` #${idx + 1}` : ''} ({item.brandLabel}):</strong> {item.cableLabel} <br />
                               <span className="text-[10px] text-slate-500">Multicore flexible AC cabling run</span>
                             </td>
-                            <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-center">{invToAcdbCableM}</td>
+                            <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-center">{item.meters}</td>
                             <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-center">m</td>
-                            <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-right">₹{(calc.invToAcdbRate || 0).toFixed(2)}</td>
-                            <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-right">{formatINR(calc.invToAcdbCost)}</td>
+                            <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-right">₹{(item.rate || 0).toFixed(2)}</td>
+                            <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-right">{formatINR(item.cost)}</td>
                           </tr>
-                        )}
-                        {acdbToMainCableM > 0 && (
-                          <tr className="hover:bg-slate-50">
+                        ))}
+                        {calc.selectedAcdbToMainDetails?.filter(item => item.meters > 0).map((item, idx) => (
+                          <tr key={`print-acdb-main-${idx}`} className="hover:bg-slate-50">
                             <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-center">{sno++}</td>
                             <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300">
-                              <strong>AC Solar Cable - ACDB to Main ({CABLE_BRANDS.find(b => b.v === acdbToMainCableBrand)?.l || cap(acdbToMainCableBrand)}):</strong> {calc.selAcdbToMainCable?.label || "N/A"} <br />
+                              <strong>AC Solar Cable - ACDB to Main{calc.selectedAcdbToMainDetails.filter(x => x.meters > 0).length > 1 ? ` #${idx + 1}` : ''} ({item.brandLabel}):</strong> {item.cableLabel} <br />
                               <span className="text-[10px] text-slate-500">AC distribution cable run</span>
                             </td>
-                            <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-center">{acdbToMainCableM}</td>
+                            <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-center">{item.meters}</td>
                             <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-center">m</td>
-                            <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-right">₹{(calc.acdbToMainRate || 0).toFixed(2)}</td>
-                            <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-right">{formatINR(calc.acdbToMainCost)}</td>
+                            <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-right">₹{(item.rate || 0).toFixed(2)}</td>
+                            <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-right">{formatINR(item.cost)}</td>
                           </tr>
-                        )}
+                        ))}
                         {calc.pitsCount > 0 && (
                           <tr className="hover:bg-slate-50">
                             <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-center">{sno++}</td>
@@ -3248,26 +3611,26 @@ export default function PricingCalculatorPage() {
                             </tr>
                           );
                         })}
-                        {invToAcdbCableM > 0 && (
-                          <tr className="hover:bg-slate-50">
+                        {calc.selectedInvToAcdbDetails?.filter(item => item.meters > 0).map((item, idx) => (
+                          <tr key={`turnkey-inv-acdb-${idx}`} className="hover:bg-slate-50">
                             <td className="text-xs text-slate-700 px-2.5 py-1.5 border border-slate-300 text-center font-semibold">{sno++}</td>
-                            <td className="text-xs text-slate-800 px-2.5 py-1.5 border border-slate-300 font-bold">AC Solar Cable (Inv to ACDB)</td>
-                            <td className="text-xs text-slate-700 px-2.5 py-1.5 border border-slate-300">{calc.selInvToAcdbCable?.label || "Multicore flexible AC cabling run"}</td>
-                            <td className="text-xs text-slate-700 px-2.5 py-1.5 border border-slate-300">{CABLE_BRANDS.find(b => b.v === invToAcdbCableBrand)?.l || cap(invToAcdbCableBrand)}</td>
+                            <td className="text-xs text-slate-800 px-2.5 py-1.5 border border-slate-300 font-bold">AC Solar Cable (Inv to ACDB{calc.selectedInvToAcdbDetails.filter(x => x.meters > 0).length > 1 ? ` #${idx + 1}` : ''})</td>
+                            <td className="text-xs text-slate-700 px-2.5 py-1.5 border border-slate-300">{item.cableLabel || "Multicore flexible AC cabling run"}</td>
+                            <td className="text-xs text-slate-700 px-2.5 py-1.5 border border-slate-300">{item.brandLabel}</td>
                             <td className="text-xs text-slate-700 px-2.5 py-1.5 border border-slate-300 text-center">Mtr</td>
-                            <td className="text-xs text-slate-700 px-2.5 py-1.5 border border-slate-300 text-center font-bold">{invToAcdbCableM}</td>
+                            <td className="text-xs text-slate-700 px-2.5 py-1.5 border border-slate-300 text-center font-bold">{item.meters}</td>
                           </tr>
-                        )}
-                        {acdbToMainCableM > 0 && (
-                          <tr className="hover:bg-slate-50">
+                        ))}
+                        {calc.selectedAcdbToMainDetails?.filter(item => item.meters > 0).map((item, idx) => (
+                          <tr key={`turnkey-acdb-main-${idx}`} className="hover:bg-slate-50">
                             <td className="text-xs text-slate-700 px-2.5 py-1.5 border border-slate-300 text-center font-semibold">{sno++}</td>
-                            <td className="text-xs text-slate-800 px-2.5 py-1.5 border border-slate-300 font-bold">AC Solar Cable (ACDB to Main)</td>
-                            <td className="text-xs text-slate-700 px-2.5 py-1.5 border border-slate-300">{calc.selAcdbToMainCable?.label || "Multicore distribution AC cable"}</td>
-                            <td className="text-xs text-slate-700 px-2.5 py-1.5 border border-slate-300">{CABLE_BRANDS.find(b => b.v === acdbToMainCableBrand)?.l || cap(acdbToMainCableBrand)}</td>
+                            <td className="text-xs text-slate-800 px-2.5 py-1.5 border border-slate-300 font-bold">AC Solar Cable (ACDB to Main{calc.selectedAcdbToMainDetails.filter(x => x.meters > 0).length > 1 ? ` #${idx + 1}` : ''})</td>
+                            <td className="text-xs text-slate-700 px-2.5 py-1.5 border border-slate-300">{item.cableLabel || "Multicore distribution AC cable"}</td>
+                            <td className="text-xs text-slate-700 px-2.5 py-1.5 border border-slate-300">{item.brandLabel}</td>
                             <td className="text-xs text-slate-700 px-2.5 py-1.5 border border-slate-300 text-center">Mtr</td>
-                            <td className="text-xs text-slate-700 px-2.5 py-1.5 border border-slate-300 text-center font-bold">{acdbToMainCableM}</td>
+                            <td className="text-xs text-slate-700 px-2.5 py-1.5 border border-slate-300 text-center font-bold">{item.meters}</td>
                           </tr>
-                        )}
+                        ))}
                         {calc.pitsCount > 0 && (
                           <tr className="hover:bg-slate-50">
                             <td className="text-xs text-slate-700 px-2.5 py-1.5 border border-slate-300 text-center font-semibold">{sno++}</td>
