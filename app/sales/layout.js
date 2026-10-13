@@ -11,8 +11,12 @@ import {
     XMarkIcon,
     SunIcon,
     ArrowUturnLeftIcon,
+    ClipboardDocumentListIcon,
 } from "@heroicons/react/24/outline";
-import { CurrencyRupeeIcon as CurrencySolid } from "@heroicons/react/24/solid";
+import { 
+    CurrencyRupeeIcon as CurrencySolid,
+    ClipboardDocumentListIcon as ClipboardSolid,
+} from "@heroicons/react/24/solid";
 
 export default function SalesLayout({ children }) {
     const { data: session, status } = useSession();
@@ -80,6 +84,7 @@ export default function SalesLayout({ children }) {
 
     const navigation = [
         { name: "Pricing Calculator", href: "/sales/pricing", icon: CurrencyRupeeIcon, solidIcon: CurrencySolid },
+        { name: "My Quotations", href: "/sales/quotations", icon: ClipboardDocumentListIcon, solidIcon: ClipboardSolid },
     ];
 
     const isActive = (href) => pathname === href || pathname.startsWith(`${href}/`);
@@ -226,7 +231,7 @@ export default function SalesLayout({ children }) {
                                 <div className="flex-1 min-w-0">
                                     <p className="text-white text-sm font-semibold truncate leading-none">
                                         {session?.user?.name || "Sales User"}
-                                    </p>;
+                                    </p>
                                     <p className="text-white/50 text-xs truncate mt-0.5">{session?.user?.email}</p>
                                 </div>
                             </div>
