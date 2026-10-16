@@ -271,7 +271,7 @@ export default async function QuotationPreviewPage({ params }) {
                 cost: hideItemizedPricing ? 'Included' : formatINR(mod.cost || 0)
             });
         });
-    } else {
+    } else if (calc?.moduleCost > 0) {
         rows.push({
             sno: sno++,
             particulars: `<strong>Solar Modules:</strong> ${calc?.selMod?.modelName || "Standard Tier-1"}<br/><span style="font-size:9px;color:#64748b">Tier-1 High-efficiency PV modules</span>`,
@@ -653,7 +653,9 @@ export default async function QuotationPreviewPage({ params }) {
                         <div className="info-box">
                             <h3>Technical Specifications</h3>
                             <p><strong>Proposed Capacity:</strong> {systemKW} kWp (Solar PV Plant)</p>
-                            <p><strong>Solar Modules:</strong> {calc?.selectedModuleDetails?.length > 0 ? calc.selectedModuleDetails.map(m => `${m.modelName} (${m.wattage}Wp)`).join(', ') : (calc?.selMod?.modelName || "N/A")}</p>
+                            {(calc?.selectedModuleDetails?.length > 0 || calc?.selMod?.modelName) && (
+                                <p><strong>Solar Modules:</strong> {calc?.selectedModuleDetails?.length > 0 ? calc.selectedModuleDetails.map(m => `${m.modelName} (${m.wattage}Wp)`).join(', ') : calc.selMod.modelName}</p>
+                            )}
                             <p><strong>Inverter Model:</strong> {calc?.selectedInverterDetails?.map(inv => inv.modelName + " (x" + inv.qty + ")").join(", ") || "N/A"}</p>
                             {calc?.selectedBatteryDetails?.length > 0 && (
                                 <p><strong>Battery Bank:</strong> {calc.selectedBatteryDetails.map(bat => `${bat.modelName} (x${bat.qty})`).join(", ")}</p>
@@ -734,6 +736,18 @@ export default async function QuotationPreviewPage({ params }) {
                                     <strong>{formatINR(handAmt)}</strong>
                                 </li>
                             </ul>
+                            <div style={{ marginTop: '10px', padding: '8px 10px', border: '1px solid #cbd5e1', background: '#f8fafc', borderRadius: '5px' }}>
+                                <div style={{ fontSize: '8.5px', fontWeight: 800, color: '#1e3a8a', textTransform: 'uppercase', letterSpacing: '0.4px', marginBottom: '4px', borderBottom: '1px solid #e2e8f0', paddingBottom: '3px', display: 'flex', justifyContent: 'space-between' }}>
+                                    <span>Official Bank Payment Details</span>
+                                    <span style={{ color: '#047857' }}>RTGS / NEFT / IMPS</span>
+                                </div>
+                                <div style={{ fontSize: '8.5px', color: '#334155', lineHeight: '1.5' }}>
+                                    <div><span style={{ color: '#64748b' }}>A/C Name:</span> <strong>DIVVY SOLAR POWER &amp; SOLUTIONS PVT LTD</strong></div>
+                                    <div><span style={{ color: '#64748b' }}>A/C No:</span> <strong style={{ color: '#0f172a', letterSpacing: '0.5px' }}>661605600618</strong></div>
+                                    <div><span style={{ color: '#64748b' }}>IFSC Code:</span> <strong style={{ color: '#0f172a' }}>ICIC0006616</strong></div>
+                                    <div><span style={{ color: '#64748b' }}>Bank &amp; Branch:</span> <strong>ICICI Bank, Urban Estate Branch</strong></div>
+                                </div>
+                            </div>
                         </div>
                         <div>
                             <h4>Terms &amp; Conditions</h4>

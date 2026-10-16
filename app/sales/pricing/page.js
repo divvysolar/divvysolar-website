@@ -1052,8 +1052,6 @@ export default function PricingCalculatorPage() {
         calc.selectedModuleDetails.forEach(mod => {
           rows += `<tr>${snoCell()}${cell(`<strong>Solar Modules (${cap(mod.brand)}):</strong> ${mod.modelName || "N/A"}<br/><span style="font-size:8px;color:#64748b">Tier-1 High-efficiency PV modules (${mod.wattage}Wp)</span>`)}${cell(mod.itemWp, "center")}${cell("Wp", "center")}${cell("&#8377;" + (mod.ratePerWp || 0).toFixed(2), "right")}${cell(fmtINR(mod.cost), "right")}</tr>`;
         });
-      } else {
-        rows += `<tr>${snoCell()}${cell(`<strong>Solar Modules:</strong> Not Selected<br/><span style="font-size:8px;color:#64748b">Tier-1 High-efficiency PV modules</span>`)}${cell((effectiveSystemKW || 0) * 1000, "center")}${cell("Wp", "center")}${cell("&#8377;0.00", "right")}${cell(fmtINR(0), "right")}</tr>`;
       }
 
       calc.selectedInverterDetails?.forEach(inv => {
@@ -1126,13 +1124,11 @@ export default function PricingCalculatorPage() {
       const snoCell = () => `<td style="border:1px solid #cbd5e1;padding:4px 6px;font-size:8.5px;text-align:center;color:#334155;vertical-align:top;font-weight:600">${sno++}</td>`;
       const cell = (content, align = "left") => `<td style="border:1px solid #cbd5e1;padding:4px 6px;font-size:8.5px;text-align:${align};color:#334155;vertical-align:top">${content}</td>`;
 
-      // 1. Modules
+      // 1. Modules (only if selected)
       if (calc.selectedModuleDetails?.length > 0) {
         calc.selectedModuleDetails.forEach(mod => {
           rows += `<tr>${snoCell()}${cell("<strong>Solar PV Modules</strong>")}${cell(`Tier-1 High Efficiency PV Modules (${mod.wattage}Wp, ${mod.tech || 'Mono PERC/TopCon'})`)}${cell(`${cap(mod.brand)} / Reputed Tier-1 (${modW} Warranty)`)}${cell("Nos", "center")}${cell(mod.panels || mod.qty, "center")}</tr>`;
         });
-      } else {
-        rows += `<tr>${snoCell()}${cell("<strong>Solar PV Modules</strong>")}${cell(`Tier-1 High Efficiency Solar PV Modules (${modW} Warranty)`)}${cell("Tier-1 Make")}${cell("Wp", "center")}${cell((effectiveSystemKW || 0) * 1000, "center")}</tr>`;
       }
 
       // 2. Inverters
@@ -1272,7 +1268,9 @@ export default function PricingCalculatorPage() {
           : "UTILITY-SCALE SOLAR PROPOSAL";
       const dateStr = new Date().toLocaleDateString("en-IN", { day: "numeric", month: "long", year: "numeric" });
       const quoteRefStr = activeQuoteRef;
-      let dynamicWarrantyTerm = `Warranty: ${modW} performance warranty on solar modules, ${invW} on grid-tie inverters.`;
+      let dynamicWarrantyTerm = (calc.selectedModuleDetails?.length > 0)
+        ? `Warranty: ${modW} performance warranty on solar modules, ${invW} on grid-tie inverters.`
+        : `Warranty: ${invW} on grid-tie inverters.`;
       if (systemType === "hybrid" || batteries.some(b => b.brand && b.model)) {
         dynamicWarrantyTerm += ` ${batW} on battery storage system.`;
       }
@@ -1429,7 +1427,7 @@ export default function PricingCalculatorPage() {
               <h3>Technical Specifications</h3>
               <p><strong>System Type:</strong> ${systemType === 'hybrid' ? 'Hybrid' : 'On-Grid'}</p>
               <p><strong>Proposed Capacity:</strong> ${effectiveSystemKW || 0} kWp (Solar PV Plant)</p>
-              <p><strong>Solar Modules:</strong> ${calc.selectedModuleDetails?.map(m => `${cap(m.brand)} ${m.modelName} (${m.kw}kWp, ${m.panels} panels)`).join(", ") || "N/A"}</p>
+              ${calc.selectedModuleDetails?.length > 0 ? `<p><strong>Solar Modules:</strong> ${calc.selectedModuleDetails.map(m => `${cap(m.brand)} ${m.modelName} (${m.kw}kWp, ${m.panels} panels)`).join(", ")}</p>` : ""}
               <p><strong>Inverter Model:</strong> ${calc.selectedInverterDetails?.map(inv => inv.modelName + " (x" + inv.qty + ")").join(", ") || "N/A"}</p>
               <p><strong>Mounting Structure:</strong> ${calc.selectedStructures?.map(st => (ALL_STRUCTURE_TYPES.find(opt => opt.v === st.type)?.l || st.type || "") + " (" + st.kw + "kW)").join(", ") || "N/A"}</p>
               ${calc.selectedDcCablesDetails?.filter(item => item.meters > 0).length > 0 ? `<p><strong>DC Cable Run:</strong> ${calc.selectedDcCablesDetails.filter(item => item.meters > 0).map(item => `${item.meters}m of ${item.cableLabel} (${item.brandLabel})`).join(", ")}</p>` : ""}
@@ -1448,6 +1446,17 @@ export default function PricingCalculatorPage() {
                 <li><span>2. Material Dispatch (${calc.dispatchPercent}%):</span><strong>${fmtINR(calc.dispatchAmount)}</strong></li>
                 <li><span>3. On the Date of Commissioning (${calc.handoverPercent}%):</span><strong>${fmtINR(calc.handoverAmount)}</strong></li>
               </ul>
+              <div style="margin-top:7px;padding:6px 8px;border:1px solid #cbd5e1;background:#f8fafc;border-radius:4px;">
+                <div style="font-size:7.5px;font-weight:800;color:#1e3a8a;text-transform:uppercase;letter-spacing:0.4px;margin-bottom:3px;border-bottom:1px solid #e2e8f0;padding-bottom:2px;">
+                  Bank Payment Details (RTGS / NEFT / IMPS)
+                </div>
+                <div style="font-size:7.5px;color:#334155;line-height:1.45;">
+                  <div><span style="color:#64748b;">A/C Name:</span> <strong>DIVVY SOLAR POWER &amp; SOLUTIONS PVT LTD</strong></div>
+                  <div><span style="color:#64748b;">A/C No:</span> <strong style="color:#0f172a;letter-spacing:0.5px;">661605600618</strong></div>
+                  <div><span style="color:#64748b;">IFSC Code:</span> <strong style="color:#0f172a;">ICIC0006616</strong></div>
+                  <div><span style="color:#64748b;">Bank &amp; Branch:</span> <strong>ICICI Bank, Urban Estate Branch</strong></div>
+                </div>
+              </div>
             </div>
             <div>
               <h4>Terms &amp; Conditions</h4>
@@ -3090,7 +3099,9 @@ export default function PricingCalculatorPage() {
               <h3 className="text-[10px] font-bold text-[#1e3a8a] uppercase border-b-2 border-[#eab308] pb-1.5 mb-2 tracking-wider">Technical Specifications</h3>
               <p className="text-xs text-slate-700"><strong>System Type:</strong> {systemType === 'hybrid' ? 'Hybrid' : 'On-Grid'}</p>
               <p className="text-xs text-slate-700"><strong>Proposed Capacity:</strong> {effectiveSystemKW || 0} kWp (Solar PV Plant)</p>
-              <p className="text-xs text-slate-700"><strong>Solar Modules:</strong> {calc.selectedModuleDetails?.map(m => `${cap(m.brand)} ${m.modelName} (${m.kw}kWp, ${m.panels} panels)`).join(", ") || "N/A"}</p>
+              {calc.selectedModuleDetails?.length > 0 && (
+                <p className="text-xs text-slate-700"><strong>Solar Modules:</strong> {calc.selectedModuleDetails.map(m => `${cap(m.brand)} ${m.modelName} (${m.kw}kWp, ${m.panels} panels)`).join(", ")}</p>
+              )}
               <p className="text-xs text-slate-700"><strong>Inverter Model:</strong> {calc.selectedInverterDetails?.map(inv => `${inv.modelName} (x${inv.qty})`).join(", ") || "N/A"}</p>
               <p className="text-xs text-slate-700"><strong>Mounting Structure:</strong> {calc.selectedStructures?.map(st => `${ALL_STRUCTURE_TYPES.find(opt => opt.v === st.type)?.l || st.type || 'Structure'} (${st.kw}kW)`).join(", ") || "N/A"}</p>
               {calc.selectedDcCablesDetails?.filter(item => item.meters > 0).length > 0 && (
@@ -3136,7 +3147,7 @@ export default function PricingCalculatorPage() {
                     let sno = 1;
                     return (
                       <>
-                        {calc.selectedModuleDetails?.length > 0 ? calc.selectedModuleDetails.map((mod, idx) => (
+                        {calc.selectedModuleDetails?.length > 0 && calc.selectedModuleDetails.map((mod, idx) => (
                           <tr key={`print-mod-${idx}`} className="hover:bg-slate-50">
                             <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-center">{sno++}</td>
                             <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300">
@@ -3148,19 +3159,7 @@ export default function PricingCalculatorPage() {
                             <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-right">₹{(mod.ratePerWp || 0).toFixed(2)}</td>
                             <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-right">{formatINR(mod.cost)}</td>
                           </tr>
-                        )) : (
-                          <tr className="hover:bg-slate-50">
-                            <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-center">{sno++}</td>
-                            <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300">
-                              <strong>Solar Modules:</strong> Not Selected <br />
-                              <span className="text-[10px] text-slate-500">Tier-1 High-efficiency PV modules</span>
-                            </td>
-                            <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-center">{(effectiveSystemKW || 0) * 1000}</td>
-                            <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-center">Wp</td>
-                            <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-right">₹0.00</td>
-                            <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-right">₹0</td>
-                          </tr>
-                        )}
+                        ))}
                         {calc.selectedInverterDetails?.length > 0 ? calc.selectedInverterDetails.map((inv, idx) => (
                           <tr key={idx} className="hover:bg-slate-50">
                             <td className="text-xs text-slate-700 px-3 py-2 border border-slate-300 text-center">{sno++}</td>
@@ -3521,7 +3520,7 @@ export default function PricingCalculatorPage() {
                     let sno = 1;
                     return (
                       <>
-                        {calc.selectedModuleDetails?.length > 0 ? calc.selectedModuleDetails.map((mod, idx) => (
+                        {calc.selectedModuleDetails?.length > 0 && calc.selectedModuleDetails.map((mod, idx) => (
                           <tr key={`turnkey-mod-${idx}`} className="hover:bg-slate-50">
                             <td className="text-xs text-slate-700 px-2.5 py-1.5 border border-slate-300 text-center font-semibold">{sno++}</td>
                             <td className="text-xs text-slate-800 px-2.5 py-1.5 border border-slate-300 font-bold">Solar PV Modules</td>
@@ -3530,16 +3529,7 @@ export default function PricingCalculatorPage() {
                             <td className="text-xs text-slate-700 px-2.5 py-1.5 border border-slate-300 text-center">Nos</td>
                             <td className="text-xs text-slate-700 px-2.5 py-1.5 border border-slate-300 text-center font-bold">{mod.panels || mod.qty}</td>
                           </tr>
-                        )) : (
-                          <tr className="hover:bg-slate-50">
-                            <td className="text-xs text-slate-700 px-2.5 py-1.5 border border-slate-300 text-center font-semibold">{sno++}</td>
-                            <td className="text-xs text-slate-800 px-2.5 py-1.5 border border-slate-300 font-bold">Solar PV Modules</td>
-                            <td className="text-xs text-slate-700 px-2.5 py-1.5 border border-slate-300">Tier-1 High Efficiency Solar PV Modules ({moduleWarranty || "25 Years"} Warranty)</td>
-                            <td className="text-xs text-slate-700 px-2.5 py-1.5 border border-slate-300">Tier-1 Make</td>
-                            <td className="text-xs text-slate-700 px-2.5 py-1.5 border border-slate-300 text-center">Wp</td>
-                            <td className="text-xs text-slate-700 px-2.5 py-1.5 border border-slate-300 text-center font-bold">{(effectiveSystemKW || 0) * 1000}</td>
-                          </tr>
-                        )}
+                        ))}
                         {calc.selectedInverterDetails?.map((inv, idx) => (
                           <tr key={`turnkey-inv-${idx}`} className="hover:bg-slate-50">
                             <td className="text-xs text-slate-700 px-2.5 py-1.5 border border-slate-300 text-center font-semibold">{sno++}</td>
@@ -3808,6 +3798,32 @@ export default function PricingCalculatorPage() {
                   <span className="font-bold">{formatINR(calc.handoverAmount)}</span>
                 </li>
               </ul>
+
+              {/* Official Bank Account Details */}
+              <div className="mt-3 p-2.5 rounded-lg border border-slate-200 bg-slate-50/80 text-[11px] text-slate-700">
+                <div className="font-bold text-[#1e3a8a] uppercase tracking-wider text-[10px] pb-1 mb-1.5 border-b border-slate-200 flex items-center justify-between">
+                  <span>Official Bank Account Details (RTGS / NEFT / IMPS)</span>
+                  <span className="text-[9px] font-semibold text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-200">ICICI Bank</span>
+                </div>
+                <div className="space-y-1 leading-tight">
+                  <div className="flex justify-between">
+                    <span className="text-slate-500">Beneficiary Name:</span>
+                    <strong className="text-slate-900 font-bold">DIVVY SOLAR POWER &amp; SOLUTIONS PVT LTD</strong>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-slate-500">Account Number:</span>
+                    <strong className="text-slate-900 font-mono font-bold tracking-wider">661605600618</strong>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-slate-500">IFSC Code:</span>
+                    <strong className="text-slate-900 font-mono font-bold">ICIC0006616</strong>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-slate-500">Bank &amp; Branch:</span>
+                    <strong className="text-slate-800 font-medium">ICICI Bank, Urban Estate Branch</strong>
+                  </div>
+                </div>
+              </div>
             </div>
 
             <div>
@@ -3816,7 +3832,9 @@ export default function PricingCalculatorPage() {
                 {(() => {
                   const modW = (moduleWarranty && moduleWarranty.trim()) ? (moduleWarranty.toLowerCase().includes('year') ? moduleWarranty : `${moduleWarranty} Years`) : '25 Years';
                   const invW = (inverterWarranty && inverterWarranty.trim()) ? (inverterWarranty.toLowerCase().includes('year') ? inverterWarranty : `${inverterWarranty} Years`) : '5 Years';
-                  let dynamicWarrantyTerm = `Warranty: ${modW} performance warranty on solar modules, ${invW} on grid-tie inverters.`;
+                  let dynamicWarrantyTerm = (calc.selectedModuleDetails?.length > 0)
+                    ? `Warranty: ${modW} performance warranty on solar modules, ${invW} on grid-tie inverters.`
+                    : `Warranty: ${invW} on grid-tie inverters.`;
                   if (systemType === "hybrid" || batteries.some(b => b.brand && b.model)) {
                     const batW = (batteryWarranty && batteryWarranty.trim()) ? (batteryWarranty.toLowerCase().includes('year') ? batteryWarranty : `${batteryWarranty} Years`) : '5 Years';
                     dynamicWarrantyTerm += ` ${batW} on battery storage system.`;
