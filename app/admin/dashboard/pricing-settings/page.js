@@ -440,7 +440,7 @@ export default function PricingSettingsPage() {
                   unit="%" 
                 />
                 <NumInput 
-                  label="Max Sales Discount %" 
+                  label="Max Negotiation Discount %" 
                   value={rates.financialSettings?.residential?.maxDiscountPercent ?? rates.financialSettings?.maxDiscountPercent ?? 5} 
                   onChange={v => {
                     update("financialSettings.residential.maxDiscountPercent", v);
@@ -450,7 +450,7 @@ export default function PricingSettingsPage() {
                 />
               </div>
               <p className="text-[10.5px] text-emerald-300/80 leading-relaxed">
-                Applied on Residential Rooftop systems and plants under 100 kWp.
+                Applied on Residential Rooftop (&lt; 100 kWp). Salespersons can negotiate &amp; discount up to this percentage.
               </p>
             </div>
 
@@ -468,14 +468,14 @@ export default function PricingSettingsPage() {
                   unit="%" 
                 />
                 <NumInput 
-                  label="Max Allowed Discount %" 
+                  label="Max Negotiation Discount %" 
                   value={rates.financialSettings?.industrial?.maxDiscountPercent ?? 3} 
                   onChange={v => update("financialSettings.industrial.maxDiscountPercent", v)} 
                   unit="%" 
                 />
               </div>
               <p className="text-[10.5px] text-blue-300/80 leading-relaxed">
-                Applied on Industrial proposals and large projects 100 kWp &amp; above.
+                Applied on Industrial proposals &amp; 100 kWp+ projects. Sets the max negotiation discount limit for sales team.
               </p>
             </div>
           </div>
