@@ -194,13 +194,17 @@ const Footer = () => {
 
             {/* Bottom bar */}
             <div className="border-t border-white/[0.06]">
-                <div className="max-w-7xl mx-auto px-6 sm:px-8 lg:px-12 py-4 flex flex-col sm:flex-row items-center justify-between gap-2">
-                    <p className="text-gray-600 text-xs">
-                        © {currentYear} Divvy Solar Pvt. Ltd. All rights reserved.
+                <div className="max-w-7xl mx-auto px-6 sm:px-8 lg:px-12 py-4 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs">
+                    <p className="text-gray-500">
+                        © {currentYear} Divvy Solar Power &amp; Solutions Pvt. Ltd. All rights reserved.
                     </p>
-                    <p className="text-gray-700 text-xs">
-                        Renewable Energy For All
-                    </p>
+                    <div className="flex items-center gap-4 text-gray-400">
+                        <Link href="/privacy-policy" className="hover:text-[#fecb00] transition-colors underline-offset-4 hover:underline">
+                            Privacy Policy
+                        </Link>
+                        <span className="text-white/20">•</span>
+                        <span className="text-gray-500">Renewable Energy For All</span>
+                    </div>
                 </div>
             </div>
         </footer>

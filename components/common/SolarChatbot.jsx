@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef, useCallback } from 'react';
+import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import {
     SunIcon,
@@ -263,26 +264,45 @@ export default function SolarChatbot() {
 
     return (
         <>
-            {/* Collapsed Floating Trigger Button */}
+            {/* Collapsed Floating Trigger Button - High-Definition & Enhanced Size */}
             {!isOpen && (
-                <div className="fixed bottom-4 right-4 md:bottom-6 md:right-6 z-[99998] flex items-center gap-3">
+                <div className="fixed bottom-4 right-4 md:bottom-6 md:right-6 z-[9998] flex flex-row-reverse items-center gap-3 group">
                     <button
                         onClick={toggleOpen}
                         id="solarChatFloatingBtn"
-                        className="relative flex items-center gap-2 px-4 md:px-5 py-2.5 md:py-3 rounded-full text-[#070b15] font-black text-xs md:text-sm tracking-tight shadow-[0_6px_25px_rgba(254,203,0,0.4)] transition-transform duration-200 hover:scale-105 active:scale-95 group cursor-pointer"
-                        style={{ background: 'linear-gradient(135deg, #FECB00, #EBB800)' }}
-                        aria-label="Open Solar Chatbot"
+                        className="relative flex items-center justify-center w-[58px] h-[58px] md:w-[64px] md:h-[64px] rounded-full bg-white p-[2px] shadow-[0_8px_30px_rgba(254,203,0,0.5)] hover:shadow-[0_12px_40px_rgba(254,203,0,0.75)] border-2 border-[#FECB00] transition-all duration-300 transform hover:scale-105 active:scale-95 cursor-pointer"
+                        aria-label="Chat with Solar AI Assistant"
                     >
-                        <SunIcon className="w-5 h-5 text-[#070b15] transition-transform duration-300 group-hover:rotate-45" />
-                        <span className="whitespace-nowrap font-black">Ask Solar Expert</span>
-                        <span className="px-2 py-0.5 rounded-full text-[10px] font-black bg-[#070b15] text-[#FECB00] hidden sm:inline-block">
-                            Free Solar Quote
+                        {/* Subtle gold glow pulse */}
+                        <span className="absolute inset-0 rounded-full bg-[#FECB00] animate-ping opacity-25 pointer-events-none"></span>
+
+                        <div className="w-full h-full rounded-full bg-white flex items-center justify-center overflow-hidden p-0 relative z-10">
+                            <Image
+                                src="/da1ab346-9490-40fd-8f47-b0dbcdd245db.png"
+                                alt="Solar AI Assistant"
+                                width={64}
+                                height={64}
+                                quality={100}
+                                priority
+                                className="w-full h-full object-contain scale-110 drop-shadow-sm"
+                            />
+                        </div>
+
+                        {/* Online Indicator Green Dot */}
+                        <span className="absolute bottom-0 right-0 w-4 h-4 bg-emerald-500 rounded-full border-2 border-white shadow-md z-20 flex items-center justify-center">
+                            <span className="w-1.5 h-1.5 bg-white rounded-full"></span>
                         </span>
 
                         {hasUnread && (
-                            <span className="absolute -top-1 -right-1 w-3.5 h-3.5 bg-red-500 rounded-full border-2 border-white"></span>
+                            <span className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 rounded-full border-2 border-white animate-pulse z-20"></span>
                         )}
                     </button>
+
+                    {/* Smooth Tooltip Pill on Hover */}
+                    <span className="hidden sm:inline-flex items-center gap-1.5 bg-[#0e1b3d] text-[#FECB00] text-xs font-bold py-1.5 px-3.5 rounded-full shadow-lg opacity-0 translate-x-3 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-300 pointer-events-none border border-white/10 whitespace-nowrap">
+                        <SparklesIcon className="w-3.5 h-3.5 text-[#FECB00]" />
+                        <span>Ask Solar AI</span>
+                    </span>
                 </div>
             )}
 
@@ -297,10 +317,17 @@ export default function SolarChatbot() {
                     <div className="px-4 py-3 bg-[#0e1b3d] border-b border-slate-700/80 flex items-center justify-between shrink-0">
                         <div className="flex items-center gap-2.5">
                             <div className="relative">
-                                <div className="w-9 h-9 rounded-xl bg-[#FECB00] flex items-center justify-center text-[#070b15] font-black shadow-sm">
-                                    <SunIcon className="w-5 h-5 text-[#070b15]" />
+                                <div className="w-12 h-12 rounded-2xl bg-white p-0.5 flex items-center justify-center shadow-md overflow-hidden border border-white/30">
+                                    <Image
+                                        src="/da1ab346-9490-40fd-8f47-b0dbcdd245db.png"
+                                        alt="Solar Expert Assistant"
+                                        width={48}
+                                        height={48}
+                                        quality={100}
+                                        className="w-full h-full object-contain scale-110"
+                                    />
                                 </div>
-                                <span className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 bg-emerald-400 rounded-full border-2 border-[#0e1b3d]"></span>
+                                <span className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-emerald-400 rounded-full border-2 border-[#0e1b3d]"></span>
                             </div>
                             <div>
                                 <div className="flex items-center gap-1.5">
