@@ -19,44 +19,6 @@ import {
     MapPinIcon
 } from '@heroicons/react/24/outline';
 
-const CATEGORIES = [
-    {
-        id: "subsidy",
-        name: "💰 Subsidy & Govt",
-        queries: [
-            { label: "₹78,000 PM Surya Ghar Subsidy", query: "How much government subsidy do I get under PM Surya Ghar Muft Bijli Yojana for 1kW, 2kW, 3kW and 5kW?" },
-            { label: "Net Metering in DHBVN / PSPCL", query: "How does net metering work in DHBVN, UHBVN, PSPCL and BSES, and what is the approval process?" },
-            { label: "Subsidy Application Steps", query: "What documents and rooftop conditions are required to claim the direct DBT central solar subsidy?" }
-        ]
-    },
-    {
-        id: "commercial",
-        name: "🏭 CAPEX vs OPEX",
-        queries: [
-            { label: "CAPEX vs OPEX / RESCO Models", query: "What is the difference between CAPEX self-owned and OPEX / RESCO zero-investment model for industrial factories?" },
-            { label: "40% Tax Depreciation", query: "How does 40% Accelerated Depreciation under Section 32 of Income Tax Act benefit commercial solar clients?" },
-            { label: "Payback Period & ROI", query: "What is the typical financial payback period and lifetime savings of a 50kW to 500kW commercial solar plant?" }
-        ]
-    },
-    {
-        id: "sizing",
-        name: "⚡ kW & Sizing",
-        queries: [
-            { label: "1 kW Generation & Roof Space", query: "How many units of electricity does 1 kW solar generate per day in North India and how much shade-free roof space is required?" },
-            { label: "Size for ₹5,000/mo Bill", query: "What is the ideal solar system kW size and monthly savings for a house with a monthly power bill of ₹5,000?" },
-            { label: "Size for ₹20,000+ Factory Bill", query: "How much solar kW capacity is required for an industrial plant with monthly electricity expenses above ₹25,000?" }
-        ]
-    },
-    {
-        id: "tech",
-        name: "🛡️ Panel Tech",
-        queries: [
-            { label: "TopCon vs Mono PERC", query: "Why are N-Type TopCon solar panels better than traditional Mono PERC panels in North Indian summer heat?" },
-            { label: "Bifacial Dual-Glass Panels", query: "How much extra generation yield do Bifacial double-glass modules produce from ground and rooftop albedo reflection?" },
-            { label: "25-30 Year Warranties", query: "What warranties and guarantees are provided on Tier-1 panels, smart inverters and galvanized mounting structures?" }
-        ]
-    }
-];
 
 const BILL_RANGES = [
     "Under ₹3,000 / month",
@@ -79,7 +41,6 @@ export default function SolarChatbot() {
 
     const [isOpen, setIsOpen] = useState(false);
     const [activeTab, setActiveTab] = useState("chat"); // "chat" | "form"
-    const [selectedCategory, setSelectedCategory] = useState("subsidy");
     const [sessionId, setSessionId] = useState("");
     const [messages, setMessages] = useState([]);
     const [input, setInput] = useState("");
@@ -126,7 +87,7 @@ export default function SolarChatbot() {
                 if (data.success && Array.isArray(data.data) && data.data.length > 0) {
                     setMessages(data.data);
                     // Check if lead was already captured
-                    const hasLead = data.data.some(m => m.text?.includes('[Submitted Free 3D Solar Audit Form]') || m.text?.includes('Got your number'));
+                    const hasLead = data.data.some(m => m.text?.includes('[Submitted Solar Quotation Request]') || m.text?.includes('[Submitted Free 3D Solar Audit Form]') || m.text?.includes('Got your number'));
                     if (hasLead) setFormSuccess(true);
                 }
             }
@@ -261,12 +222,12 @@ export default function SolarChatbot() {
                     ...prev,
                     {
                         sender: 'user',
-                        text: `📋 **[Submitted Free 3D Solar Audit Form]**\n• Name: ${formData.name}\n• Phone: +91 ${cleanPhone}\n• City: ${formData.location}\n• Monthly Bill: ${formData.monthlyBill}\n• Property Type: ${formData.propertyType}`,
+                        text: `📋 **[Submitted Solar Quotation Request]**\n• Name: ${formData.name}\n• Phone: +91 ${cleanPhone}\n• City: ${formData.location}\n• Monthly Bill: ${formData.monthlyBill}\n• Property Type: ${formData.propertyType}`,
                         timestamp: new Date()
                     },
                     {
                         sender: 'bot',
-                        text: data.reply || `🎉 **Thank you ${formData.name}! Your Solar Audit is Confirmed.**\n\nOur Senior Solar EPC Engineer is reviewing your roof feasibility and will connect with you on WhatsApp / Call shortly with your **3D Solar Layout, PM Surya Ghar Subsidy calculation & detailed quotation**.`,
+                        text: data.reply || `🎉 **Thank you ${formData.name}! Your request has been received.**\n\nOur Senior Solar EPC Engineer is reviewing your requirements and will connect with you on WhatsApp / Call shortly with your **System Sizing, PM Surya Ghar Subsidy calculation & detailed quotation**.`,
                         timestamp: new Date()
                     }
                 ]);
@@ -300,8 +261,6 @@ export default function SolarChatbot() {
 
     if (isAdmin) return null;
 
-    const currentCategoryObj = CATEGORIES.find(c => c.id === selectedCategory) || CATEGORIES[0];
-
     return (
         <>
             {/* Collapsed Floating Trigger Button */}
@@ -317,7 +276,7 @@ export default function SolarChatbot() {
                         <SunIcon className="w-5 h-5 text-[#070b15] transition-transform duration-300 group-hover:rotate-45" />
                         <span className="whitespace-nowrap font-black">Ask Solar Expert</span>
                         <span className="px-2 py-0.5 rounded-full text-[10px] font-black bg-[#070b15] text-[#FECB00] hidden sm:inline-block">
-                            Free 3D Quote
+                            Free Solar Quote
                         </span>
 
                         {hasUnread && (
@@ -386,7 +345,7 @@ export default function SolarChatbot() {
                                 <div className="text-[13px] sm:text-[14px] text-[#f8fafc] space-y-1.5">
                                     <p>Hello! 👋 Welcome to <strong className="text-[#FECB00]">Divvy Solar</strong>.</p>
                                     <p className="text-xs text-slate-300">
-                                        I am your 24/7 AI Solar Engineer. Get your <strong>Free 3D Solar Layout, PM Surya Ghar Subsidy (up to ₹78,000) & Quotation</strong> below, or ask any question! ☀️
+                                        I am your 24/7 AI Solar Engineer. Get your <strong>Solar Sizing, PM Surya Ghar Subsidy (up to ₹78,000) & Instant Quotation</strong> below, or ask any question! ☀️
                                     </p>
                                 </div>
                             </div>
@@ -401,17 +360,17 @@ export default function SolarChatbot() {
                                     <div className="w-12 h-12 rounded-full bg-emerald-500/20 border border-emerald-500/40 text-emerald-400 flex items-center justify-center mx-auto">
                                         <CheckCircleIcon className="w-7 h-7" />
                                     </div>
-                                    <h4 className="text-sm font-black text-white">✅ Solar Audit Request Received!</h4>
+                                    <h4 className="text-sm font-black text-white">✅ Solar Quotation Request Received!</h4>
                                     <p className="text-[11px] text-slate-300 max-w-xs mx-auto">
-                                        Thank you, <strong className="text-white">{formData.name || 'Client'}</strong>! Our Senior Engineer will call you on <strong className="text-[#FECB00]">+91 {formData.phone}</strong> with your customized 3D design.
+                                        Thank you, <strong className="text-white">{formData.name || 'Client'}</strong>! Our Senior Solar Engineer will call you on <strong className="text-[#FECB00]">+91 {formData.phone}</strong> with your customized solar proposal & subsidy details.
                                     </p>
                                 </div>
                             ) : (
                                 <form onSubmit={handleFormSubmit} className="space-y-2.5">
                                     <div className="flex items-center justify-between border-b border-slate-700/80 pb-2">
                                         <div className="flex items-center gap-1.5">
-                                            <span className="p-1 rounded-lg bg-[#FECB00] text-[#070b15] font-black text-[10px]">3D</span>
-                                            <span className="font-extrabold text-xs text-white">Request Free 3D Solar Design & Quotation</span>
+                                            <span className="px-1.5 py-0.5 rounded-lg bg-[#FECB00] text-[#070b15] font-black text-[10px]">QUOTE</span>
+                                            <span className="font-extrabold text-xs text-white">Request Solar Sizing & Free Quotation</span>
                                         </div>
                                         <span className="text-[10px] font-bold text-emerald-400">● 100% Free</span>
                                     </div>
@@ -524,7 +483,7 @@ export default function SolarChatbot() {
                                         {formSubmitting ? (
                                             <div className="w-3.5 h-3.5 border-2 border-[#070b15]/30 border-t-[#070b15] rounded-full animate-spin"></div>
                                         ) : (
-                                            <span>🚀 Submit for Free 3D Design & Price</span>
+                                            <span>🚀 Get Free Solar Quotation & Feasibility</span>
                                         )}
                                     </button>
                                 </form>
@@ -592,37 +551,6 @@ export default function SolarChatbot() {
                         <div className="h-1" />
                     </div>
 
-                    {/* Amazon / Flipkart Style "Categorized Frequent Queries Hub" */}
-                    <div className="bg-[#091126] border-t border-slate-700/80 shrink-0">
-                        {/* Category Selector Tabs */}
-                        <div className="px-3 pt-2 pb-1.5 flex gap-1.5 overflow-x-auto no-scrollbar">
-                            {CATEGORIES.map((cat) => (
-                                <button
-                                    key={cat.id}
-                                    onClick={() => setSelectedCategory(cat.id)}
-                                    className={`whitespace-nowrap px-2.5 py-1 rounded-lg text-[10px] font-bold transition-all cursor-pointer ${selectedCategory === cat.id
-                                            ? "bg-[#FECB00]/20 text-[#FECB00] border border-[#FECB00]/50"
-                                            : "bg-slate-800/80 text-slate-400 hover:text-white border border-slate-700/50"
-                                        }`}
-                                >
-                                    {cat.name}
-                                </button>
-                            ))}
-                        </div>
-
-                        {/* Queries for Selected Category */}
-                        <div className="px-3 pb-2 flex gap-1.5 overflow-x-auto no-scrollbar">
-                            {currentCategoryObj.queries.map((qItem, qIdx) => (
-                                <button
-                                    key={qIdx}
-                                    onClick={() => handleSend(qItem.query)}
-                                    className="whitespace-nowrap px-3 py-1.5 rounded-xl text-[11px] font-bold bg-slate-800 hover:bg-[#FECB00] text-slate-200 hover:text-[#070b15] border border-slate-600 transition-colors cursor-pointer shrink-0"
-                                >
-                                    {qItem.label} →
-                                </button>
-                            ))}
-                        </div>
-                    </div>
 
                     {/* Bottom Input Field for Free-form Questions */}
                     <div className="p-3 bg-[#0e1b3d] border-t border-slate-700 shrink-0">
