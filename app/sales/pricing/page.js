@@ -118,7 +118,7 @@ const STRUCTURE_TYPES_MAP = {
     { v: "alu_longrail", l: "Aluminium Long rail" },
   ],
   ground: [
-    { v: "ground_gi", l: "GI Structure" },
+    { v: "ground_gi", l: "Hot Dip GI (Ground)" },
     { v: "ground_galvalume", l: "Galvalume" }
   ]
 };
@@ -205,9 +205,9 @@ const Inp = ({ label, id, value, onChange, placeholder = "", unit, type = "text"
     <div className="relative">
       <input id={id} type={type} value={value} min={min} max={max} step={step} placeholder={placeholder}
         onChange={e => onChange(type === "number" ? (e.target.value === "" ? "" : Number(e.target.value)) : e.target.value)}
-        className="w-full px-4 py-2.5 bg-white/5 border border-white/10 rounded-xl text-white text-sm focus:outline-none focus:ring-2 focus:ring-[#FECB00]/50 focus:border-[#FECB00] transition-all"
-        style={unit ? { paddingRight: "3.5rem" } : {}} />
-      {unit && <span className="absolute right-3 top-1/2 -translate-y-1/2 text-white/30 text-xs font-bold">{unit}</span>}
+        className="w-full px-4 py-2.5 bg-white/5 border border-white/10 rounded-xl text-white text-sm focus:outline-none focus:ring-2 focus:ring-[#FECB00]/50 focus:border-[#FECB00] transition-all [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+        style={unit ? { paddingRight: "2.75rem" } : {}} />
+      {unit && <span className="absolute right-3 top-1/2 -translate-y-1/2 text-white/40 text-xs font-bold pointer-events-none select-none">{unit}</span>}
     </div>
   </div>
 );
