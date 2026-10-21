@@ -642,7 +642,10 @@ export default async function QuotationPreviewPage({ params }) {
                     <div className="info-grid">
                         <div className="info-box">
                             <h3>Client Details</h3>
-                            <p><strong>Client / Org:</strong> {clientName || "N/A"}</p>
+                            {(log?.firmName || state?.firmName || calc?.calcState?.firmName) && (
+                                <p><strong>Firm / Company:</strong> {log?.firmName || state?.firmName || calc?.calcState?.firmName}</p>
+                            )}
+                            <p><strong>{log?.firmName || state?.firmName || calc?.calcState?.firmName ? "Contact Person:" : "Client / Org:"}</strong> {clientName || "N/A"}</p>
                             <p><strong>Contact:</strong> {clientPhone || "N/A"}</p>
                             <p><strong>Site Location:</strong> {clientLocation || "N/A"}</p>
                             <p><strong>Quotation Prepared By:</strong> {log?.salespersonName || "Divvy Solar Representative"}{log?.salespersonPhone ? ` | Mob: ${log.salespersonPhone}` : ""}</p>

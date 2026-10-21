@@ -124,6 +124,7 @@ export async function PUT(request, { params }) {
         const body = await request.json();
         const updateData = {};
 
+        if (body.firmName !== undefined) updateData.firmName = body.firmName;
         if (body.clientName !== undefined) updateData.clientName = body.clientName;
         if (body.clientPhone !== undefined) updateData.clientPhone = body.clientPhone;
         if (body.clientLocation !== undefined) updateData.clientLocation = body.clientLocation;

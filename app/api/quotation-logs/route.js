@@ -30,6 +30,7 @@ export async function POST(request) {
         const {
             salespersonName,
             salespersonPhone,
+            firmName,
             clientName,
             clientPhone,
             clientLocation,
@@ -50,6 +51,7 @@ export async function POST(request) {
             salespersonName: (salespersonName || session.user.name || 'Unknown').trim(),
             salespersonEmail: session.user.email || '',
             salespersonPhone: (salespersonPhone || session.user.phone || '').trim(),
+            firmName: firmName || '',
             clientName: clientName || '',
             clientPhone: clientPhone || '',
             clientLocation: clientLocation || '',
