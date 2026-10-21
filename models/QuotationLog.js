@@ -19,6 +19,10 @@ const QuotationLogSchema = new mongoose.Schema(
             type: String,
             default: '',
         },
+        firmName: {
+            type: String,
+            default: '',
+        },
         clientName: {
             type: String,
             default: '',

@@ -118,7 +118,7 @@ const STRUCTURE_TYPES_MAP = {
     { v: "alu_longrail", l: "Aluminium Long rail" },
   ],
   ground: [
-    { v: "ground_gi", l: "Hot Dip GI (Ground)" },
+    { v: "ground_gi", l: "Hot Dip GI" },
     { v: "ground_galvalume", l: "Galvalume" }
   ]
 };
@@ -131,7 +131,7 @@ const STRUCTURE_TYPES = ALL_STRUCTURE_TYPES;
 const ROOF_TYPES = [{ v: "rcc", l: "Rooftop RCC" }, { v: "profile", l: "Shed (Profile Sheet)" }, { v: "ground", l: "Ground Mounted" }];
 const PROJECT_CATEGORIES = [
   { v: "residential", l: "Residential Rooftop Solar" },
-  { v: "industrial", l: "Industrial & Commercial Solar (C&I / 100kW+)" },
+  { v: "industrial", l: "Industrial & Commercial Solar" },
 ];
 const LA_OPTS = [
   { v: "none", l: "None" },
@@ -333,6 +333,8 @@ export default function PricingCalculatorPage() {
   const [loading, setLoading] = useState(true);
   const printRef = useRef(null);
   // Client & Project Details
+  const [projectCategory, setProjectCategory] = useState("residential");
+  const [firmName, setFirmName] = useState("");
   const [clientName, setClientName] = useState("");
   const [clientPhone, setClientPhone] = useState("");
   const [clientLocation, setClientLocation] = useState("");
@@ -342,7 +344,6 @@ export default function PricingCalculatorPage() {
   const [quoteRef, setQuoteRef] = useState("");
   const [systemKW, setSystemKW] = useState("");
   const [systemType, setSystemType] = useState("ongrid");
-  const [projectCategory, setProjectCategory] = useState("residential");
   const [roofType, setRoofType] = useState("");
   const [connectedLoad, setConnectedLoad] = useState("");
   const [dgSync, setDgSync] = useState(false);
@@ -478,6 +479,7 @@ export default function PricingCalculatorPage() {
         if (isMounted && json.success && json.state) {
           const s = json.state;
           setEditingLogId(editId);
+          if (s.firmName !== undefined) setFirmName(s.firmName);
           if (s.clientName !== undefined) setClientName(s.clientName);
           if (s.clientPhone !== undefined) setClientPhone(s.clientPhone);
           if (s.clientLocation !== undefined) setClientLocation(s.clientLocation);
@@ -1415,7 +1417,8 @@ export default function PricingCalculatorPage() {
           <div class="info-grid">
             <div class="info-box">
               <h3>Client Details</h3>
-              <p><strong>Client / Org:</strong> ${clientName || "N/A"}</p>
+              ${firmName ? `<p><strong>Firm / Company:</strong> ${firmName}</p>` : ''}
+              <p><strong>${firmName || projectCategory === 'industrial' ? 'Contact Person' : 'Client / Org'}:</strong> ${clientName || "N/A"}</p>
               <p><strong>Contact:</strong> ${clientPhone || "N/A"}</p>
               <p><strong>Site Location:</strong> ${clientLocation || "N/A"}</p>
               <p><strong>Quotation Prepared By:</strong> ${salespersonName || "Divvy Solar Representative"}${salespersonPhone ? ` | Mob: ${salespersonPhone}` : ""}</p>
@@ -1547,6 +1550,7 @@ export default function PricingCalculatorPage() {
         : '';
 
       const calcStateData = {
+        firmName: firmName || '',
         clientName: clientName || '',
         clientPhone: clientPhone || '',
         clientLocation: clientLocation || '',
@@ -1612,6 +1616,7 @@ export default function PricingCalculatorPage() {
           body: JSON.stringify({
             salespersonName: salespersonName || session?.user?.name || '',
             salespersonPhone: salespersonPhone || session?.user?.phone || '',
+            firmName: firmName || '',
             clientName: clientName || '',
             clientPhone: clientPhone || '',
             clientLocation: clientLocation || '',
@@ -1841,8 +1846,36 @@ export default function PricingCalculatorPage() {
                 <p className="text-white/40 text-xs mt-0.5">Basic information for the quotation header.</p>
               </div>
             </div>
+            {/* Project Category Selection at Top to Configure Form Dynamically */}
+            <div className="p-4 rounded-xl bg-white/[0.04] border border-white/10 space-y-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <Sel label="Project Category" id="proj-cat" value={projectCategory} onChange={setProjectCategory}>
+                  {PROJECT_CATEGORIES.map(c => <option key={c.v} value={c.v} className="bg-[#0f172a]">{c.l}</option>)}
+                </Sel>
+                {projectCategory === "industrial" ? (
+                  <Inp 
+                    label="Firm / Company Name" 
+                    id="firm-name" 
+                    value={firmName} 
+                    onChange={setFirmName} 
+                    placeholder="e.g. ABC Steels Pvt. Ltd. / XYZ Textiles" 
+                  />
+                ) : (
+                  <div className="flex items-center text-xs text-white/50 px-2 pt-6">
+                    <span>Selected: <strong className="text-[#FECB00]">Residential Solar Project</strong> (Standard Client Details)</span>
+                  </div>
+                )}
+              </div>
+            </div>
+
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <Inp label="Client Name" id="client-name" value={clientName} onChange={setClientName} />
+              <Inp 
+                label={projectCategory === "industrial" ? "Contact Person / Client Name" : "Client Name"} 
+                id="client-name" 
+                value={clientName} 
+                onChange={setClientName} 
+                placeholder={projectCategory === "industrial" ? "e.g. Mr. Rajesh Sharma (Director)" : "e.g. Rahul Sharma"}
+              />
               <Inp label="Phone" id="client-phone" value={clientPhone} onChange={setClientPhone} />
               <Inp 
                 label="Location / Site Address" 
@@ -1918,10 +1951,7 @@ export default function PricingCalculatorPage() {
                 <option value="hybrid" className="bg-[#0f172a]">Hybrid (Grid + Battery Backup)</option>
               </Sel>
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-              <Sel label="Project Category" id="proj-cat" value={projectCategory} onChange={setProjectCategory}>
-                {PROJECT_CATEGORIES.map(c => <option key={c.v} value={c.v} className="bg-[#0f172a]">{c.l}</option>)}
-              </Sel>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <Sel label="Roof Type" id="roof-type" value={roofType} onChange={setRoofType}>
                 <option value="" className="bg-[#0f172a]">Select Roof Type</option>
                 {ROOF_TYPES.map(c => <option key={c.v} value={c.v} className="bg-[#0f172a]">{c.l}</option>)}
@@ -3085,7 +3115,10 @@ export default function PricingCalculatorPage() {
             {/* Client Details */}
             <div className="border border-slate-300 bg-slate-50/30 rounded-lg p-3 space-y-1">
               <h3 className="text-[10px] font-bold text-[#1e3a8a] uppercase border-b-2 border-[#eab308] pb-1.5 mb-2 tracking-wider">Client Details</h3>
-              <p className="text-xs text-slate-700"><strong>Client / Org:</strong> {clientName || "N/A"}</p>
+              {(projectCategory === "industrial" || firmName) && firmName ? (
+                <p className="text-xs text-slate-700"><strong>Firm / Company:</strong> {firmName}</p>
+              ) : null}
+              <p className="text-xs text-slate-700"><strong>{(projectCategory === "industrial" || firmName) && firmName ? "Contact Person:" : "Client / Org:"}</strong> {clientName || "N/A"}</p>
               <p className="text-xs text-slate-700"><strong>Contact:</strong> {clientPhone || "N/A"}</p>
               <p className="text-xs text-slate-700"><strong>Site Location:</strong> {clientLocation || "N/A"}</p>
               <p className="text-xs text-slate-700"><strong>Quotation Prepared By:</strong> {salespersonName || "Divvy Solar Representative"}{salespersonPhone ? ` | Mob: ${salespersonPhone}` : ""}</p>
