@@ -487,7 +487,8 @@ export default function PricingCalculatorPage() {
           if (s.systemKW !== undefined) setSystemKW(s.systemKW ? String(s.systemKW) : "");
           if (s.issuingBranch) setIssuingBranch(s.issuingBranch);
           if (s.projectCategory) setProjectCategory(s.projectCategory);
-          if (s.systemType) setSystemType(s.systemType);
+          const loadedSystemType = s.systemType || "ongrid";
+          setSystemType(loadedSystemType);
           if (s.connectedLoad !== undefined) setConnectedLoad(s.connectedLoad);
           if (s.roofType !== undefined) setRoofType(s.roofType);
           if (s.dgSync !== undefined) setDgSync(!!s.dgSync);
@@ -495,7 +496,11 @@ export default function PricingCalculatorPage() {
 
           if (Array.isArray(s.modules) && s.modules.length > 0) setModules(s.modules);
           if (Array.isArray(s.inverters) && s.inverters.length > 0) setInverters(s.inverters);
-          if (Array.isArray(s.batteries)) setBatteries(s.batteries);
+          if (loadedSystemType === "hybrid" && Array.isArray(s.batteries)) {
+            setBatteries(s.batteries);
+          } else {
+            setBatteries([{ brand: "", model: "", qty: "" }]);
+          }
           if (Array.isArray(s.structures) && s.structures.length > 0) setStructures(s.structures);
 
           if (Array.isArray(s.dcCablesList) && s.dcCablesList.length > 0) setDcCablesList(s.dcCablesList);
@@ -750,7 +755,7 @@ export default function PricingCalculatorPage() {
       inverters.some(i => i.model && (Number(i.qty) > 0 || i.qty)) || 
       modules.some(m => m.model && Number(m.qty) > 0) || 
       structures.some(s => Number(s.kw) > 0) ||
-      batteries.some(b => b.model && (Number(b.qty) > 0 || b.qty)) ||
+      (systemType === "hybrid" && batteries.some(b => b.model && (Number(b.qty) > 0 || b.qty))) ||
       (conduit && (Number(conduitUpvcM) > 0 || Number(cableTrayM) > 0)) ||
       (walkway && Number(walkwayM) > 0) ||
       (safetyLine && Number(customSafety) > 0) ||
@@ -827,7 +832,7 @@ export default function PricingCalculatorPage() {
 
     let batteryCost = 0;
     const selectedBatteryDetails = [];
-    if (systemType === "hybrid" || batteries.some(b => b.brand && b.model && Number(b.qty) > 0)) {
+    if (systemType === "hybrid") {
       batteries.forEach(bat => {
         const availModels = bat.brand && rates.batteries?.[bat.brand] ? rates.batteries[bat.brand] : [];
         const selBat = availModels.find(m => (m._id && m._id === bat.model) || m.modelName === bat.model);
@@ -1273,7 +1278,7 @@ export default function PricingCalculatorPage() {
       let dynamicWarrantyTerm = (calc.selectedModuleDetails?.length > 0)
         ? `Warranty: ${modW} performance warranty on solar modules, ${invW} on grid-tie inverters.`
         : `Warranty: ${invW} on grid-tie inverters.`;
-      if (systemType === "hybrid" || batteries.some(b => b.brand && b.model)) {
+      if (systemType === "hybrid" && calc.selectedBatteryDetails?.length > 0) {
         dynamicWarrantyTerm += ` ${batW} on battery storage system.`;
       }
 
@@ -1432,6 +1437,7 @@ export default function PricingCalculatorPage() {
               <p><strong>Proposed Capacity:</strong> ${effectiveSystemKW || 0} kWp (Solar PV Plant)</p>
               ${calc.selectedModuleDetails?.length > 0 ? `<p><strong>Solar Modules:</strong> ${calc.selectedModuleDetails.map(m => `${cap(m.brand)} ${m.modelName} (${m.kw}kWp, ${m.panels} panels)`).join(", ")}</p>` : ""}
               <p><strong>Inverter Model:</strong> ${calc.selectedInverterDetails?.map(inv => inv.modelName + " (x" + inv.qty + ")").join(", ") || "N/A"}</p>
+              ${systemType === 'hybrid' && calc.selectedBatteryDetails?.length > 0 ? `<p><strong>Battery Bank:</strong> ${calc.selectedBatteryDetails.map(b => `${cap(b.brand)} ${b.modelName} (x${b.qty})`).join(", ")}</p>` : ""}
               <p><strong>Mounting Structure:</strong> ${calc.selectedStructures?.map(st => (ALL_STRUCTURE_TYPES.find(opt => opt.v === st.type)?.l || st.type || "") + " (" + st.kw + "kW)").join(", ") || "N/A"}</p>
               ${calc.selectedDcCablesDetails?.filter(item => item.meters > 0).length > 0 ? `<p><strong>DC Cable Run:</strong> ${calc.selectedDcCablesDetails.filter(item => item.meters > 0).map(item => `${item.meters}m of ${item.cableLabel} (${item.brandLabel})`).join(", ")}</p>` : ""}
               ${calc.selectedInvToAcdbDetails?.filter(item => item.meters > 0).length > 0 ? `<p><strong>AC Cable (Inv-ACDB):</strong> ${calc.selectedInvToAcdbDetails.filter(item => item.meters > 0).map(item => `${item.meters}m of ${item.cableLabel} (${item.brandLabel})`).join(", ")}</p>` : ""}
@@ -1564,7 +1570,7 @@ export default function PricingCalculatorPage() {
         modules: modules || [],
         systemType: systemType || 'ongrid',
         inverters: inverters || [],
-        batteries: batteries || [],
+        batteries: systemType === 'hybrid' ? (batteries || []) : [],
         structures: structures || [],
         projectCategory: projectCategory || 'residential',
         connectedLoad: connectedLoad || '',
@@ -1946,7 +1952,12 @@ export default function PricingCalculatorPage() {
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <Inp label="System Size (kWp)" id="system-kw" value={systemKW} onChange={setSystemKW} type="number" min={0} step="0.1" placeholder="e.g. 10" />
-              <Sel label="System Type" id="sys-type" value={systemType} onChange={setSystemType}>
+              <Sel label="System Type" id="sys-type" value={systemType} onChange={v => {
+                setSystemType(v);
+                if (v !== "hybrid") {
+                  setBatteries([{ brand: "", model: "", qty: "" }]);
+                }
+              }}>
                 <option value="ongrid" className="bg-[#0f172a]">On-Grid (Grid-Tied)</option>
                 <option value="hybrid" className="bg-[#0f172a]">Hybrid (Grid + Battery Backup)</option>
               </Sel>
@@ -2190,8 +2201,8 @@ export default function PricingCalculatorPage() {
             </div>
           </section>
 
-          {/* Section 3b: Battery Storage (for Hybrid Solar) */}
-          {(systemType === "hybrid" || batteries.some(b => b.brand || b.model)) && (
+          {/* Section 4: Battery Storage (Strictly for Hybrid Solar) */}
+          {systemType === "hybrid" && (
             <section className="rounded-2xl bg-white/5 border border-white/10 p-6 space-y-5 animate-fadeIn">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
@@ -3136,6 +3147,9 @@ export default function PricingCalculatorPage() {
                 <p className="text-xs text-slate-700"><strong>Solar Modules:</strong> {calc.selectedModuleDetails.map(m => `${cap(m.brand)} ${m.modelName} (${m.kw}kWp, ${m.panels} panels)`).join(", ")}</p>
               )}
               <p className="text-xs text-slate-700"><strong>Inverter Model:</strong> {calc.selectedInverterDetails?.map(inv => `${inv.modelName} (x${inv.qty})`).join(", ") || "N/A"}</p>
+              {systemType === 'hybrid' && calc.selectedBatteryDetails?.length > 0 && (
+                <p className="text-xs text-slate-700"><strong>Battery Bank:</strong> {calc.selectedBatteryDetails.map(b => `${cap(b.brand)} ${b.modelName} (x${b.qty})`).join(", ")}</p>
+              )}
               <p className="text-xs text-slate-700"><strong>Mounting Structure:</strong> {calc.selectedStructures?.map(st => `${ALL_STRUCTURE_TYPES.find(opt => opt.v === st.type)?.l || st.type || 'Structure'} (${st.kw}kW)`).join(", ") || "N/A"}</p>
               {calc.selectedDcCablesDetails?.filter(item => item.meters > 0).length > 0 && (
                 <p className="text-xs text-slate-700">
@@ -3868,7 +3882,7 @@ export default function PricingCalculatorPage() {
                   let dynamicWarrantyTerm = (calc.selectedModuleDetails?.length > 0)
                     ? `Warranty: ${modW} performance warranty on solar modules, ${invW} on grid-tie inverters.`
                     : `Warranty: ${invW} on grid-tie inverters.`;
-                  if (systemType === "hybrid" || batteries.some(b => b.brand && b.model)) {
+                  if (systemType === "hybrid" && calc.selectedBatteryDetails?.length > 0) {
                     const batW = (batteryWarranty && batteryWarranty.trim()) ? (batteryWarranty.toLowerCase().includes('year') ? batteryWarranty : `${batteryWarranty} Years`) : '5 Years';
                     dynamicWarrantyTerm += ` ${batW} on battery storage system.`;
                   }
