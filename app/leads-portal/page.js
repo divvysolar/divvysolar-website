@@ -229,7 +229,8 @@ export default function LeadsPortal() {
 
     const matchesSource = sourceFilter === "All" ||
       (sourceFilter === "chatbot" && isChat) ||
-      (sourceFilter === "form" && !isChat);
+      (sourceFilter === "ads" && String(lead.serviceType || "").includes("Ads")) ||
+      (sourceFilter === "form" && !isChat && !String(lead.serviceType || "").includes("Ads"));
 
     return matchesSearch && matchesFilter && matchesLocation && matchesSource;
   });
@@ -564,6 +565,7 @@ export default function LeadsPortal() {
                     style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath d='M6 8L1 3h10z' fill='%2394a3b8'/%3E%3C/svg%3E")`, backgroundRepeat: "no-repeat", backgroundPosition: "right 10px center" }}
                   >
                     <option value="All" className="bg-[#0c1322]">All Sources</option>
+                    <option value="ads" className="bg-[#0c1322]">🎯 Residential Ads Leads</option>
                     <option value="chatbot" className="bg-[#0c1322]">🤖 AI Chatbot Leads</option>
                     <option value="form" className="bg-[#0c1322]">🌐 Website Form Leads</option>
                   </select>
@@ -657,6 +659,10 @@ export default function LeadsPortal() {
                               {isChatbotLead ? (
                                 <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-black bg-amber-400/15 text-amber-300 border border-amber-400/30">
                                   <SparklesIcon className="w-2.5 h-2.5" /> 🤖 AI Chatbot Lead
+                                </span>
+                              ) : String(lead.serviceType || "").includes("Ads") ? (
+                                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-black bg-emerald-500/15 text-emerald-300 border border-emerald-500/30">
+                                  ⚡ Ads Landing Page
                                 </span>
                               ) : (
                                 <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-extrabold bg-sky-500/15 text-sky-300 border border-sky-500/30">
@@ -800,6 +806,10 @@ export default function LeadsPortal() {
                                     {isChatbotLead ? (
                                       <span className="px-2.5 py-0.5 rounded-full text-[9px] font-black bg-amber-400/15 text-amber-300 border border-amber-400/30 flex items-center gap-1 shadow-sm">
                                         <SparklesIcon className="w-2.5 h-2.5" /> 🤖 AI Chatbot Lead
+                                      </span>
+                                    ) : String(lead.serviceType || "").includes("Ads") ? (
+                                      <span className="px-2.5 py-0.5 rounded-full text-[9px] font-black bg-emerald-500/15 text-emerald-300 border border-emerald-500/30 flex items-center gap-1 shadow-sm">
+                                        ⚡ Residential Ads Lead
                                       </span>
                                     ) : (
                                       <span className="px-2.5 py-0.5 rounded-full text-[9px] font-extrabold bg-sky-500/15 text-sky-300 border border-sky-500/30 flex items-center gap-1 shadow-sm">

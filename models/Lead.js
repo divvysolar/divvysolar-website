@@ -35,6 +35,36 @@ const LeadSchema = new mongoose.Schema(
             trim: true,
             default: 'Residential (Chatbot Quality Lead)',
         },
+        companyName: {
+            type: String,
+            trim: true,
+            default: '',
+        },
+        landingPage: {
+            type: String,
+            trim: true,
+            default: '',
+        },
+        gclid: {
+            type: String,
+            trim: true,
+            default: '',
+        },
+        utmSource: {
+            type: String,
+            trim: true,
+            default: '',
+        },
+        utmMedium: {
+            type: String,
+            trim: true,
+            default: '',
+        },
+        utmCampaign: {
+            type: String,
+            trim: true,
+            default: '',
+        },
         status: {
             type: String,
             enum: ['new', 'contacted', 'converted', 'rejected'],
