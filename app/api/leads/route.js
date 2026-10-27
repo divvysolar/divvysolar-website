@@ -22,11 +22,15 @@ export async function POST(req) {
             const emailHtml = `
         <h2>New Solar Consultation Request</h2>
         <p><strong>Name:</strong> ${lead.name}</p>
-        <p><strong>Email:</strong> ${lead.email}</p>
-        <p><strong>WhatsApp:</strong> ${lead.whatsapp}</p>
+        <p><strong>Mobile/WhatsApp:</strong> ${lead.whatsapp}</p>
+        <p><strong>Email:</strong> ${lead.email || 'N/A'}</p>
+        <p><strong>Company:</strong> ${lead.companyName || 'Residential / Individual'}</p>
         <p><strong>Location:</strong> ${lead.location}</p>
         <p><strong>Monthly Bill:</strong> ${lead.monthlyBill}</p>
         <p><strong>Service Type:</strong> ${lead.serviceType}</p>
+        <p><strong>Landing Page:</strong> ${lead.landingPage || 'Direct'}</p>
+        ${lead.gclid ? `<p><strong>Google Ads Click ID (GCLID):</strong> ${lead.gclid}</p>` : ''}
+        ${lead.utmCampaign ? `<p><strong>UTM Campaign:</strong> ${lead.utmCampaign} (${lead.utmSource || ''})</p>` : ''}
       `;
 
             // Fire and forget email
