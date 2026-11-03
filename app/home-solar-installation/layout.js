@@ -37,9 +37,5 @@ export const metadata = {
 };
 
 export default function HomeSolarInstallationLayout({ children }) {
-    return (
-        <div className="min-h-screen bg-[#fcfbfa] text-[#0f172a] antialiased selection:bg-[#fecb00] selection:text-[#0a1122]">
-            {children}
-        </div>
-    );
+    return <>{children}</>;
 }
