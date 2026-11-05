@@ -40,6 +40,11 @@ const LeadSchema = new mongoose.Schema(
             trim: true,
             default: '',
         },
+        industryType: {
+            type: String,
+            trim: true,
+            default: '',
+        },
         landingPage: {
             type: String,
             trim: true,
