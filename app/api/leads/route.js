@@ -25,6 +25,7 @@ export async function POST(req) {
         <p><strong>Mobile/WhatsApp:</strong> ${lead.whatsapp}</p>
         <p><strong>Email:</strong> ${lead.email || 'N/A'}</p>
         <p><strong>Company:</strong> ${lead.companyName || 'Residential / Individual'}</p>
+        ${lead.industryType ? `<p><strong>Industry Type:</strong> ${lead.industryType}</p>` : ''}
         <p><strong>Location:</strong> ${lead.location}</p>
         <p><strong>Monthly Bill:</strong> ${lead.monthlyBill}</p>
         <p><strong>Service Type:</strong> ${lead.serviceType}</p>

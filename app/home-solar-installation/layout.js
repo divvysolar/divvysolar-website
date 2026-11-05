@@ -1,18 +1,18 @@
 export const metadata = {
     title: 'Home Rooftop Solar Installation & PM Surya Ghar Subsidy | Divvy Solar',
-    description: "Find the right rooftop solar system for your home's electricity consumption, roof space and location. Get direct PM Surya Ghar subsidy up to ₹78,000, 25-yr warranty, and net-metering across Haryana, Punjab & Delhi NCR.",
+    description: "Get turnkey home rooftop solar installation with PM Surya Ghar subsidy up to ₹78,000, 25-yr warranty, and DISCOM net-metering across Haryana, Punjab & Delhi NCR. Free physical site survey.",
     keywords: [
         'Home Rooftop Solar Installation',
         'PM Surya Ghar Muft Bijli Yojana',
-        'residential solar rooftop Punjab Haryana Delhi NCR',
-        'home solar panels quote',
-        'rooftop solar subsidy eligibility',
-        'net metering home solar installation',
-        'Divvy Solar residential'
+        'residential rooftop solar subsidy Haryana Punjab Delhi NCR',
+        'home solar panels installation cost',
+        'rooftop solar subsidy eligibility 2026',
+        'net metering solar home',
+        'Divvy Solar residential EPC'
     ],
     openGraph: {
-        title: 'Home Rooftop Solar Installation | Divvy Solar',
-        description: "Find the right rooftop solar system for your home's electricity consumption, roof space and location. Get up to ₹78,000 subsidy & zero bill.",
+        title: 'Home Rooftop Solar Installation & PM Surya Ghar Subsidy | Divvy Solar',
+        description: "Zero electricity bill + direct government subsidy up to ₹78,000 credited to bank. 25-year warranty, Tier-1 ALMM panels.",
         url: 'https://divvysolar.in/home-solar-installation',
         siteName: 'Divvy Solar',
         locale: 'en_IN',
