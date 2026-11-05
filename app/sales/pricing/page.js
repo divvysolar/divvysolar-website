@@ -263,8 +263,8 @@ const DynamicCableSelector = ({ label, cables, selectedId, onChange, brand = "po
     .filter(c => c.conductor === selConductor && c.cores === selCores)
     .map(c => c.sizeSqMm)
     .sort((a, b) => a - b);
-  const selSize = selCable && selCable.conductor === selConductor && selCable.cores === selCores 
-    ? selCable.sizeSqMm 
+  const selSize = selCable && selCable.conductor === selConductor && selCable.cores === selCores
+    ? selCable.sizeSqMm
     : availableSizes[0];
 
   const updateSelection = (cond, cores, size) => {
@@ -647,7 +647,7 @@ export default function PricingCalculatorPage() {
 
 
   // Auto-filter out brands with no active models in stock (supports dynamically added brands from Admin)
-  const allModuleBrandKeys = rates?.modules 
+  const allModuleBrandKeys = rates?.modules
     ? Object.keys(rates.modules).filter(k => k !== 'typeAdder' && !k.startsWith('$'))
     : ACTIVE_MODULE_BRANDS;
   const filteredModuleBrands = rates ? allModuleBrandKeys.filter(brand => {
@@ -656,7 +656,7 @@ export default function PricingCalculatorPage() {
   }) : allModuleBrandKeys;
   const visibleModuleBrands = filteredModuleBrands.length > 0 ? filteredModuleBrands : allModuleBrandKeys;
 
-  const allInverterBrandKeys = rates?.inverters 
+  const allInverterBrandKeys = rates?.inverters
     ? Object.keys(rates.inverters).filter(k => !k.startsWith('$'))
     : ACTIVE_INVERTER_BRANDS;
   const filteredInverterBrands = rates ? allInverterBrandKeys.filter(brand => {
@@ -665,7 +665,7 @@ export default function PricingCalculatorPage() {
   }) : allInverterBrandKeys;
   const visibleInverterBrands = filteredInverterBrands.length > 0 ? filteredInverterBrands : allInverterBrandKeys;
 
-  const allBatteryBrandKeys = rates?.batteries 
+  const allBatteryBrandKeys = rates?.batteries
     ? Object.keys(rates.batteries).filter(k => !k.startsWith('$'))
     : ACTIVE_BATTERY_BRANDS;
   const filteredBatteryBrands = rates ? allBatteryBrandKeys.filter(brand => {
@@ -749,11 +749,11 @@ export default function PricingCalculatorPage() {
     const invKW = totalInvKW;
     const structKW = totalStructKW;
     const plantKW = effectiveSystemKW;
-    
+
     // Allow calculation if plantKW > 0 OR if any component is configured
-    const hasAnySelection = plantKW > 0 || 
-      inverters.some(i => i.model && (Number(i.qty) > 0 || i.qty)) || 
-      modules.some(m => m.model && Number(m.qty) > 0) || 
+    const hasAnySelection = plantKW > 0 ||
+      inverters.some(i => i.model && (Number(i.qty) > 0 || i.qty)) ||
+      modules.some(m => m.model && Number(m.qty) > 0) ||
       structures.some(s => Number(s.kw) > 0) ||
       (systemType === "hybrid" && batteries.some(b => b.model && (Number(b.qty) > 0 || b.qty))) ||
       (conduit && (Number(conduitUpvcM) > 0 || Number(cableTrayM) > 0)) ||
@@ -785,7 +785,7 @@ export default function PricingCalculatorPage() {
     // Category-specific financial settings:
     // Industrial applies if category is "industrial" OR plant capacity >= 100 kW
     const isIndustrial = projectCategory === "industrial" || plantKW >= 100;
-    const catSettings = isIndustrial 
+    const catSettings = isIndustrial
       ? (fin.industrial || { profitMarginPercent: 8, maxDiscountPercent: 3 })
       : (fin.residential || { profitMarginPercent: fin.profitMarginPercent ?? 17, maxDiscountPercent: fin.maxDiscountPercent ?? 5 });
 
@@ -942,8 +942,8 @@ export default function PricingCalculatorPage() {
     const earthingWireMeters = (earthing && Number(earthingWireM) > 0) ? Number(earthingWireM) : 0;
     const earthingWireCost = earthingWireMeters * earthingWireRate;
 
-    const earthingLabel = earthingType === "copper_wire" 
-      ? `Single Core Copper Wire (${earthingWireSize} sqmm)` 
+    const earthingLabel = earthingType === "copper_wire"
+      ? `Single Core Copper Wire (${earthingWireSize} sqmm)`
       : "GI Strip Earthing";
 
     const earthingCost = pitsCost + earthingWireCost;
@@ -1050,224 +1050,224 @@ export default function PricingCalculatorPage() {
       const fmtINR = n => new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR", maximumFractionDigits: 0 }).format(n || 0);
 
       const buildItemizedRows = () => {
-      let rows = "";
-      let sno = 1;
-      const snoCell = () => `<td style="border:1px solid #cbd5e1;padding:4px 6px;font-size:8.5px;text-align:center;color:#334155;vertical-align:top;font-weight:600">${sno++}</td>`;
-      const cell = (content, align = "left") => `<td style="border:1px solid #cbd5e1;padding:4px 6px;font-size:8.5px;text-align:${align};color:#334155;vertical-align:top">${content}</td>`;
+        let rows = "";
+        let sno = 1;
+        const snoCell = () => `<td style="border:1px solid #cbd5e1;padding:4px 6px;font-size:8.5px;text-align:center;color:#334155;vertical-align:top;font-weight:600">${sno++}</td>`;
+        const cell = (content, align = "left") => `<td style="border:1px solid #cbd5e1;padding:4px 6px;font-size:8.5px;text-align:${align};color:#334155;vertical-align:top">${content}</td>`;
 
-      if (calc.selectedModuleDetails?.length > 0) {
-        calc.selectedModuleDetails.forEach(mod => {
-          rows += `<tr>${snoCell()}${cell(`<strong>Solar Modules (${cap(mod.brand)}):</strong> ${mod.modelName || "N/A"}<br/><span style="font-size:8px;color:#64748b">Tier-1 High-efficiency PV modules (${mod.wattage}Wp)</span>`)}${cell(mod.itemWp, "center")}${cell("Wp", "center")}${cell("&#8377;" + (mod.ratePerWp || 0).toFixed(2), "right")}${cell(fmtINR(mod.cost), "right")}</tr>`;
+        if (calc.selectedModuleDetails?.length > 0) {
+          calc.selectedModuleDetails.forEach(mod => {
+            rows += `<tr>${snoCell()}${cell(`<strong>Solar Modules (${cap(mod.brand)}):</strong> ${mod.modelName || "N/A"}<br/><span style="font-size:8px;color:#64748b">Tier-1 High-efficiency PV modules (${mod.wattage}Wp)</span>`)}${cell(mod.itemWp, "center")}${cell("Wp", "center")}${cell("&#8377;" + (mod.ratePerWp || 0).toFixed(2), "right")}${cell(fmtINR(mod.cost), "right")}</tr>`;
+          });
+        }
+
+        calc.selectedInverterDetails?.forEach(inv => {
+          rows += `<tr>${snoCell()}${cell(`<strong>Solar Grid-Tie Inverter:</strong> ${inv.modelName}<br/><span style="font-size:8px;color:#64748b">Multi-MPPT High-efficiency inverter system</span>`)}${cell(inv.qty, "center")}${cell("Nos", "center")}${cell("&#8377;" + (inv.cost / (inv.qty || 1)).toFixed(2), "right")}${cell(fmtINR(inv.cost), "right")}</tr>`;
         });
-      }
 
-      calc.selectedInverterDetails?.forEach(inv => {
-        rows += `<tr>${snoCell()}${cell(`<strong>Solar Grid-Tie Inverter:</strong> ${inv.modelName}<br/><span style="font-size:8px;color:#64748b">Multi-MPPT High-efficiency inverter system</span>`)}${cell(inv.qty, "center")}${cell("Nos", "center")}${cell("&#8377;" + (inv.cost / (inv.qty || 1)).toFixed(2), "right")}${cell(fmtINR(inv.cost), "right")}</tr>`;
-      });
-
-      calc.selectedBatteryDetails?.forEach(bat => {
-        rows += `<tr>${snoCell()}${cell(`<strong>Battery Storage System (${cap(bat.brand)}):</strong> ${bat.modelName}<br/><span style="font-size:8px;color:#64748b">Deep-cycle energy storage bank</span>`)}${cell(bat.qty, "center")}${cell("Nos", "center")}${cell("&#8377;" + (bat.cost / (bat.qty || 1)).toFixed(2), "right")}${cell(fmtINR(bat.cost), "right")}</tr>`;
-      });
-
-      if (calc.acdbCost > 0) rows += `<tr>${snoCell()}${cell("<strong>ACDB Combiner / Panel</strong><br/><span style='font-size:8px;color:#64748b'>L&amp;T / Elmex / Schneider / Reputed Make</span>")}${cell(effectiveSystemKW, "center")}${cell("kW", "center")}${cell("&#8377;" + (calc.acdbRate || 0).toFixed(2), "right")}${cell(fmtINR(calc.acdbCost), "right")}</tr>`;
-      if (calc.dcdbCost > 0) rows += `<tr>${snoCell()}${cell("<strong>DCDB Combiner / Panel</strong><br/><span style='font-size:8px;color:#64748b'>Reputed Make</span>")}${cell(effectiveSystemKW, "center")}${cell("kW", "center")}${cell("&#8377;" + (calc.dcdbRate || 0).toFixed(2), "right")}${cell(fmtINR(calc.dcdbCost), "right")}</tr>`;
-
-      calc.selectedStructures?.forEach(st => {
-        const stLabel = ALL_STRUCTURE_TYPES.find(opt => opt.v === st.type)?.l || st.type || "N/A";
-        rows += `<tr>${snoCell()}${cell(`<strong>Mounting Structure:</strong> ${stLabel}<br/><span style="font-size:8px;color:#64748b">Wind load sustained structural rails &amp; clamps</span>`)}${cell(st.kw, "center")}${cell("kW", "center")}${cell("&#8377;" + (st.rate || 0).toFixed(2), "right")}${cell(fmtINR(st.cost), "right")}</tr>`;
-      });
-
-      rows += `<tr>${snoCell()}${cell("<strong>Structure Accessories:</strong> SS 304 Nut Bolts &amp; Fasteners<br/><span style='font-size:8px;color:#64748b'>Anti-corrosion hardware for mechanical integrity</span>")}${cell(effectiveSystemKW, "center")}${cell("kW", "center")}${cell("Included", "right")}${cell("Included", "right")}</tr>`;
-
-      if (calc.selectedDcCablesDetails?.length > 0) {
-        calc.selectedDcCablesDetails.forEach(item => {
-          if (item.meters > 0) {
-            rows += `<tr>${snoCell()}${cell(`<strong>DC Solar Cable (${item.brandLabel}):</strong> ${item.cableLabel}<br/><span style="font-size:8px;color:#64748b">Tinned copper flexible single-core solar wire</span>`)}${cell(item.meters, "center")}${cell("m", "center")}${cell("&#8377;" + (item.rate || 0).toFixed(2), "right")}${cell(fmtINR(item.cost), "right")}</tr>`;
-          }
+        calc.selectedBatteryDetails?.forEach(bat => {
+          rows += `<tr>${snoCell()}${cell(`<strong>Battery Storage System (${cap(bat.brand)}):</strong> ${bat.modelName}<br/><span style="font-size:8px;color:#64748b">Deep-cycle energy storage bank</span>`)}${cell(bat.qty, "center")}${cell("Nos", "center")}${cell("&#8377;" + (bat.cost / (bat.qty || 1)).toFixed(2), "right")}${cell(fmtINR(bat.cost), "right")}</tr>`;
         });
-      }
-      if (calc.selectedInvToAcdbDetails?.length > 0) {
-        calc.selectedInvToAcdbDetails.forEach((item, idx) => {
-          if (item.meters > 0) {
-            const itemTag = calc.selectedInvToAcdbDetails.filter(x => x.meters > 0).length > 1 ? ` #${idx + 1}` : '';
-            rows += `<tr>${snoCell()}${cell(`<strong>AC Cable - Inv to ACDB${itemTag} (${item.brandLabel}):</strong> ${item.cableLabel}<br/><span style="font-size:8px;color:#64748b">Multicore flexible AC cabling run</span>`)}${cell(item.meters, "center")}${cell("m", "center")}${cell("&#8377;" + (item.rate || 0).toFixed(2), "right")}${cell(fmtINR(item.cost), "right")}</tr>`;
-          }
+
+        if (calc.acdbCost > 0) rows += `<tr>${snoCell()}${cell("<strong>ACDB Combiner / Panel</strong><br/><span style='font-size:8px;color:#64748b'>L&amp;T / Elmex / Schneider / Reputed Make</span>")}${cell(effectiveSystemKW, "center")}${cell("kW", "center")}${cell("&#8377;" + (calc.acdbRate || 0).toFixed(2), "right")}${cell(fmtINR(calc.acdbCost), "right")}</tr>`;
+        if (calc.dcdbCost > 0) rows += `<tr>${snoCell()}${cell("<strong>DCDB Combiner / Panel</strong><br/><span style='font-size:8px;color:#64748b'>Reputed Make</span>")}${cell(effectiveSystemKW, "center")}${cell("kW", "center")}${cell("&#8377;" + (calc.dcdbRate || 0).toFixed(2), "right")}${cell(fmtINR(calc.dcdbCost), "right")}</tr>`;
+
+        calc.selectedStructures?.forEach(st => {
+          const stLabel = ALL_STRUCTURE_TYPES.find(opt => opt.v === st.type)?.l || st.type || "N/A";
+          rows += `<tr>${snoCell()}${cell(`<strong>Mounting Structure:</strong> ${stLabel}<br/><span style="font-size:8px;color:#64748b">Wind load sustained structural rails &amp; clamps</span>`)}${cell(st.kw, "center")}${cell("kW", "center")}${cell("&#8377;" + (st.rate || 0).toFixed(2), "right")}${cell(fmtINR(st.cost), "right")}</tr>`;
         });
-      }
-      if (calc.selectedAcdbToMainDetails?.length > 0) {
-        calc.selectedAcdbToMainDetails.forEach((item, idx) => {
-          if (item.meters > 0) {
-            const itemTag = calc.selectedAcdbToMainDetails.filter(x => x.meters > 0).length > 1 ? ` #${idx + 1}` : '';
-            rows += `<tr>${snoCell()}${cell(`<strong>AC Cable - ACDB to Main${itemTag} (${item.brandLabel}):</strong> ${item.cableLabel}<br/><span style="font-size:8px;color:#64748b">AC distribution cable run</span>`)}${cell(item.meters, "center")}${cell("m", "center")}${cell("&#8377;" + (item.rate || 0).toFixed(2), "right")}${cell(fmtINR(item.cost), "right")}</tr>`;
-          }
+
+        rows += `<tr>${snoCell()}${cell("<strong>Structure Accessories:</strong> SS 304 Nut Bolts &amp; Fasteners<br/><span style='font-size:8px;color:#64748b'>Anti-corrosion hardware for mechanical integrity</span>")}${cell(effectiveSystemKW, "center")}${cell("kW", "center")}${cell("Included", "right")}${cell("Included", "right")}</tr>`;
+
+        if (calc.selectedDcCablesDetails?.length > 0) {
+          calc.selectedDcCablesDetails.forEach(item => {
+            if (item.meters > 0) {
+              rows += `<tr>${snoCell()}${cell(`<strong>DC Solar Cable (${item.brandLabel}):</strong> ${item.cableLabel}<br/><span style="font-size:8px;color:#64748b">Tinned copper flexible single-core solar wire</span>`)}${cell(item.meters, "center")}${cell("m", "center")}${cell("&#8377;" + (item.rate || 0).toFixed(2), "right")}${cell(fmtINR(item.cost), "right")}</tr>`;
+            }
+          });
+        }
+        if (calc.selectedInvToAcdbDetails?.length > 0) {
+          calc.selectedInvToAcdbDetails.forEach((item, idx) => {
+            if (item.meters > 0) {
+              const itemTag = calc.selectedInvToAcdbDetails.filter(x => x.meters > 0).length > 1 ? ` #${idx + 1}` : '';
+              rows += `<tr>${snoCell()}${cell(`<strong>AC Cable - Inv to ACDB${itemTag} (${item.brandLabel}):</strong> ${item.cableLabel}<br/><span style="font-size:8px;color:#64748b">Multicore flexible AC cabling run</span>`)}${cell(item.meters, "center")}${cell("m", "center")}${cell("&#8377;" + (item.rate || 0).toFixed(2), "right")}${cell(fmtINR(item.cost), "right")}</tr>`;
+            }
+          });
+        }
+        if (calc.selectedAcdbToMainDetails?.length > 0) {
+          calc.selectedAcdbToMainDetails.forEach((item, idx) => {
+            if (item.meters > 0) {
+              const itemTag = calc.selectedAcdbToMainDetails.filter(x => x.meters > 0).length > 1 ? ` #${idx + 1}` : '';
+              rows += `<tr>${snoCell()}${cell(`<strong>AC Cable - ACDB to Main${itemTag} (${item.brandLabel}):</strong> ${item.cableLabel}<br/><span style="font-size:8px;color:#64748b">AC distribution cable run</span>`)}${cell(item.meters, "center")}${cell("m", "center")}${cell("&#8377;" + (item.rate || 0).toFixed(2), "right")}${cell(fmtINR(item.cost), "right")}</tr>`;
+            }
+          });
+        }
+        if (calc.pitsCount > 0) rows += `<tr>${snoCell()}${cell(`<strong>Chemical Earthing Pits:</strong> Copper Chemical Pits<br/><span style="font-size:8px;color:#64748b">Low-resistance maintenance-free earthing</span>`)}${cell(calc.pitsCount, "center")}${cell("pits", "center")}${cell("&#8377;" + (calc.pitRate || 0).toFixed(2), "right")}${cell(fmtINR(calc.pitsCost), "right")}</tr>`;
+        if (calc.earthingWireMeters > 0) rows += `<tr>${snoCell()}${cell(`<strong>Earthing Conductor / Wire:</strong> ${calc.earthingLabel}<br/><span style="font-size:8px;color:#64748b">Dedicated equipment safety grounding run</span>`)}${cell(calc.earthingWireMeters, "center")}${cell("m", "center")}${cell("&#8377;" + (calc.earthingWireRate || 0).toFixed(2), "right")}${cell(fmtINR(calc.earthingWireCost), "right")}</tr>`;
+        if (calc.laCount > 0) rows += `<tr>${snoCell()}${cell(`<strong>Lightning Protection:</strong> ${laType === "ese" ? "ESE Active" : "Conventional"}<br/><span style="font-size:8px;color:#64748b">Safety shield against high-voltage lightning surges</span>`)}${cell(calc.laCount, "center")}${cell("units", "center")}${cell("&#8377;" + (calc.laUnitRate || 0).toFixed(2), "right")}${cell(fmtINR(calc.laCost), "right")}</tr>`;
+        if (walkway && Number(walkwayM) > 0) rows += `<tr>${snoCell()}${cell(`<strong>Roof Walkway:</strong> ${walkwayType === "gi" ? "GI Walkway" : "FRP Walkway"}<br/><span style="font-size:8px;color:#64748b">Safe pathway on roof for O&amp;M visits</span>`)}${cell(walkwayM, "center")}${cell("m", "center")}${cell("&#8377;" + (calc.walkRate || 0).toFixed(2), "right")}${cell(fmtINR(calc.walkCost), "right")}</tr>`;
+        if (customSafety > 0) rows += `<tr>${snoCell()}${cell("<strong>Safety Lifeline</strong><br/><span style='font-size:8px;color:#64748b'>Anchor lifeline system for cleaning personnel</span>")}${cell(customSafety, "center")}${cell("m", "center")}${cell("&#8377;" + (calc.safetyLineRate || 0).toFixed(2), "right")}${cell(fmtINR(calc.safetyCost), "right")}</tr>`;
+        if (calc.conduitUpvcCost > 0) rows += `<tr>${snoCell()}${cell("<strong>Cable Conduiting:</strong> Rigid uPVC Conduit Pipe<br/><span style='font-size:8px;color:#64748b'>UV-resistant heavy-duty protective cable sleeve</span>")}${cell(calc.conduitUpvcMeters, "center")}${cell("m", "center")}${cell("&#8377;" + (calc.conduitUpvcRate || 0).toFixed(2), "right")}${cell(fmtINR(calc.conduitUpvcCost), "right")}</tr>`;
+        if (calc.cableTrayCost > 0) rows += `<tr>${snoCell()}${cell("<strong>Cable Tray:</strong> GI Perforated / Ladder Cable Tray<br/><span style='font-size:8px;color:#64748b'>Galvanized heavy-duty cable routing channel</span>")}${cell(calc.cableTrayMeters, "center")}${cell("m", "center")}${cell("&#8377;" + (calc.cableTrayRate || 0).toFixed(2), "right")}${cell(fmtINR(calc.cableTrayCost), "right")}</tr>`;
+        if (calc.mc4Cost > 0) rows += `<tr>${snoCell()}${cell("<strong>MC4 Connectors</strong><br/><span style='font-size:8px;color:#64748b'>Waterproof module string connector links</span>")}${cell(calc.mc4Pairs, "center")}${cell("pairs", "center")}${cell("&#8377;" + (calc.mc4Rate || 0).toFixed(2), "right")}${cell(fmtINR(calc.mc4Cost), "right")}</tr>`;
+        if (calc.mc4BranchCost > 0) rows += `<tr>${snoCell()}${cell("<strong>Branch (Y) Connectors</strong><br/><span style='font-size:8px;color:#64748b'>Parallel string configuration connectors</span>")}${cell(calc.mc4BranchQty, "center")}${cell("nos", "center")}${cell("&#8377;" + (calc.branchRate || 0).toFixed(2), "right")}${cell(fmtINR(calc.mc4BranchCost), "right")}</tr>`;
+        if (incBos) rows += `<tr>${snoCell()}${cell("<strong>BOS &amp; Accessories:</strong> Cable Lugs, Tape, Cable tie &amp; Conduit Pipe")}${cell(effectiveSystemKW, "center")}${cell("kWp", "center")}${cell("Included", "right")}${cell("Included", "right")}</tr>`;
+        if (incEng) rows += `<tr>${snoCell()}${cell("<strong>Engineering &amp; Supervision</strong><br/><span style='font-size:8px;color:#64748b'>String designing, Shadow Analysis, electrical design</span>")}${cell(effectiveSystemKW, "center")}${cell("kWp", "center")}${cell("Included", "right")}${cell("Included", "right")}</tr>`;
+        if (incMon) rows += `<tr>${snoCell()}${cell("<strong>Remote Monitoring Access</strong><br/><span style='font-size:8px;color:#64748b'>Continuous monitoring through data logger device</span>")}${cell(1, "center")}${cell("Set", "center")}${cell("Included", "right")}${cell("Included", "right")}</tr>`;
+        if (incTrans) rows += `<tr>${snoCell()}${cell("<strong>Transportation &amp; Freight</strong><br/><span style='font-size:8px;color:#64748b'>Till site loading and unloading</span>")}${cell(1, "center")}${cell("Job", "center")}${cell("Included", "right")}${cell("Included", "right")}</tr>`;
+        if (discom) rows += `<tr>${snoCell()}${cell("<strong>DISCOM Liaising &amp; Net Metering</strong><br/><span style='font-size:8px;color:#64748b'>Net-metering approval process with local electricity authority</span>")}${cell(1, "center")}${cell("job", "center")}${cell("&#8377;" + (calc.discomCost || 0).toFixed(2), "right")}${cell(fmtINR(calc.discomCost), "right")}</tr>`;
+        const installTypeLabel = roofType === "rcc" ? "Rooftop RCC" : roofType === "profile" ? "Shed" : roofType === "ground" ? "Ground-Mounted" : "Standard";
+        rows += `<tr>${snoCell()}${cell(`<strong>Installation &amp; Commissioning (${installTypeLabel}):</strong> On-site mechanics, engineering execution, panel staging and commissioning`)}${cell(effectiveSystemKW, "center")}${cell("kW", "center")}${cell("&#8377;" + (calc.installRate || 0).toFixed(2), "right")}${cell(fmtINR(calc.installCost), "right")}</tr>`;
+        return rows;
+      };
+
+      const modW = (moduleWarranty && moduleWarranty.trim()) ? (moduleWarranty.toLowerCase().includes('year') ? moduleWarranty : `${moduleWarranty} Years`) : '25 Years';
+      const invW = (inverterWarranty && inverterWarranty.trim()) ? (inverterWarranty.toLowerCase().includes('year') ? inverterWarranty : `${inverterWarranty} Years`) : '5 Years';
+      const batW = (batteryWarranty && batteryWarranty.trim()) ? (batteryWarranty.toLowerCase().includes('year') ? batteryWarranty : `${batteryWarranty} Years`) : '5 Years';
+
+      const buildTurnkeyRows = () => {
+        let rows = "";
+        let sno = 1;
+        const snoCell = () => `<td style="border:1px solid #cbd5e1;padding:4px 6px;font-size:8.5px;text-align:center;color:#334155;vertical-align:top;font-weight:600">${sno++}</td>`;
+        const cell = (content, align = "left") => `<td style="border:1px solid #cbd5e1;padding:4px 6px;font-size:8.5px;text-align:${align};color:#334155;vertical-align:top">${content}</td>`;
+
+        // 1. Modules (only if selected)
+        if (calc.selectedModuleDetails?.length > 0) {
+          calc.selectedModuleDetails.forEach(mod => {
+            rows += `<tr>${snoCell()}${cell("<strong>Solar PV Modules</strong>")}${cell(`Tier-1 High Efficiency PV Modules (${mod.wattage}Wp, ${mod.tech || 'Mono PERC/TopCon'})`)}${cell(`${cap(mod.brand)} / Reputed Tier-1 (${modW} Warranty)`)}${cell("Nos", "center")}${cell(mod.panels || mod.qty, "center")}</tr>`;
+          });
+        }
+
+        // 2. Inverters
+        calc.selectedInverterDetails?.forEach(inv => {
+          rows += `<tr>${snoCell()}${cell("<strong>Solar Inverter</strong>")}${cell(`Grid-Tie / Hybrid Multi-MPPT Inverter System (${inv.modelName})`)}${cell(`${cap(inv.brand)} / Tier-1 (${invW} Warranty)`)}${cell("Nos", "center")}${cell(inv.qty, "center")}</tr>`;
         });
-      }
-      if (calc.pitsCount > 0) rows += `<tr>${snoCell()}${cell(`<strong>Chemical Earthing Pits:</strong> Copper Chemical Pits<br/><span style="font-size:8px;color:#64748b">Low-resistance maintenance-free earthing</span>`)}${cell(calc.pitsCount, "center")}${cell("pits", "center")}${cell("&#8377;" + (calc.pitRate || 0).toFixed(2), "right")}${cell(fmtINR(calc.pitsCost), "right")}</tr>`;
-      if (calc.earthingWireMeters > 0) rows += `<tr>${snoCell()}${cell(`<strong>Earthing Conductor / Wire:</strong> ${calc.earthingLabel}<br/><span style="font-size:8px;color:#64748b">Dedicated equipment safety grounding run</span>`)}${cell(calc.earthingWireMeters, "center")}${cell("m", "center")}${cell("&#8377;" + (calc.earthingWireRate || 0).toFixed(2), "right")}${cell(fmtINR(calc.earthingWireCost), "right")}</tr>`;
-      if (calc.laCount > 0) rows += `<tr>${snoCell()}${cell(`<strong>Lightning Protection:</strong> ${laType === "ese" ? "ESE Active" : "Conventional"}<br/><span style="font-size:8px;color:#64748b">Safety shield against high-voltage lightning surges</span>`)}${cell(calc.laCount, "center")}${cell("units", "center")}${cell("&#8377;" + (calc.laUnitRate || 0).toFixed(2), "right")}${cell(fmtINR(calc.laCost), "right")}</tr>`;
-      if (walkway && Number(walkwayM) > 0) rows += `<tr>${snoCell()}${cell(`<strong>Roof Walkway:</strong> ${walkwayType === "gi" ? "GI Walkway" : "FRP Walkway"}<br/><span style="font-size:8px;color:#64748b">Safe pathway on roof for O&amp;M visits</span>`)}${cell(walkwayM, "center")}${cell("m", "center")}${cell("&#8377;" + (calc.walkRate || 0).toFixed(2), "right")}${cell(fmtINR(calc.walkCost), "right")}</tr>`;
-      if (customSafety > 0) rows += `<tr>${snoCell()}${cell("<strong>Safety Lifeline</strong><br/><span style='font-size:8px;color:#64748b'>Anchor lifeline system for cleaning personnel</span>")}${cell(customSafety, "center")}${cell("m", "center")}${cell("&#8377;" + (calc.safetyLineRate || 0).toFixed(2), "right")}${cell(fmtINR(calc.safetyCost), "right")}</tr>`;
-      if (calc.conduitUpvcCost > 0) rows += `<tr>${snoCell()}${cell("<strong>Cable Conduiting:</strong> Rigid uPVC Conduit Pipe<br/><span style='font-size:8px;color:#64748b'>UV-resistant heavy-duty protective cable sleeve</span>")}${cell(calc.conduitUpvcMeters, "center")}${cell("m", "center")}${cell("&#8377;" + (calc.conduitUpvcRate || 0).toFixed(2), "right")}${cell(fmtINR(calc.conduitUpvcCost), "right")}</tr>`;
-      if (calc.cableTrayCost > 0) rows += `<tr>${snoCell()}${cell("<strong>Cable Tray:</strong> GI Perforated / Ladder Cable Tray<br/><span style='font-size:8px;color:#64748b'>Galvanized heavy-duty cable routing channel</span>")}${cell(calc.cableTrayMeters, "center")}${cell("m", "center")}${cell("&#8377;" + (calc.cableTrayRate || 0).toFixed(2), "right")}${cell(fmtINR(calc.cableTrayCost), "right")}</tr>`;
-      if (calc.mc4Cost > 0) rows += `<tr>${snoCell()}${cell("<strong>MC4 Connectors</strong><br/><span style='font-size:8px;color:#64748b'>Waterproof module string connector links</span>")}${cell(calc.mc4Pairs, "center")}${cell("pairs", "center")}${cell("&#8377;" + (calc.mc4Rate || 0).toFixed(2), "right")}${cell(fmtINR(calc.mc4Cost), "right")}</tr>`;
-      if (calc.mc4BranchCost > 0) rows += `<tr>${snoCell()}${cell("<strong>Branch (Y) Connectors</strong><br/><span style='font-size:8px;color:#64748b'>Parallel string configuration connectors</span>")}${cell(calc.mc4BranchQty, "center")}${cell("nos", "center")}${cell("&#8377;" + (calc.branchRate || 0).toFixed(2), "right")}${cell(fmtINR(calc.mc4BranchCost), "right")}</tr>`;
-      if (incBos) rows += `<tr>${snoCell()}${cell("<strong>BOS &amp; Accessories:</strong> Cable Lugs, Tape, Cable tie &amp; Conduit Pipe")}${cell(effectiveSystemKW, "center")}${cell("kWp", "center")}${cell("Included", "right")}${cell("Included", "right")}</tr>`;
-      if (incEng) rows += `<tr>${snoCell()}${cell("<strong>Engineering &amp; Supervision</strong><br/><span style='font-size:8px;color:#64748b'>String designing, Shadow Analysis, electrical design</span>")}${cell(effectiveSystemKW, "center")}${cell("kWp", "center")}${cell("Included", "right")}${cell("Included", "right")}</tr>`;
-      if (incMon) rows += `<tr>${snoCell()}${cell("<strong>Remote Monitoring Access</strong><br/><span style='font-size:8px;color:#64748b'>Continuous monitoring through data logger device</span>")}${cell(1, "center")}${cell("Set", "center")}${cell("Included", "right")}${cell("Included", "right")}</tr>`;
-      if (incTrans) rows += `<tr>${snoCell()}${cell("<strong>Transportation &amp; Freight</strong><br/><span style='font-size:8px;color:#64748b'>Till site loading and unloading</span>")}${cell(1, "center")}${cell("Job", "center")}${cell("Included", "right")}${cell("Included", "right")}</tr>`;
-      if (discom) rows += `<tr>${snoCell()}${cell("<strong>DISCOM Liaising &amp; Net Metering</strong><br/><span style='font-size:8px;color:#64748b'>Net-metering approval process with local electricity authority</span>")}${cell(1, "center")}${cell("job", "center")}${cell("&#8377;" + (calc.discomCost || 0).toFixed(2), "right")}${cell(fmtINR(calc.discomCost), "right")}</tr>`;
-      const installTypeLabel = roofType === "rcc" ? "Rooftop RCC" : roofType === "profile" ? "Shed" : roofType === "ground" ? "Ground-Mounted" : "Standard";
-      rows += `<tr>${snoCell()}${cell(`<strong>Installation &amp; Commissioning (${installTypeLabel}):</strong> On-site mechanics, engineering execution, panel staging and commissioning`)}${cell(effectiveSystemKW, "center")}${cell("kW", "center")}${cell("&#8377;" + (calc.installRate || 0).toFixed(2), "right")}${cell(fmtINR(calc.installCost), "right")}</tr>`;
-      return rows;
-    };
 
-    const modW = (moduleWarranty && moduleWarranty.trim()) ? (moduleWarranty.toLowerCase().includes('year') ? moduleWarranty : `${moduleWarranty} Years`) : '25 Years';
-    const invW = (inverterWarranty && inverterWarranty.trim()) ? (inverterWarranty.toLowerCase().includes('year') ? inverterWarranty : `${inverterWarranty} Years`) : '5 Years';
-    const batW = (batteryWarranty && batteryWarranty.trim()) ? (batteryWarranty.toLowerCase().includes('year') ? batteryWarranty : `${batteryWarranty} Years`) : '5 Years';
-
-    const buildTurnkeyRows = () => {
-      let rows = "";
-      let sno = 1;
-      const snoCell = () => `<td style="border:1px solid #cbd5e1;padding:4px 6px;font-size:8.5px;text-align:center;color:#334155;vertical-align:top;font-weight:600">${sno++}</td>`;
-      const cell = (content, align = "left") => `<td style="border:1px solid #cbd5e1;padding:4px 6px;font-size:8.5px;text-align:${align};color:#334155;vertical-align:top">${content}</td>`;
-
-      // 1. Modules (only if selected)
-      if (calc.selectedModuleDetails?.length > 0) {
-        calc.selectedModuleDetails.forEach(mod => {
-          rows += `<tr>${snoCell()}${cell("<strong>Solar PV Modules</strong>")}${cell(`Tier-1 High Efficiency PV Modules (${mod.wattage}Wp, ${mod.tech || 'Mono PERC/TopCon'})`)}${cell(`${cap(mod.brand)} / Reputed Tier-1 (${modW} Warranty)`)}${cell("Nos", "center")}${cell(mod.panels || mod.qty, "center")}</tr>`;
+        // 3. Batteries (if hybrid)
+        calc.selectedBatteryDetails?.forEach(bat => {
+          rows += `<tr>${snoCell()}${cell("<strong>Battery Storage Bank</strong>")}${cell(`Deep-Cycle Solar Battery Bank (${bat.modelName})`)}${cell(`${cap(bat.brand)} (${batW} Warranty)`)}${cell("Nos", "center")}${cell(bat.qty, "center")}</tr>`;
         });
-      }
 
-      // 2. Inverters
-      calc.selectedInverterDetails?.forEach(inv => {
-        rows += `<tr>${snoCell()}${cell("<strong>Solar Inverter</strong>")}${cell(`Grid-Tie / Hybrid Multi-MPPT Inverter System (${inv.modelName})`)}${cell(`${cap(inv.brand)} / Tier-1 (${invW} Warranty)`)}${cell("Nos", "center")}${cell(inv.qty, "center")}</tr>`;
-      });
+        // 4. ACDB
+        if (calc.acdbCost > 0) {
+          rows += `<tr>${snoCell()}${cell("<strong>AC Distribution Box (ACDB)</strong>")}${cell("ACDB Combiner with MCB/MCCB, Surge Protection Device (SPD) & Fuses")}${cell("L&amp;T / Schneider / Elmex / Reputed")}${cell("Set", "center")}${cell("1", "center")}</tr>`;
+        }
 
-      // 3. Batteries (if hybrid)
-      calc.selectedBatteryDetails?.forEach(bat => {
-        rows += `<tr>${snoCell()}${cell("<strong>Battery Storage Bank</strong>")}${cell(`Deep-Cycle Solar Battery Bank (${bat.modelName})`)}${cell(`${cap(bat.brand)} (${batW} Warranty)`)}${cell("Nos", "center")}${cell(bat.qty, "center")}</tr>`;
-      });
+        // 5. DCDB
+        if (calc.dcdbCost > 0) {
+          rows += `<tr>${snoCell()}${cell("<strong>DC Distribution Box (DCDB)</strong>")}${cell("DC Combiner Box with Class-1 DC Fuses & High surge arrestor SPD")}${cell("Reputed Make")}${cell("Set", "center")}${cell("1", "center")}</tr>`;
+        }
 
-      // 4. ACDB
-      if (calc.acdbCost > 0) {
-        rows += `<tr>${snoCell()}${cell("<strong>AC Distribution Box (ACDB)</strong>")}${cell("ACDB Combiner with MCB/MCCB, Surge Protection Device (SPD) & Fuses")}${cell("L&amp;T / Schneider / Elmex / Reputed")}${cell("Set", "center")}${cell("1", "center")}</tr>`;
-      }
-
-      // 5. DCDB
-      if (calc.dcdbCost > 0) {
-        rows += `<tr>${snoCell()}${cell("<strong>DC Distribution Box (DCDB)</strong>")}${cell("DC Combiner Box with Class-1 DC Fuses & High surge arrestor SPD")}${cell("Reputed Make")}${cell("Set", "center")}${cell("1", "center")}</tr>`;
-      }
-
-      // 6. Mounting Structure
-      calc.selectedStructures?.forEach(st => {
-        const stLabel = ALL_STRUCTURE_TYPES.find(opt => opt.v === st.type)?.l || st.type || "N/A";
-        rows += `<tr>${snoCell()}${cell("<strong>Module Mounting Structure</strong>")}${cell(`${stLabel} (Engineered for wind resistance up to 150 kmph)`)}${cell("Standard Structural Grade")}${cell("kWp", "center")}${cell(st.kw, "center")}</tr>`;
-      });
-
-      // 7. Structure Fasteners
-      rows += `<tr>${snoCell()}${cell("<strong>Structure Hardware &amp; Fasteners</strong>")}${cell("SS 304 / High tensile anti-corrosion nut bolts, clamps &amp; brackets")}${cell("Reputed Make")}${cell("Set", "center")}${cell("1", "center")}</tr>`;
-
-      // 8. DC Cables
-      if (calc.selectedDcCablesDetails?.length > 0) {
-        calc.selectedDcCablesDetails.forEach(item => {
-          if (item.meters > 0) {
-            rows += `<tr>${snoCell()}${cell("<strong>DC Solar Cable</strong>")}${cell(`${item.cableLabel} (Single-core flexible tinned copper solar cable)`)}${cell(item.brandLabel || "Polycab / Siechem")}${cell("Mtr", "center")}${cell(item.meters, "center")}</tr>`;
-          }
+        // 6. Mounting Structure
+        calc.selectedStructures?.forEach(st => {
+          const stLabel = ALL_STRUCTURE_TYPES.find(opt => opt.v === st.type)?.l || st.type || "N/A";
+          rows += `<tr>${snoCell()}${cell("<strong>Module Mounting Structure</strong>")}${cell(`${stLabel} (Engineered for wind resistance up to 150 kmph)`)}${cell("Standard Structural Grade")}${cell("kWp", "center")}${cell(st.kw, "center")}</tr>`;
         });
-      }
 
-      // 9. AC Cables (Inv to ACDB)
-      if (calc.selectedInvToAcdbDetails?.length > 0) {
-        calc.selectedInvToAcdbDetails.forEach((item, idx) => {
-          if (item.meters > 0) {
-            const itemTag = calc.selectedInvToAcdbDetails.filter(x => x.meters > 0).length > 1 ? ` #${idx + 1}` : '';
-            rows += `<tr>${snoCell()}${cell(`<strong>AC Solar Cable (Inv to ACDB${itemTag})</strong>`)}${cell(item.cableLabel || "Multicore flexible AC cabling run")}${cell(item.brandLabel)}${cell("Mtr", "center")}${cell(item.meters, "center")}</tr>`;
-          }
-        });
-      }
+        // 7. Structure Fasteners
+        rows += `<tr>${snoCell()}${cell("<strong>Structure Hardware &amp; Fasteners</strong>")}${cell("SS 304 / High tensile anti-corrosion nut bolts, clamps &amp; brackets")}${cell("Reputed Make")}${cell("Set", "center")}${cell("1", "center")}</tr>`;
 
-      // 10. AC Cables (ACDB to Main)
-      if (calc.selectedAcdbToMainDetails?.length > 0) {
-        calc.selectedAcdbToMainDetails.forEach((item, idx) => {
-          if (item.meters > 0) {
-            const itemTag = calc.selectedAcdbToMainDetails.filter(x => x.meters > 0).length > 1 ? ` #${idx + 1}` : '';
-            rows += `<tr>${snoCell()}${cell(`<strong>AC Solar Cable (ACDB to Main${itemTag})</strong>`)}${cell(item.cableLabel || "Multicore distribution AC cable")}${cell(item.brandLabel)}${cell("Mtr", "center")}${cell(item.meters, "center")}</tr>`;
-          }
-        });
-      }
+        // 8. DC Cables
+        if (calc.selectedDcCablesDetails?.length > 0) {
+          calc.selectedDcCablesDetails.forEach(item => {
+            if (item.meters > 0) {
+              rows += `<tr>${snoCell()}${cell("<strong>DC Solar Cable</strong>")}${cell(`${item.cableLabel} (Single-core flexible tinned copper solar cable)`)}${cell(item.brandLabel || "Polycab / Siechem")}${cell("Mtr", "center")}${cell(item.meters, "center")}</tr>`;
+            }
+          });
+        }
 
-      // 11. Chemical Earthing Pits
-      if (calc.pitsCount > 0) {
-        rows += `<tr>${snoCell()}${cell("<strong>Chemical Earthing Pits</strong>")}${cell("Maintenance-free chemical copper earthing electrode with compound")}${cell("Reputed Make")}${cell("Pits", "center")}${cell(calc.pitsCount, "center")}</tr>`;
-      }
+        // 9. AC Cables (Inv to ACDB)
+        if (calc.selectedInvToAcdbDetails?.length > 0) {
+          calc.selectedInvToAcdbDetails.forEach((item, idx) => {
+            if (item.meters > 0) {
+              const itemTag = calc.selectedInvToAcdbDetails.filter(x => x.meters > 0).length > 1 ? ` #${idx + 1}` : '';
+              rows += `<tr>${snoCell()}${cell(`<strong>AC Solar Cable (Inv to ACDB${itemTag})</strong>`)}${cell(item.cableLabel || "Multicore flexible AC cabling run")}${cell(item.brandLabel)}${cell("Mtr", "center")}${cell(item.meters, "center")}</tr>`;
+            }
+          });
+        }
 
-      // 12. Earthing Conductor
-      if (calc.earthingWireMeters > 0) {
-        rows += `<tr>${snoCell()}${cell("<strong>Earthing Conductor</strong>")}${cell(`${calc.earthingLabel} (Dedicated equipment &amp; plant safety grounding)`)}${cell("Reputed Make")}${cell("Mtr", "center")}${cell(calc.earthingWireMeters, "center")}</tr>`;
-      }
+        // 10. AC Cables (ACDB to Main)
+        if (calc.selectedAcdbToMainDetails?.length > 0) {
+          calc.selectedAcdbToMainDetails.forEach((item, idx) => {
+            if (item.meters > 0) {
+              const itemTag = calc.selectedAcdbToMainDetails.filter(x => x.meters > 0).length > 1 ? ` #${idx + 1}` : '';
+              rows += `<tr>${snoCell()}${cell(`<strong>AC Solar Cable (ACDB to Main${itemTag})</strong>`)}${cell(item.cableLabel || "Multicore distribution AC cable")}${cell(item.brandLabel)}${cell("Mtr", "center")}${cell(item.meters, "center")}</tr>`;
+            }
+          });
+        }
 
-      // 13. Lightning Protection
-      if (calc.laCount > 0) {
-        rows += `<tr>${snoCell()}${cell("<strong>Lightning Protection System</strong>")}${cell(laType === "ese" ? "ESE Active Early Streamer Emission Lightning Arrestor" : "Conventional Spike Lightning Arrestor")}${cell("Reputed Make")}${cell("Nos", "center")}${cell(calc.laCount, "center")}</tr>`;
-      }
+        // 11. Chemical Earthing Pits
+        if (calc.pitsCount > 0) {
+          rows += `<tr>${snoCell()}${cell("<strong>Chemical Earthing Pits</strong>")}${cell("Maintenance-free chemical copper earthing electrode with compound")}${cell("Reputed Make")}${cell("Pits", "center")}${cell(calc.pitsCount, "center")}</tr>`;
+        }
 
-      // 14. Walkway
-      if (walkway && Number(walkwayM) > 0) {
-        rows += `<tr>${snoCell()}${cell("<strong>Roof Walkway</strong>")}${cell(walkwayType === "gi" ? "GI Steel Grating Walkway" : "FRP Anti-corrosion Walkway")}${cell("Standard Make")}${cell("Mtr", "center")}${cell(walkwayM, "center")}</tr>`;
-      }
+        // 12. Earthing Conductor
+        if (calc.earthingWireMeters > 0) {
+          rows += `<tr>${snoCell()}${cell("<strong>Earthing Conductor</strong>")}${cell(`${calc.earthingLabel} (Dedicated equipment &amp; plant safety grounding)`)}${cell("Reputed Make")}${cell("Mtr", "center")}${cell(calc.earthingWireMeters, "center")}</tr>`;
+        }
 
-      // 15. Safety Lifeline
-      if (customSafety > 0) {
-        rows += `<tr>${snoCell()}${cell("<strong>Safety Lifeline System</strong>")}${cell("Stainless steel lifeline wire rope with roof anchor brackets")}${cell("Standard Make")}${cell("Mtr", "center")}${cell(customSafety, "center")}</tr>`;
-      }
+        // 13. Lightning Protection
+        if (calc.laCount > 0) {
+          rows += `<tr>${snoCell()}${cell("<strong>Lightning Protection System</strong>")}${cell(laType === "ese" ? "ESE Active Early Streamer Emission Lightning Arrestor" : "Conventional Spike Lightning Arrestor")}${cell("Reputed Make")}${cell("Nos", "center")}${cell(calc.laCount, "center")}</tr>`;
+        }
 
-      // 15b. Conduiting & Cable Trays
-      if (calc.conduitUpvcCost > 0) {
-        rows += `<tr>${snoCell()}${cell("<strong>Cable Conduiting</strong>")}${cell("Rigid heavy-duty UV-stabilized uPVC Conduit Pipe")}${cell("ISI / Reputed Make")}${cell("Mtr", "center")}${cell(calc.conduitUpvcMeters, "center")}</tr>`;
-      }
-      if (calc.cableTrayCost > 0) {
-        rows += `<tr>${snoCell()}${cell("<strong>Cable Tray System</strong>")}${cell("Galvanized GI Perforated / Ladder Cable Tray with Coupler Plates")}${cell("Standard Structural Grade")}${cell("Mtr", "center")}${cell(calc.cableTrayMeters, "center")}</tr>`;
-      }
+        // 14. Walkway
+        if (walkway && Number(walkwayM) > 0) {
+          rows += `<tr>${snoCell()}${cell("<strong>Roof Walkway</strong>")}${cell(walkwayType === "gi" ? "GI Steel Grating Walkway" : "FRP Anti-corrosion Walkway")}${cell("Standard Make")}${cell("Mtr", "center")}${cell(walkwayM, "center")}</tr>`;
+        }
 
-      // 16. MC4 Connectors
-      if (calc.mc4Cost > 0 || calc.mc4BranchCost > 0) {
-        const totalMc4 = (Number(calc.mc4Pairs) || 0) + (Number(calc.mc4BranchQty) || 0);
-        rows += `<tr>${snoCell()}${cell("<strong>MC4 &amp; Branch Connectors</strong>")}${cell("IP67 / IP68 UV resistant waterproof module string connectors")}${cell("Multi-Contact / Reputed")}${cell("Set", "center")}${cell(totalMc4 > 0 ? totalMc4 : "1", "center")}</tr>`;
-      }
+        // 15. Safety Lifeline
+        if (customSafety > 0) {
+          rows += `<tr>${snoCell()}${cell("<strong>Safety Lifeline System</strong>")}${cell("Stainless steel lifeline wire rope with roof anchor brackets")}${cell("Standard Make")}${cell("Mtr", "center")}${cell(customSafety, "center")}</tr>`;
+        }
 
-      // 17. BOS Accessories
-      if (incBos) {
-        rows += `<tr>${snoCell()}${cell("<strong>BOS Accessories &amp; Wiring</strong>")}${cell("Cable ties, cable trays, PVC conduit pipes, copper lugs, glands &amp; safety labels")}${cell("Reputed / Tier-1")}${cell("Lot", "center")}${cell("1", "center")}</tr>`;
-      }
+        // 15b. Conduiting & Cable Trays
+        if (calc.conduitUpvcCost > 0) {
+          rows += `<tr>${snoCell()}${cell("<strong>Cable Conduiting</strong>")}${cell("Rigid heavy-duty UV-stabilized uPVC Conduit Pipe")}${cell("ISI / Reputed Make")}${cell("Mtr", "center")}${cell(calc.conduitUpvcMeters, "center")}</tr>`;
+        }
+        if (calc.cableTrayCost > 0) {
+          rows += `<tr>${snoCell()}${cell("<strong>Cable Tray System</strong>")}${cell("Galvanized GI Perforated / Ladder Cable Tray with Coupler Plates")}${cell("Standard Structural Grade")}${cell("Mtr", "center")}${cell(calc.cableTrayMeters, "center")}</tr>`;
+        }
 
-      // 18. Installation & Commissioning
-      const installTypeLabel = roofType === "rcc" ? "Rooftop RCC" : roofType === "profile" ? "Shed" : roofType === "ground" ? "Ground-Mounted" : "Standard";
-      rows += `<tr>${snoCell()}${cell("<strong>Installation, Testing &amp; Commissioning</strong>")}${cell(`Complete mechanical erection, electrical integration, string testing &amp; commissioning (${installTypeLabel})`)}${cell("Divvy Solar Technical Team")}${cell("Job", "center")}${cell("1", "center")}</tr>`;
+        // 16. MC4 Connectors
+        if (calc.mc4Cost > 0 || calc.mc4BranchCost > 0) {
+          const totalMc4 = (Number(calc.mc4Pairs) || 0) + (Number(calc.mc4BranchQty) || 0);
+          rows += `<tr>${snoCell()}${cell("<strong>MC4 &amp; Branch Connectors</strong>")}${cell("IP67 / IP68 UV resistant waterproof module string connectors")}${cell("Multi-Contact / Reputed")}${cell("Set", "center")}${cell(totalMc4 > 0 ? totalMc4 : "1", "center")}</tr>`;
+        }
 
-      // 19. Engineering & Supervision
-      if (incEng) {
-        rows += `<tr>${snoCell()}${cell("<strong>Engineering &amp; System Design</strong>")}${cell("3D shadow analysis, string sizing, electrical SLD &amp; supervision")}${cell("Divvy Solar Design Engineering")}${cell("Job", "center")}${cell("1", "center")}</tr>`;
-      }
+        // 17. BOS Accessories
+        if (incBos) {
+          rows += `<tr>${snoCell()}${cell("<strong>BOS Accessories &amp; Wiring</strong>")}${cell("Cable ties, cable trays, PVC conduit pipes, copper lugs, glands &amp; safety labels")}${cell("Reputed / Tier-1")}${cell("Lot", "center")}${cell("1", "center")}</tr>`;
+        }
 
-      // 20. Remote Monitoring
-      if (incMon) {
-        rows += `<tr>${snoCell()}${cell("<strong>Remote Monitoring System</strong>")}${cell("IoT Data logger device with cloud mobile application &amp; web portal")}${cell("Inverter OEM / Divvy Solar")}${cell("Set", "center")}${cell("1", "center")}</tr>`;
-      }
+        // 18. Installation & Commissioning
+        const installTypeLabel = roofType === "rcc" ? "Rooftop RCC" : roofType === "profile" ? "Shed" : roofType === "ground" ? "Ground-Mounted" : "Standard";
+        rows += `<tr>${snoCell()}${cell("<strong>Installation, Testing &amp; Commissioning</strong>")}${cell(`Complete mechanical erection, electrical integration, string testing &amp; commissioning (${installTypeLabel})`)}${cell("Divvy Solar Technical Team")}${cell("Job", "center")}${cell("1", "center")}</tr>`;
 
-      // 21. Transportation & Freight
-      if (incTrans) {
-        rows += `<tr>${snoCell()}${cell("<strong>Transportation &amp; Freight</strong>")}${cell("Safe transit, transit insurance, loading, transportation to site &amp; unloading")}${cell("Divvy Solar Logistics")}${cell("Job", "center")}${cell("1", "center")}</tr>`;
-      }
+        // 19. Engineering & Supervision
+        if (incEng) {
+          rows += `<tr>${snoCell()}${cell("<strong>Engineering &amp; System Design</strong>")}${cell("3D shadow analysis, string sizing, electrical SLD &amp; supervision")}${cell("Divvy Solar Design Engineering")}${cell("Job", "center")}${cell("1", "center")}</tr>`;
+        }
 
-      // 22. DISCOM Net Metering
-      if (discom) {
-        rows += `<tr>${snoCell()}${cell("<strong>DISCOM Liaising &amp; Net Metering</strong>")}${cell("Net-metering application processing, grid feasibility and DISCOM coordination")}${cell("Divvy Solar Regulatory")}${cell("Job", "center")}${cell("1", "center")}</tr>`;
-      }
+        // 20. Remote Monitoring
+        if (incMon) {
+          rows += `<tr>${snoCell()}${cell("<strong>Remote Monitoring System</strong>")}${cell("IoT Data logger device with cloud mobile application &amp; web portal")}${cell("Inverter OEM / Divvy Solar")}${cell("Set", "center")}${cell("1", "center")}</tr>`;
+        }
 
-      return rows;
-    };
+        // 21. Transportation & Freight
+        if (incTrans) {
+          rows += `<tr>${snoCell()}${cell("<strong>Transportation &amp; Freight</strong>")}${cell("Safe transit, transit insurance, loading, transportation to site &amp; unloading")}${cell("Divvy Solar Logistics")}${cell("Job", "center")}${cell("1", "center")}</tr>`;
+        }
 
-    const activeQuoteRef = (quoteRef && quoteRef.trim()) || `DS/QP/${new Date().getFullYear()}/0001`;
+        // 22. DISCOM Net Metering
+        if (discom) {
+          rows += `<tr>${snoCell()}${cell("<strong>DISCOM Liaising &amp; Net Metering</strong>")}${cell("Net-metering application processing, grid feasibility and DISCOM coordination")}${cell("Divvy Solar Regulatory")}${cell("Job", "center")}${cell("1", "center")}</tr>`;
+        }
+
+        return rows;
+      };
+
+      const activeQuoteRef = (quoteRef && quoteRef.trim()) || `DS/QP/${new Date().getFullYear()}/0001`;
       const projectTypeLabel = projectCategory === "residential"
         ? "RESIDENTIAL SOLAR PROPOSAL"
         : projectCategory === "industrial"
@@ -1859,12 +1859,12 @@ export default function PricingCalculatorPage() {
                   {PROJECT_CATEGORIES.map(c => <option key={c.v} value={c.v} className="bg-[#0f172a]">{c.l}</option>)}
                 </Sel>
                 {projectCategory === "industrial" ? (
-                  <Inp 
-                    label="Firm / Company Name" 
-                    id="firm-name" 
-                    value={firmName} 
-                    onChange={setFirmName} 
-                    placeholder="e.g. ABC Steels Pvt. Ltd. / XYZ Textiles" 
+                  <Inp
+                    label="Firm / Company Name"
+                    id="firm-name"
+                    value={firmName}
+                    onChange={setFirmName}
+                    placeholder="e.g. ABC Steels Pvt. Ltd. / XYZ Textiles"
                   />
                 ) : (
                   <div className="flex items-center text-xs text-white/50 px-2 pt-6">
@@ -1875,20 +1875,20 @@ export default function PricingCalculatorPage() {
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <Inp 
-                label={projectCategory === "industrial" ? "Contact Person / Client Name" : "Client Name"} 
-                id="client-name" 
-                value={clientName} 
-                onChange={setClientName} 
+              <Inp
+                label={projectCategory === "industrial" ? "Contact Person / Client Name" : "Client Name"}
+                id="client-name"
+                value={clientName}
+                onChange={setClientName}
                 placeholder={projectCategory === "industrial" ? "e.g. Mr. Rajesh Sharma (Director)" : "e.g. Rahul Sharma"}
               />
               <Inp label="Phone" id="client-phone" value={clientPhone} onChange={setClientPhone} />
-              <Inp 
-                label="Location / Site Address" 
-                id="client-loc" 
-                value={clientLocation} 
-                onChange={handleClientLocationChange} 
-                placeholder="e.g. Mohali, Punjab / Gurgaon, HR / Hisar" 
+              <Inp
+                label="Location / Site Address"
+                id="client-loc"
+                value={clientLocation}
+                onChange={handleClientLocationChange}
+                placeholder="e.g. Mohali, Punjab / Gurgaon, HR / Hisar"
               />
               <div className="flex flex-col gap-1.5">
                 <label htmlFor="quote-ref" className="text-xs font-bold text-white/50 uppercase tracking-wider">Quote Reference #</label>
@@ -1903,28 +1903,28 @@ export default function PricingCalculatorPage() {
                   />
                 </div>
               </div>
-              <Inp 
-                label="Quotation Prepared By (Salesperson Name)" 
-                id="salesperson-name" 
-                value={salespersonName} 
-                onChange={setSalespersonName} 
-                placeholder="e.g. Vineet Kumar" 
+              <Inp
+                label="Quotation Prepared By (Salesperson Name)"
+                id="salesperson-name"
+                value={salespersonName}
+                onChange={setSalespersonName}
+                placeholder="e.g. Vineet Kumar"
               />
-              <Inp 
-                label="Salesperson Mobile # (Printed on Proposal)" 
-                id="salesperson-phone" 
-                value={salespersonPhone} 
-                onChange={setSalespersonPhone} 
-                placeholder="e.g. +91 98765 43210" 
+              <Inp
+                label="Salesperson Mobile # (Printed on Proposal)"
+                id="salesperson-phone"
+                value={salespersonPhone}
+                onChange={setSalespersonPhone}
+                placeholder="e.g. +91 98765 43210"
               />
             </div>
 
             {/* Issuing Branch / Office Synchronization */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-1">
-              <Sel 
-                label="Divvy Issuing Branch / Office (Letterhead Header)" 
-                id="issuing-branch" 
-                value={issuingBranch} 
+              <Sel
+                label="Divvy Issuing Branch / Office (Letterhead Header)"
+                id="issuing-branch"
+                value={issuingBranch}
                 onChange={setIssuingBranch}
               >
                 <option value="gurgaon" className="bg-[#0f172a]">Gurgaon (Corporate Office) — Spaze I-Tech Park</option>
@@ -2006,15 +2006,15 @@ export default function PricingCalculatorPage() {
                 const availModels = mod.brand && rates?.modules?.[mod.brand]
                   ? rates.modules[mod.brand].filter(m => m.inStock !== false)
                   : [];
-                
+
                 // Distinct technology options for chosen brand
                 const distinctTechs = Array.from(new Set(availModels.map(m => getModuleTech(m)))).filter(Boolean);
-                
+
                 const selModObj = availModels.find(m => (m._id && m._id === mod.model) || m.modelName === mod.model);
                 const currentTech = selModObj ? getModuleTech(selModObj) : (mod.tech || (distinctTechs[0] || ""));
-                
+
                 // Models available for currentTech
-                const filteredModels = currentTech 
+                const filteredModels = currentTech
                   ? availModels.filter(m => getModuleTech(m) === currentTech)
                   : availModels;
 
@@ -2627,10 +2627,10 @@ export default function PricingCalculatorPage() {
                     </Sel>
 
                     {earthingType === "copper_wire" && (
-                      <Sel 
-                        label="Copper Wire Size (sqmm)" 
-                        id="earthing-wire-size" 
-                        value={earthingWireSize} 
+                      <Sel
+                        label="Copper Wire Size (sqmm)"
+                        id="earthing-wire-size"
+                        value={earthingWireSize}
                         onChange={setEarthingWireSize}
                       >
                         {(EARTHING_WIRE_SIZES.copper_wire || []).map(sz => (
@@ -2639,15 +2639,15 @@ export default function PricingCalculatorPage() {
                       </Sel>
                     )}
 
-                    <Inp 
-                      label="Earthing Wire Run Length" 
-                      id="earthing-wire-m" 
-                      value={earthingWireM} 
-                      onChange={setEarthingWireM} 
-                      type="number" 
-                      min={0} 
-                      unit="m" 
-                      placeholder="e.g. 50" 
+                    <Inp
+                      label="Earthing Wire Run Length"
+                      id="earthing-wire-m"
+                      value={earthingWireM}
+                      onChange={setEarthingWireM}
+                      type="number"
+                      min={0}
+                      unit="m"
+                      placeholder="e.g. 50"
                     />
 
                     <Inp label="No. of Chemical Earthing Pits" id="pits-qty" value={customPits}
@@ -2728,25 +2728,25 @@ export default function PricingCalculatorPage() {
                 <Chk label="Conduiting / Cable Trays Required" id="conduit-check" checked={conduit} onChange={setConduit} />
                 {conduit && (
                   <div className="pt-2 space-y-2.5">
-                    <Inp 
-                      label="uPVC Conduit Pipe (Meters)" 
-                      id="conduit-upvc-m" 
-                      value={conduitUpvcM} 
-                      onChange={setConduitUpvcM} 
-                      type="number" 
-                      min={0} 
-                      unit="m" 
-                      placeholder="e.g. 30" 
+                    <Inp
+                      label="uPVC Conduit Pipe (Meters)"
+                      id="conduit-upvc-m"
+                      value={conduitUpvcM}
+                      onChange={setConduitUpvcM}
+                      type="number"
+                      min={0}
+                      unit="m"
+                      placeholder="e.g. 30"
                     />
-                    <Inp 
-                      label="GI Cable Tray (Meters)" 
-                      id="cable-tray-m" 
-                      value={cableTrayM} 
-                      onChange={setCableTrayM} 
-                      type="number" 
-                      min={0} 
-                      unit="m" 
-                      placeholder="e.g. 15" 
+                    <Inp
+                      label="GI Cable Tray (Meters)"
+                      id="cable-tray-m"
+                      value={cableTrayM}
+                      onChange={setCableTrayM}
+                      type="number"
+                      min={0}
+                      unit="m"
+                      placeholder="e.g. 15"
                     />
                   </div>
                 )}
@@ -2787,14 +2787,14 @@ export default function PricingCalculatorPage() {
 
             <div className="pt-4 border-t border-white/5">
               <div className="p-4 rounded-xl bg-white/3 border border-white/5 space-y-3 max-w-md">
-                <Chk 
-                  label="DISCOM approval & Net Metering" 
-                  id="discom-check" 
-                  checked={discom} 
+                <Chk
+                  label="DISCOM approval & Net Metering"
+                  id="discom-check"
+                  checked={discom}
                   onChange={(v) => {
                     setDiscom(v);
                     if (!v) setDiscomType("");
-                  }} 
+                  }}
                 />
                 {discom && (
                   <div className="pt-2">
@@ -2865,10 +2865,10 @@ export default function PricingCalculatorPage() {
 
               <div className="flex items-center justify-between text-xs px-1 pt-1">
                 <span className="text-white/40">
-                  Total Milestone: <strong className={((Number(advancePercent)||0) + (Number(dispatchPercent)||0) + (Number(handoverPercent)||0)) === 100 ? "text-emerald-400 font-bold" : "text-amber-400 font-bold"}>
-                    {((Number(advancePercent)||0) + (Number(dispatchPercent)||0) + (Number(handoverPercent)||0))}%
+                  Total Milestone: <strong className={((Number(advancePercent) || 0) + (Number(dispatchPercent) || 0) + (Number(handoverPercent) || 0)) === 100 ? "text-emerald-400 font-bold" : "text-amber-400 font-bold"}>
+                    {((Number(advancePercent) || 0) + (Number(dispatchPercent) || 0) + (Number(handoverPercent) || 0))}%
                   </strong>
-                  {((Number(advancePercent)||0) + (Number(dispatchPercent)||0) + (Number(handoverPercent)||0)) !== 100 && (
+                  {((Number(advancePercent) || 0) + (Number(dispatchPercent) || 0) + (Number(handoverPercent) || 0)) !== 100 && (
                     <span className="text-amber-400/80 ml-1.5">(Target: 100%)</span>
                   )}
                 </span>
@@ -2997,9 +2997,9 @@ export default function PricingCalculatorPage() {
                     ...(calc.dcdbCost ? [{ l: `DCDB Combiner`, v: calc.dcdbCost }] : []),
                     ...(calc.mc4Cost ? [{ l: `MC4 Connectors`, v: calc.mc4Cost }] : []),
                     ...(calc.mc4BranchCost ? [{ l: `Branch (Y) Connectors`, v: calc.mc4BranchCost }] : []),
-                    ...(calc.discomCost > 0 ? [{ 
-                      l: `DISCOM / Net Metering (${discomType === 'three_phase' ? 'Three Phase' : discomType === 'lt' ? 'LT' : discomType === 'ht' ? 'HT' : discomType === 'single_phase' ? 'Single Phase' : 'Net Metering'})`, 
-                      v: calc.discomCost 
+                    ...(calc.discomCost > 0 ? [{
+                      l: `DISCOM / Net Metering (${discomType === 'three_phase' ? 'Three Phase' : discomType === 'lt' ? 'LT' : discomType === 'ht' ? 'HT' : discomType === 'single_phase' ? 'Single Phase' : 'Net Metering'})`,
+                      v: calc.discomCost
                     }] : []),
                     { l: "Installation & Commissioning", v: calc.installCost },
                   ].filter(i => i.v > 0).map(i => (

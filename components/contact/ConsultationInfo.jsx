@@ -103,10 +103,10 @@ const ConsultationInfo = () => {
                         </div>
                         {office.url !== '#' && (
                             <div>
-                                <a 
-                                    href={office.url} 
-                                    target="_blank" 
-                                    rel="noopener noreferrer" 
+                                <a
+                                    href={office.url}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
                                     className="bg-accent text-white px-4 py-2 rounded-lg text-[10px] font-black inline-flex items-center gap-2 hover:bg-[#EBB800] transition-all active:scale-95 shadow-md shadow-accent/20"
                                 >
                                     MAP VIEW
