@@ -1,18 +1,45 @@
 'use client';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 
-const Footer = () => {
+const Footer = ({ isLandingPage = false }) => {
     const currentYear = new Date().getFullYear();
+    const [fromParam, setFromParam] = useState(null);
 
-    const quickLinks = [
-        { href: '/', label: 'Home' },
-        { href: '/about', label: 'About Us' },
-        { href: '/services', label: 'Solutions' },
-        { href: '/projects', label: 'Projects' },
-        { href: '/blogs', label: 'Blog' },
-        { href: '/contact', label: 'Contact' },
-    ];
+    useEffect(() => {
+        if (typeof window !== 'undefined') {
+            const p = new URLSearchParams(window.location.search).get('from');
+            if (p) {
+                setFromParam(p);
+                try { sessionStorage.setItem('divvy_landing_from', p); } catch {}
+            } else if (window.location.pathname === '/privacy-policy') {
+                try {
+                    const stored = sessionStorage.getItem('divvy_landing_from');
+                    if (stored) setFromParam(stored);
+                } catch {}
+            }
+        }
+    }, []);
+
+    const isLanding = isLandingPage || Boolean(fromParam);
+    const landingRoute = fromParam ? `/${fromParam}` : '';
+
+    const quickLinks = isLanding
+        ? [
+            { href: isLandingPage ? '#epc-form' : `${landingRoute}#epc-form`, label: 'Get Feasibility Report' },
+            { href: isLandingPage ? '#commissioned-plants' : `${landingRoute}#commissioned-plants`, label: 'Commissioned Plants' },
+            { href: isLandingPage ? '#client-reviews' : `${landingRoute}#client-reviews`, label: 'Client Testimonials' },
+            { href: fromParam ? `/privacy-policy?from=${fromParam}` : '/privacy-policy?from=industrial-solar-epc', label: 'Privacy Policy' },
+        ]
+        : [
+            { href: '/', label: 'Home' },
+            { href: '/about', label: 'About Us' },
+            { href: '/services', label: 'Solutions' },
+            { href: '/projects', label: 'Projects' },
+            { href: '/blogs', label: 'Blog' },
+            { href: '/contact', label: 'Contact' },
+        ];
 
     const offices = [
         {
@@ -65,7 +92,16 @@ const Footer = () => {
 
                     {/* ── Col 1: Brand ── */}
                     <div className="lg:col-span-3 flex flex-col gap-5">
-                        <Link href="/" className="inline-block w-fit">
+                        <Link
+                            href={isLandingPage ? "#" : fromParam ? landingRoute : "/"}
+                            onClick={(e) => {
+                                if (isLandingPage) {
+                                    e.preventDefault();
+                                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                                }
+                            }}
+                            className="inline-block w-fit cursor-pointer"
+                        >
                             <div className="relative h-14 w-52 transition-transform duration-300 hover:scale-105 bg-white/95 backdrop-blur-md rounded-full p-2.5 shadow-[0_10px_40px_-10px_rgba(0,0,0,0.2)] border border-white/20 flex items-center justify-center overflow-hidden">
                                 {/* Subtle premium gloss effect */}
                                 <div className="absolute inset-0 bg-gradient-to-tr from-white/0 via-white/30 to-white/0 pointer-events-none" />
@@ -114,7 +150,14 @@ const Footer = () => {
                                 <li key={link.label}>
                                     <Link
                                         href={link.href}
-                                        className="text-gray-400 text-[15px] hover:text-[#fecb00] transition-colors duration-200 flex items-center gap-2 group"
+                                        onClick={(e) => {
+                                            if (isLandingPage && link.href.startsWith('#')) {
+                                                e.preventDefault();
+                                                const el = document.querySelector(link.href);
+                                                if (el) el.scrollIntoView({ behavior: 'smooth' });
+                                            }
+                                        }}
+                                        className="text-gray-400 text-[15px] hover:text-[#fecb00] transition-colors duration-200 flex items-center gap-2 group cursor-pointer"
                                     >
                                         <span className="w-1.5 h-1.5 rounded-full bg-gray-600 group-hover:bg-[#fecb00] transition-colors duration-200 flex-shrink-0" />
                                         {link.label}
@@ -199,7 +242,10 @@ const Footer = () => {
                         © {currentYear} Divvy Solar Power &amp; Solutions Pvt. Ltd. All rights reserved.
                     </p>
                     <div className="flex items-center gap-4 text-gray-400">
-                        <Link href="/privacy-policy" className="hover:text-[#fecb00] transition-colors underline-offset-4 hover:underline">
+                        <Link
+                            href={fromParam ? `/privacy-policy?from=${fromParam}` : isLandingPage ? "/privacy-policy?from=industrial-solar-epc" : "/privacy-policy"}
+                            className="hover:text-[#fecb00] transition-colors underline-offset-4 hover:underline"
+                        >
                             Privacy Policy
                         </Link>
                         <span className="text-white/20">•</span>
