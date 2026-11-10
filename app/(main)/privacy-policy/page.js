@@ -16,8 +16,11 @@ export const metadata = {
     description: 'Official Privacy Policy of Divvy Solar Power & Solutions Pvt. Ltd. Read our transparent data security, privacy practices, and compliance standards for solar EPC services.',
 };
 
-export default function PrivacyPolicyPage() {
+export default function PrivacyPolicyPage({ searchParams }) {
     const lastUpdated = "October 16, 2026";
+    const from = searchParams?.from;
+    const backHref = from ? `/${from}` : '/';
+    const backLabel = from === 'industrial-solar-epc' ? '← Back to Industrial Solar Feasibility' : '← Back to Divvy Solar Home';
 
     const keyHighlights = [
         {
@@ -342,10 +345,10 @@ export default function PrivacyPolicyPage() {
 
                     <div className="text-center pt-4">
                         <Link 
-                            href="/" 
+                            href={backHref} 
                             className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-[#0e1b3d] hover:bg-[#1a2e63] text-white text-xs font-bold transition-all shadow-md hover:scale-105"
                         >
-                            ← Back to Divvy Solar Home
+                            {backLabel}
                         </Link>
                     </div>
 

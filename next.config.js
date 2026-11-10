@@ -68,6 +68,11 @@ const nextConfig = {
 
       // Tera existing redirects
       {
+        source: '/industrial_solar_epc',
+        destination: '/industrial-solar-epc',
+        permanent: true,
+      },
+      {
         source: '/haryana_industrial',
         destination: '/haryana-industrial',
         permanent: true,

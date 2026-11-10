@@ -62,7 +62,35 @@ const Navbar = ({ isLandingPage = false }) => {
     const [isScrolled, setIsScrolled] = useState(false);
     const [openDropdown, setOpenDropdown] = useState(null);
     const [activeMobileDropdown, setActiveMobileDropdown] = useState(null);
+    const [fromParam, setFromParam] = useState(() => {
+        if (typeof window !== 'undefined') {
+            return new URLSearchParams(window.location.search).get('from') || sessionStorage.getItem('divvy_landing_from');
+        }
+        return null;
+    });
     const closeTimer = useRef(null);
+
+    useEffect(() => {
+        if (typeof window !== 'undefined') {
+            const p = new URLSearchParams(window.location.search).get('from');
+            if (p) {
+                setFromParam(p);
+                try { sessionStorage.setItem('divvy_landing_from', p); } catch {}
+            } else if (pathname === '/privacy-policy') {
+                try {
+                    const stored = sessionStorage.getItem('divvy_landing_from');
+                    if (stored) setFromParam(stored);
+                } catch {}
+            }
+        }
+    }, [pathname]);
+
+    const isLandingRoute = Boolean(
+        pathname?.includes('industrial-solar-epc') ||
+        pathname?.includes('industrial_solar_epc')
+    );
+    const isLanding = isLandingPage || isLandingRoute || Boolean(fromParam);
+    const landingRoute = fromParam ? `/${fromParam}` : '/industrial-solar-epc';
 
     const isActive = (path) => {
         if (!pathname) return false;
@@ -123,7 +151,16 @@ const Navbar = ({ isLandingPage = false }) => {
                 <div className="flex justify-between items-center h-16">
 
                     <div className="flex-shrink-0 flex items-center">
-                        <Link href="/" className="flex items-center">
+                        <Link
+                            href={isLandingPage || isLandingRoute ? "#" : fromParam ? landingRoute : "/"}
+                            onClick={(e) => {
+                                if (isLandingPage || isLandingRoute) {
+                                    e.preventDefault();
+                                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                                }
+                            }}
+                            className="flex items-center cursor-pointer"
+                        >
                             <div
                                 className="relative h-11 w-44 transition-transform duration-300 hover:scale-105"
                             >
@@ -143,7 +180,7 @@ const Navbar = ({ isLandingPage = false }) => {
 
                     <div className="hidden lg:flex flex-1 items-center justify-end">
                         {/* Right-Aligned Nav Links */}
-                        {!isLandingPage && (
+                        {!isLanding && (
                             <div className="flex space-x-8 items-center h-full mr-8 xl:mr-12">
                             <Link
                                 href="/"
@@ -196,12 +233,13 @@ const Navbar = ({ isLandingPage = false }) => {
                         {/* Extreme Right Button */}
                         <div className="flex-shrink-0 flex items-center">
                             <Link
-                                href={isLandingPage ? "#lead-form" : "/contact"}
+                                href={isLandingPage ? "#epc-form" : fromParam ? `${landingRoute}#epc-form` : "/contact"}
                                 onClick={(e) => {
                                     fp.event('Contact', { content_name: 'Navbar Quote Button' });
                                     if (isLandingPage) {
                                         e.preventDefault();
-                                        document.getElementById('lead-form')?.scrollIntoView({ behavior: 'smooth' });
+                                        const formEl = document.getElementById('epc-form') || document.getElementById('lead-form');
+                                        formEl?.scrollIntoView({ behavior: 'smooth', block: 'center' });
                                     }
                                 }}
                                 className="bg-yellow-400 text-[#0a0f1e] text-[11px] lg:text-[12px] xl:text-[13px] font-black tracking-wider lg:tracking-widest px-5 lg:px-6 py-2.5 rounded-full hover:bg-yellow-500 transition-all duration-300 hover:scale-105 active:scale-95 shadow-lg whitespace-nowrap"
@@ -211,7 +249,7 @@ const Navbar = ({ isLandingPage = false }) => {
                         </div>
                     </div>
 
-                    {!isLandingPage && (
+                    {!isLanding && (
                         <div className="lg:hidden flex items-center">
                             <button
                                 onClick={() => setIsOpen(!isOpen)}
@@ -225,14 +263,17 @@ const Navbar = ({ isLandingPage = false }) => {
                             </button>
                         </div>
                     )}
-                    {isLandingPage && (
+                    {isLanding && (
                         <div className="lg:hidden flex items-center">
                             <Link
-                                href="#lead-form"
+                                href={isLandingPage ? "#epc-form" : fromParam ? `${landingRoute}#epc-form` : "#"}
                                 onClick={(e) => {
                                     fp.event('Contact', { content_name: 'Navbar Quote Button Mobile' });
-                                    e.preventDefault();
-                                    document.getElementById('lead-form')?.scrollIntoView({ behavior: 'smooth' });
+                                    if (isLandingPage) {
+                                        e.preventDefault();
+                                        const formEl = document.getElementById('epc-form') || document.getElementById('lead-form');
+                                        formEl?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                                    }
                                 }}
                                 className="bg-yellow-400 text-[#0a0f1e] text-[10px] font-black tracking-wider px-4 py-2 rounded-full shadow-lg"
                             >
@@ -243,7 +284,8 @@ const Navbar = ({ isLandingPage = false }) => {
                 </div>
             </div>
 
-            <div className={`lg:hidden overflow-y-auto transition-all duration-300 bg-white border-t border-gray-100 absolute w-full shadow-2xl ${isOpen ? 'max-h-screen opacity-100' : 'max-h-0 opacity-0'}`}>
+            {!isLanding && (
+                <div className={`lg:hidden overflow-y-auto transition-all duration-300 bg-white border-t border-gray-100 absolute w-full shadow-2xl ${isOpen ? 'max-h-screen opacity-100' : 'max-h-0 opacity-0'}`}>
                 <div className="px-6 pt-6 pb-32 space-y-2">
                     {/* HOME */}
                     <Link
@@ -362,6 +404,7 @@ const Navbar = ({ isLandingPage = false }) => {
                     </div>
                 </div>
             </div>
+            )}
         </nav>
     );
 };

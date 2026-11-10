@@ -1,953 +1,666 @@
 'use client';
 
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import Image from 'next/image';
-import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import Navbar from '@/components/common/Navbar';
 import Footer from '@/components/common/Footer';
-import Testimonials from '@/components/home/Testimonials';
-import * as fp from '@/lib/fpixel';
-import {
-    BuildingOffice2Icon,
-    CurrencyRupeeIcon,
-    BoltIcon,
-    ShieldCheckIcon,
-    DocumentCheckIcon,
-    ChartBarIcon,
-    PhoneIcon,
-    ArrowRightIcon,
-    CheckCircleIcon,
-    ChevronDownIcon,
-    BriefcaseIcon,
-    WrenchScrewdriverIcon,
-    CheckBadgeIcon,
-    ScaleIcon,
-    LockClosedIcon,
-    CheckIcon,
-    CpuChipIcon,
-    FireIcon,
-    ArrowTrendingUpIcon
-} from '@heroicons/react/24/outline';
-import { StarIcon } from '@heroicons/react/24/solid';
+import { gridTariff, solarTariff, projects, getProjectSavings } from '@/data/projects';
 
-// 1. Genuine Industrial Mega Projects
-const COMPLETED_PROJECTS = [
-    {
-        title: "2.5 MW Agro-Manufacturing Solar Plant",
-        location: "Village Umra, Hansi, Haryana",
-        capacity: "2,500 kWp",
-        image: "/2.5 MW village umra hansi harayan.webp",
-        annualSavings: "₹1.85 Cr / yr",
-        sector: "Agro & Heavy Processing",
-        structure: "HT Ground Mount + RCC Rooftop",
-        generation: "3.75 Million Units / yr",
-        tag: "Mega HT EPC"
-    },
-    {
-        title: "900 kW Industrial Rooftop EPC",
-        location: "Chaudhariwas, Hisar, Haryana",
-        capacity: "900 kWp",
-        image: "/900 kw chaudhariwas hisar haryana.webp",
-        annualSavings: "₹68.5 Lakh / yr",
-        sector: "Processing & Warehousing",
-        structure: "Pre-Engineered PEB Standing Seam",
-        generation: "1.35 Million Units / yr",
-        tag: "Non-Penetrating"
-    },
-    {
-        title: "500 kW Plywood Manufacturing Plant",
-        location: "Hmbran, Ludhiana, Punjab",
-        capacity: "500 kWp",
-        image: "/500 kw  golden plywood hmbran ludhiana.jpeg",
-        annualSavings: "₹38.2 Lakh / yr",
-        sector: "Timber & Plywood Industry",
-        structure: "Industrial Corrugated Metal Sheet",
-        generation: "750,000 Units / yr",
-        tag: "DG-PV Sync"
-    },
-    {
-        title: "500 kW Surya Polyflex Polymers",
-        location: "Hansi Industrial Zone, Haryana",
-        capacity: "500 kWp",
-        image: "/surya polyflex 500 kw hansi  .jpeg",
-        annualSavings: "₹41.0 Lakh / yr",
-        sector: "Plastics & Packaging",
-        structure: "Trapezoidal Sheet + HDG Walkways",
-        generation: "750,000 Units / yr",
-        tag: "Zero-Leak"
-    }
-];
+// ─────────────────────────────────────────────────────────────────────────────
+// INDUSTRIAL SOLAR EPC — LANDING PAGE
+// Colors: navy #071A3E (gradient to #040E24), yellow #FFC400, black #0A0A0F
+// Fonts: Space Grotesk (headings), Inter (body) — loaded via layout.js CSS vars
+// ─────────────────────────────────────────────────────────────────────────────
 
-// 2. Commercial ROI & Payback Tiers
-const ROI_TIERS = [
-    {
-        category: "50 kW - 100 kW",
-        scope: "Small Factories & Cold Rooms",
-        monthlyBill: "₹1L - ₹3L / mo",
-        estAnnualSavings: "₹7.5L - ₹15L",
-        payback: "3.2 Years",
-        taxDeprec: "₹14L - ₹28L (Yr 1)",
-        popular: false
-    },
-    {
-        category: "200 kW - 300 kW",
-        scope: "Textile, Plastic & Auto Ancillaries",
-        monthlyBill: "₹5L - ₹10L / mo",
-        estAnnualSavings: "₹30L - ₹45L",
-        payback: "3.1 Years",
-        taxDeprec: "₹56L - ₹84L (Yr 1)",
-        popular: true
-    },
-    {
-        category: "500 kW - 1 MW",
-        scope: "Heavy Processing & Warehouses",
-        monthlyBill: "₹15L - ₹35L / mo",
-        estAnnualSavings: "₹75L - ₹1.5 Cr",
-        payback: "2.9 Years",
-        taxDeprec: "₹1.4 Cr - ₹2.8 Cr (Yr 1)",
-        popular: false
-    },
-    {
-        category: "1 MW - 5 MW+",
-        scope: "Mega Industrial Parks & HT Plants",
-        monthlyBill: "₹40L+ / mo",
-        estAnnualSavings: "₹1.8 Cr - ₹7 Cr+",
-        payback: "2.8 Years",
-        taxDeprec: "₹3 Cr+ (Yr 1)",
-        popular: false
-    }
-];
-
-// 3. Technical Engineering Standards
-const ENGINEERING_STANDARDS = [
-    {
-        num: "01",
-        title: "Non-Penetrating Standing Seam Clamping",
-        desc: "Engineered anodized aluminum seam clamps designed for PEB roofs. Zero drill punctures protect your factory roof and raw inventory from any water damage."
-    },
-    {
-        num: "02",
-        title: "STAAD-Pro Wind Load Certified HDG Steel",
-        desc: "Heavy hot-dip galvanized mounting structures fabricated to withstand extreme 160+ km/h gale winds with 80+ micron zinc protective galvanization."
-    },
-    {
-        num: "03",
-        title: "Automated DG-PV Synchronization",
-        desc: "Smart microgrid controllers dynamically throttle solar inverter feeds in real time, preventing generator reverse feeding and reducing factory diesel burn by 60%+."
-    },
-    {
-        num: "04",
-        title: "100% Turnkey CEIG & DISCOM Approvals",
-        desc: "Complete liaisoning for drawing clearances from the Chief Electrical Inspector to Govt (CEIG), relay testing, and HT/LT bi-directional net-meter synchronization."
-    }
-];
+const GG = {
+    heading: { fontFamily: "var(--font-space-grotesk, 'Space Grotesk', sans-serif)" },
+    body:    { fontFamily: "var(--font-inter, 'Inter', sans-serif)" },
+};
 
 export default function IndustrialSolarLandingPage() {
-    const [monthlyPowerSpend, setMonthlyPowerSpend] = useState(8); // In Lakhs
+    const router = useRouter();
 
-    const [formData, setFormData] = useState({
-        fullName: '',
-        companyName: '',
-        mobileNumber: '',
-        cityState: '',
-        industryType: '',
-        monthlyBill: '₹5L - ₹10L / mo'
-    });
-
-    const [marketingParams, setMarketingParams] = useState({
-        gclid: '',
-        utmSource: '',
-        utmMedium: '',
-        utmCampaign: ''
-    });
-
+    const [formData, setFormData] = useState({ name: '', phone: '', monthlyBill: '', location: '' });
+    const [honeypot, setHoneypot]   = useState('');
     const [submitting, setSubmitting] = useState(false);
-    const [submitted, setSubmitted] = useState(false);
-    const [errorMsg, setErrorMsg] = useState('');
+    const [errorMsg, setErrorMsg]     = useState('');
+    const [mousePos, setMousePos]   = useState({ x: 0.5, y: 0.5 });
+    const heroRef = useRef(null);
 
-    // Dynamic Industrial ROI Calculations
-    const indCalc = useMemo(() => {
-        const monthlyRupees = monthlyPowerSpend * 100000;
-        const estimatedKw = Math.round((monthlyRupees / 9.20) / 120 / 10) * 10;
-        const recKw = Math.max(50, Math.min(2500, estimatedKw));
-        const estAnnualSavingsCr = ((monthlyRupees * 12 * 0.88) / 10000000).toFixed(2);
-        const estYr1TaxWriteOffLakh = Math.round(recKw * 38000 * 0.40 / 100000);
-        const roofAreaSqFt = recKw * 90;
+    const whatsappNum = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || '919254986321';
+    const whatsappUrl = `https://wa.me/${whatsappNum}?text=${encodeURIComponent('Hi Divvy Solar, I would like to inquire about industrial rooftop solar for our factory.')}`;
 
-        return {
-            recKw,
-            estAnnualSavingsCr,
-            estYr1TaxWriteOffLakh,
-            roofAreaSqFt
-        };
-    }, [monthlyPowerSpend]);
-
+    // Parallax mouse tracking for hero 3D depth
     useEffect(() => {
-        if (typeof window !== 'undefined') {
-            const urlParams = new URLSearchParams(window.location.search);
-            setMarketingParams({
-                gclid: urlParams.get('gclid') || '',
-                utmSource: urlParams.get('utm_source') || 'google',
-                utmMedium: urlParams.get('utm_medium') || 'cpc',
-                utmCampaign: urlParams.get('utm_campaign') || 'industrial_solar_epc'
+        const onMove = (e) => {
+            if (!heroRef.current) return;
+            const r = heroRef.current.getBoundingClientRect();
+            setMousePos({
+                x: (e.clientX - r.left) / r.width,
+                y: (e.clientY - r.top)  / r.height,
             });
-        }
+        };
+        const el = heroRef.current;
+        if (el) el.addEventListener('mousemove', onMove);
+        return () => { if (el) el.removeEventListener('mousemove', onMove); };
     }, []);
 
     const scrollToForm = (e) => {
         if (e && e.preventDefault) e.preventDefault();
-        const formEl = document.getElementById('assessment-form');
-        if (formEl) formEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    };
-
-    const scrollToTop = (e) => {
-        if (e && e.preventDefault) e.preventDefault();
-        window.scrollTo({ top: 0, behavior: 'smooth' });
+        document.getElementById('epc-form')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
     };
 
     const handleFormSubmit = async (e) => {
         e.preventDefault();
-        if (submitting || submitted) return;
+        setErrorMsg('');
+        if (honeypot) return;
 
-        const cleanPhone = formData.mobileNumber.replace(/\D/g, '');
-        if (cleanPhone.length !== 10) {
-            setErrorMsg('Please enter a valid 10-digit mobile number');
-            return;
-        }
+        const cleanName  = formData.name.trim();
+        const cleanPhone = formData.phone.replace(/\D/g, '');
+        const cleanLoc   = formData.location.trim();
+
+        if (!cleanName)                        return setErrorMsg('Please enter your full name');
+        if (!/^[6-9]\d{9}$/.test(cleanPhone)) return setErrorMsg('Please enter a valid 10-digit mobile number');
+        if (!formData.monthlyBill)             return setErrorMsg('Please select your monthly power bill range');
+        if (!cleanLoc)                         return setErrorMsg('Please enter your plant / factory location');
 
         setSubmitting(true);
-        setErrorMsg('');
-
         try {
-            const res = await fetch('/api/leads', {
+            const res  = await fetch('/api/lead', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    name: formData.fullName,
-                    companyName: formData.companyName,
-                    whatsapp: cleanPhone,
-                    location: formData.cityState,
-                    industryType: formData.industryType,
-                    monthlyBill: `₹${monthlyPowerSpend} Lakh/mo (Est. Capacity: ${indCalc.recKw} kWp)`,
-                    serviceType: `Industrial Solar EPC (${indCalc.recKw} kWp - Tax Write-Off: ₹${indCalc.estYr1TaxWriteOffLakh}L)`,
-                    landingPage: '/industrial-solar-epc',
-                    gclid: marketingParams.gclid,
-                    utmSource: marketingParams.utmSource,
-                    utmMedium: marketingParams.utmMedium,
-                    utmCampaign: marketingParams.utmCampaign
-                })
+                body: JSON.stringify({ name: cleanName, phone: cleanPhone, monthlyBill: formData.monthlyBill, location: cleanLoc, honeypot }),
             });
-
-            if (res.ok) {
-                setSubmitted(true);
-                fp.event('Lead', {
-                    content_name: 'Industrial Solar EPC Lead',
-                    content_category: 'Google Ads Industrial',
-                    currency: 'INR',
-                    value: monthlyPowerSpend * 100000
-                });
-                if (typeof window !== 'undefined') {
-                    window.dataLayer = window.dataLayer || [];
-                    window.dataLayer.push({
-                        event: 'industrial_lead_submitted',
-                        company_name: formData.companyName,
-                        capacity_kw: indCalc.recKw
-                    });
-                }
+            const data = await res.json();
+            if (res.ok && data.success) {
+                router.push('/thank-you');
             } else {
-                const errData = await res.json();
-                setErrorMsg(errData.error || 'Something went wrong. Please connect with our team via phone.');
+                setErrorMsg(data.error || 'Unable to submit request. Please call our desk directly.');
             }
-        } catch (err) {
-            console.error('Lead submission error:', err);
-            setErrorMsg('Network error. Please call our corporate desk directly.');
+        } catch {
+            setErrorMsg('Network error. Please try again.');
         } finally {
             setSubmitting(false);
         }
     };
 
+    // Parallax offsets for hero layers
+    const px = (mousePos.x - 0.5) * 30;
+    const py = (mousePos.y - 0.5) * 20;
+
     return (
-        <div className="relative font-sans text-[#2c221e] bg-[#fbf8f5] overflow-x-hidden selection:bg-amber-400 selection:text-[#1c140e]">
+        <div style={GG.body} className="min-h-screen bg-white text-slate-900 selection:bg-[#FFC400] selection:text-black overflow-x-hidden">
 
-            {/* TOP EXECUTIVE TICKER: Warm Ochre & Bronze Theme */}
-            <div className="bg-[#1c1511] text-[#e8ded6] text-xs py-2 px-4 border-b border-[#3d2f26]">
-                <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-2">
-                    <div className="flex items-center gap-2 text-center sm:text-left">
-                        <span className="w-2 h-2 rounded-full bg-amber-400 animate-pulse shrink-0"></span>
-                        <span className="font-normal text-[#d4c5b9] text-[11px] sm:text-xs">
-                            <strong className="text-amber-400 font-medium">Commercial Solar EPC:</strong> 40% Accelerated Depreciation Under Section 32 + Reduce Factory Power Tariff to ₹3.50/unit.
-                        </span>
-                    </div>
-                    <div className="hidden md:flex items-center gap-4 text-[11px] text-[#a89586] font-normal">
-                        <span className="flex items-center gap-1.5"><CheckBadgeIcon className="w-3.5 h-3.5 text-amber-400" /> CEIG Approved &amp; HT Net-Metering Liaison</span>
-                        <span>•</span>
-                        <span>35+ MWp Installed Across North India</span>
-                    </div>
+            {/* Hide solar chatbot on this page */}
+            <style>{`[data-solar-chatbot], .solar-chatbot-widget, #solar-chatbot { display:none!important; }`}</style>
+
+            {/* ═══════════════════════════════════════════════════════════════
+                NAVBAR — official website component
+            ═══════════════════════════════════════════════════════════════ */}
+            <Navbar isLandingPage={true} />
+
+            {/* ═══════════════════════════════════════════════════════════════
+                SECTION 1 — HERO (Dark Blue 3D)
+            ═══════════════════════════════════════════════════════════════ */}
+            <section
+                ref={heroRef}
+                className="relative overflow-hidden text-white min-h-[92vh] flex items-center"
+                style={{ background: 'linear-gradient(135deg, #020814 0%, #040E24 30%, #061A44 55%, #030C1E 100%)' }}
+            >
+                {/* ── Layer 1: Industrial BG photo with dark overlay ─────── */}
+                <div className="absolute inset-0 z-0">
+                    <Image
+                        src="/industrial_4k.webp"
+                        alt="Industrial solar plant"
+                        fill
+                        sizes="100vw"
+                        className="object-cover object-center"
+                        priority
+                        style={{ opacity: 0.08 }}
+                    />
+                    {/* Deep gradient overlay on top of image */}
+                    <div className="absolute inset-0" style={{
+                        background: 'linear-gradient(135deg, rgba(2,8,20,0.98) 0%, rgba(4,14,36,0.95) 40%, rgba(6,24,56,0.88) 70%, rgba(3,10,24,0.97) 100%)'
+                    }} />
                 </div>
-            </div>
 
-            {/* STICKY WARM IVORY NAVBAR */}
-            <header className="sticky top-0 z-50 bg-[#fbf8f5]/95 backdrop-blur-md border-b border-[#ebdcd0] shadow-[0_2px_12px_rgba(28,21,17,0.03)]">
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
-                    <button
-                        type="button"
-                        onClick={scrollToTop}
-                        aria-label="Divvy Solar Industrial"
-                        className="flex items-center gap-2 cursor-pointer bg-transparent border-none p-0 focus:outline-none"
-                    >
-                        <div className="relative w-44 sm:w-52 h-12">
-                            <Image
-                                src="/divvy_photo.png"
-                                alt="Divvy Solar"
-                                fill
-                                priority
-                                className="object-contain object-left"
-                                sizes="208px"
-                            />
-                        </div>
-                    </button>
+                {/* ── Layer 2: Animated grid mesh ───────────────────────── */}
+                <div className="absolute inset-0 z-[1] pointer-events-none" style={{
+                    backgroundImage: 'linear-gradient(rgba(255,196,0,0.025) 1px, transparent 1px), linear-gradient(90deg, rgba(255,196,0,0.025) 1px, transparent 1px)',
+                    backgroundSize: '60px 60px',
+                    transform: `translate(${px * 0.3}px, ${py * 0.3}px)`,
+                    transition: 'transform 0.1s ease-out',
+                }} />
 
-                    <div className="flex items-center gap-4 sm:gap-6">
-                        <a
-                            href="tel:+919254986321"
-                            className="text-xs sm:text-sm font-normal text-[#4a3b32] hover:text-amber-700 transition flex items-center gap-2 group"
-                        >
-                            <div className="w-9 h-9 rounded-xl bg-amber-100/70 border border-amber-300/60 flex items-center justify-center text-amber-800 group-hover:scale-105 transition-transform shadow-xs">
-                                <PhoneIcon className="w-4 h-4 stroke-[1.75]" />
-                            </div>
-                            <div className="hidden sm:block text-left">
-                                <span className="block text-[10px] uppercase tracking-wider text-[#8c7b6f] font-medium">Corporate Engineering Desk</span>
-                                <span className="font-semibold text-[#1c1511]">92549-86321</span>
-                            </div>
-                        </a>
-
-                        <button
-                            type="button"
-                            onClick={scrollToForm}
-                            className="bg-[#1c1511] hover:bg-[#2e231c] text-white font-medium text-xs sm:text-sm px-5 py-2.5 rounded-xl transition-all shadow-[0_4px_14px_rgba(28,21,17,0.2)] hover:-translate-y-0.5 cursor-pointer flex items-center gap-1.5"
-                        >
-                            <span>Request Plant Feasibility</span>
-                            <ArrowRightIcon className="w-3.5 h-3.5 text-amber-400 stroke-[2]" />
-                        </button>
-                    </div>
+                {/* ── Layer 3: Radial glows (parallax) ─────────────────── */}
+                <div className="absolute inset-0 z-[2] pointer-events-none overflow-hidden">
+                    {/* Top-right cyan sphere */}
+                    <div style={{
+                        position: 'absolute', top: '-15%', right: '-5%',
+                        width: 700, height: 700, borderRadius: '50%',
+                        background: 'radial-gradient(circle, rgba(29,78,216,0.22) 0%, rgba(17,50,160,0.10) 50%, transparent 70%)',
+                        filter: 'blur(60px)',
+                        transform: `translate(${-px * 0.8}px, ${-py * 0.5}px)`,
+                        transition: 'transform 0.15s ease-out',
+                    }} />
+                    {/* Centre-left gold glow */}
+                    <div style={{
+                        position: 'absolute', top: '30%', left: '-10%',
+                        width: 600, height: 400, borderRadius: '50%',
+                        background: 'radial-gradient(circle, rgba(255,196,0,0.07) 0%, rgba(255,196,0,0.02) 60%, transparent 80%)',
+                        filter: 'blur(80px)',
+                        transform: `translate(${px * 0.6}px, ${py * 0.4}px)`,
+                        transition: 'transform 0.15s ease-out',
+                    }} />
+                    {/* Bottom deep indigo */}
+                    <div style={{
+                        position: 'absolute', bottom: '-20%', left: '30%',
+                        width: 800, height: 350, borderRadius: '50%',
+                        background: 'radial-gradient(circle, rgba(49,46,129,0.12) 0%, transparent 70%)',
+                        filter: 'blur(90px)',
+                    }} />
                 </div>
-            </header>
 
-            {/* ════════════════════════════════════════════════════════════════
-                HERO SECTION: Industrial Editorial Warm Theme (Distinct From Residential)
-            ════════════════════════════════════════════════════════════════ */}
-            <section className="relative pt-8 sm:pt-14 pb-16 lg:pb-20 bg-gradient-to-b from-[#fbf8f5] via-[#f5ede4] to-[#ebe0d3] border-b border-[#ebdcd0] overflow-hidden">
-                
-                {/* Warm Ochre & Amber Radial Ambient Glow */}
-                <div className="absolute top-0 left-1/4 w-96 h-96 bg-amber-500/10 rounded-full blur-3xl pointer-events-none -translate-y-1/2" />
-                <div className="absolute top-1/3 right-10 w-96 h-96 bg-orange-600/10 rounded-full blur-3xl pointer-events-none" />
+                {/* ── Layer 4: Floating 3D accent rings (decorative) ────── */}
+                <div className="absolute inset-0 z-[3] pointer-events-none" style={{
+                    transform: `translate(${px * 0.4}px, ${py * 0.3}px)`,
+                    transition: 'transform 0.2s ease-out',
+                }}>
+                    {/* Large outer ring */}
+                    <div className="absolute" style={{
+                        top: '5%', right: '8%', width: 320, height: 320, borderRadius: '50%',
+                        border: '1px solid rgba(255,196,0,0.12)',
+                        boxShadow: 'inset 0 0 60px rgba(255,196,0,0.04)',
+                    }} />
+                    {/* Medium inner ring */}
+                    <div className="absolute" style={{
+                        top: '12%', right: '12%', width: 200, height: 200, borderRadius: '50%',
+                        border: '1px solid rgba(255,196,0,0.18)',
+                    }} />
+                    {/* Small dot ring */}
+                    <div className="absolute" style={{
+                        top: '19%', right: '17.5%', width: 86, height: 86, borderRadius: '50%',
+                        border: '1px solid rgba(255,196,0,0.5)',
+                        boxShadow: '0 0 20px rgba(255,196,0,0.2)',
+                    }} />
+                    {/* Centre sun pulse dot */}
+                    <div className="absolute animate-pulse" style={{
+                        top: '23.5%', right: '20.5%', width: 20, height: 20, borderRadius: '50%',
+                        background: 'rgba(255,196,0,0.9)',
+                        boxShadow: '0 0 30px rgba(255,196,0,0.6), 0 0 60px rgba(255,196,0,0.3)',
+                    }} />
+                </div>
 
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-                    <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-12 items-start">
+                {/* ── Layer 5: Dot matrix top-left ─────────────────────── */}
+                <div className="absolute inset-0 z-[3] pointer-events-none" style={{
+                    backgroundImage: 'radial-gradient(rgba(255,255,255,0.3) 1px, transparent 1px)',
+                    backgroundSize: '28px 28px',
+                    opacity: 0.045,
+                    maskImage: 'radial-gradient(ellipse 60% 80% at 10% 20%, black 40%, transparent 100%)',
+                    WebkitMaskImage: 'radial-gradient(ellipse 60% 80% at 10% 20%, black 40%, transparent 100%)',
+                }} />
 
-                        {/* LEFT COLUMN: Industrial Architecture Proposition */}
-                        <div className="lg:col-span-7 space-y-6 pt-2">
+                {/* ── CONTENT ───────────────────────────────────────────── */}
+                <div className="relative z-10 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-20 lg:py-24">
+                    <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-14 items-center">
 
-                            {/* Warm Industrial Badge */}
-                            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/80 border border-[#e3d0c1] shadow-[0_2px_8px_rgba(28,21,17,0.03)]">
-                                <span className="w-2 h-2 rounded-full bg-amber-600"></span>
-                                <span className="text-xs font-medium text-[#3b2d24]">
-                                    Industrial Rooftop &amp; Ground Mount EPC
+                        {/* LEFT COLUMN */}
+                        <div className="lg:col-span-7 space-y-6">
+
+                            {/* Pill badge */}
+                            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full border text-xs font-bold tracking-widest uppercase" style={{
+                                background: 'rgba(255,196,0,0.08)',
+                                borderColor: 'rgba(255,196,0,0.5)',
+                                color: '#FFC400',
+                                boxShadow: '0 0 24px rgba(255,196,0,0.15)',
+                            }}>
+                                <svg className="w-3.5 h-3.5 animate-pulse" fill="currentColor" viewBox="0 0 20 20">
+                                    <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                                </svg>
+                                Free Feasibility Report
+                            </div>
+
+                            {/* H1 */}
+                            <h1 style={{ ...GG.heading, fontWeight: 800, fontSize: 'clamp(2.2rem, 5vw, 3.6rem)', lineHeight: 1.05, letterSpacing: '-0.03em' }}>
+                                Cut Factory Power<br />
+                                Cost to{' '}
+                                <span style={{
+                                    color: '#FFC400',
+                                    textShadow: '0 0 40px rgba(255,196,0,0.5), 0 4px 20px rgba(255,196,0,0.3)',
+                                }}>
+                                    ₹{solarTariff.toFixed(2)}/Unit
                                 </span>
-                                <span className="text-[#c7b3a3]">|</span>
-                                <span className="text-xs text-amber-800 font-semibold">35+ MWp Commissioned</span>
-                            </div>
-
-                            {/* Headline: Editorial Warm High-Impact */}
-                            <h1 className="text-3xl sm:text-4xl lg:text-[3.25rem] font-semibold leading-[1.18] text-[#1c1511] tracking-tight">
-                                Turn Factory Rooftops into a <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-700 via-amber-600 to-yellow-600 font-bold">Multi-Crore Profit</span> Center.
                             </h1>
 
-                            {/* Subtitle */}
-                            <p className="text-base sm:text-lg text-[#524136] leading-relaxed font-normal max-w-xl">
-                                Displace high grid power tariffs (₹9–11/unit) down to ₹3.50/unit levelized cost. Zero factory downtime, non-penetrating PEB clamps, and 100% turnkey CEIG &amp; DISCOM net-metering.
+                            {/* Subheading */}
+                            <p style={{ color: 'rgba(186,210,255,0.85)', fontSize: '1rem', lineHeight: 1.7, maxWidth: 520 }}>
+                                Turnkey rooftop solar for factories with 40% accelerated depreciation,
+                                non-penetrating roof mounting and DG-PV synchronisation across North India.
                             </p>
 
-                            {/* 3 Value Metrics Grid (Warm Paper Cards) */}
-                            <div className="grid grid-cols-3 gap-3.5 pt-1">
-                                <div className="p-4 rounded-2xl bg-white border border-[#e8dacd] shadow-[0_8px_20px_-4px_rgba(44,34,30,0.04)] hover:-translate-y-1 transition-all duration-300">
-                                    <div className="text-2xl sm:text-3xl font-semibold text-amber-700">40%</div>
-                                    <div className="text-[11px] sm:text-xs font-medium text-[#2c221e] uppercase tracking-wide mt-1">Tax Write-Off</div>
-                                    <div className="text-[10px] text-[#7a675b] font-normal">Section 32 (Year 1)</div>
-                                </div>
-                                <div className="p-4 rounded-2xl bg-white border border-[#e8dacd] shadow-[0_8px_20px_-4px_rgba(44,34,30,0.04)] hover:-translate-y-1 transition-all duration-300">
-                                    <div className="text-2xl sm:text-3xl font-semibold text-emerald-700">&lt; 3.0 Yrs</div>
-                                    <div className="text-[11px] sm:text-xs font-medium text-[#2c221e] uppercase tracking-wide mt-1">Corporate Payback</div>
-                                    <div className="text-[10px] text-[#7a675b] font-normal">22+ Yrs 100% Free Power</div>
-                                </div>
-                                <div className="p-4 rounded-2xl bg-white border border-[#e8dacd] shadow-[0_8px_20px_-4px_rgba(44,34,30,0.04)] hover:-translate-y-1 transition-all duration-300">
-                                    <div className="text-2xl sm:text-3xl font-semibold text-[#1c1511]">₹3.50</div>
-                                    <div className="text-[11px] sm:text-xs font-medium text-[#2c221e] uppercase tracking-wide mt-1">Levelized Cost</div>
-                                    <div className="text-[10px] text-[#7a675b] font-normal">vs ₹9.50 Grid Tariff</div>
-                                </div>
-                            </div>
-
-                            {/* Warm Dark Industrial Statement Badge */}
-                            <div className="p-4 rounded-2xl bg-[#1c1511] text-white flex items-center justify-between flex-wrap gap-3 shadow-[0_10px_25px_rgba(28,21,17,0.25)] border border-[#3d2f26]">
-                                <div className="flex items-center gap-3">
-                                    <div className="flex -space-x-2 overflow-hidden">
-                                        <div className="w-8 h-8 rounded-full bg-amber-500 text-slate-950 font-bold text-xs flex items-center justify-center ring-2 ring-[#1c1511]">35M</div>
-                                        <div className="w-8 h-8 rounded-full bg-yellow-400 text-slate-950 font-bold text-xs flex items-center justify-center ring-2 ring-[#1c1511]">★</div>
-                                        <div className="w-8 h-8 rounded-full bg-emerald-500 text-white font-medium text-xs flex items-center justify-center ring-2 ring-[#1c1511]">✓</div>
-                                    </div>
-                                    <div>
-                                        <div className="flex items-center gap-1.5">
-                                            <div className="flex text-amber-400 text-xs">
-                                                <StarIcon className="w-3.5 h-3.5 fill-amber-400" />
-                                                <StarIcon className="w-3.5 h-3.5 fill-amber-400" />
-                                                <StarIcon className="w-3.5 h-3.5 fill-amber-400" />
-                                                <StarIcon className="w-3.5 h-3.5 fill-amber-400" />
-                                                <StarIcon className="w-3.5 h-3.5 fill-amber-400" />
-                                            </div>
-                                            <span className="text-xs font-medium text-[#d4c5b9]">Enterprise Solar EPC</span>
+                            {/* 3 Stat chips — 3D glassmorphic */}
+                            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-1">
+                                {[
+                                    { val: `₹${solarTariff.toFixed(2)}`, label: `Solar cost per unit vs ₹${gridTariff.toFixed(2)} grid` },
+                                    { val: '40%', label: 'Accelerated depreciation tax benefit' },
+                                    { val: '35+ MWp', label: 'Installed across Haryana, Punjab & NCR' },
+                                ].map((chip, i) => (
+                                    <div key={i} style={{
+                                        padding: '14px 16px',
+                                        borderRadius: 16,
+                                        background: 'linear-gradient(135deg, rgba(255,255,255,0.09) 0%, rgba(255,255,255,0.03) 100%)',
+                                        border: '1px solid rgba(255,255,255,0.12)',
+                                        backdropFilter: 'blur(12px)',
+                                        WebkitBackdropFilter: 'blur(12px)',
+                                        boxShadow: '0 8px 32px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.1)',
+                                        transform: `perspective(600px) rotateX(${-py * 2}deg) rotateY(${px * 1.5}deg)`,
+                                        transition: 'transform 0.2s ease-out',
+                                        cursor: 'default',
+                                    }}>
+                                        <div style={{ ...GG.heading, fontSize: '1.65rem', fontWeight: 800, color: '#FFC400', letterSpacing: '-0.03em', textShadow: '0 2px 12px rgba(255,196,0,0.4)' }}>
+                                            {chip.val}
                                         </div>
-                                        <p className="text-[11px] text-[#a89586] font-normal">Empanelled for Textiles, Auto Ancillaries, Forging, Plastics &amp; Warehousing</p>
-                                    </div>
-                                </div>
-                                <span className="text-[11px] font-medium text-amber-300 bg-amber-500/15 px-3 py-1 rounded-full border border-amber-500/30">
-                                    Zero Factory Halt
-                                </span>
-                            </div>
-
-                            {/* Industrial Trust Bullets */}
-                            <div className="grid grid-cols-2 gap-3 text-xs text-[#4a3b32] font-normal pt-1">
-                                <div className="flex items-center gap-2">
-                                    <div className="w-5 h-5 rounded-full bg-amber-100 text-amber-800 flex items-center justify-center shrink-0">
-                                        <CheckIcon className="w-3 h-3 stroke-[2.5]" />
-                                    </div>
-                                    <span>Non-Penetrating Leak-Proof PEB Clamping</span>
-                                </div>
-                                <div className="flex items-center gap-2">
-                                    <div className="w-5 h-5 rounded-full bg-amber-100 text-amber-800 flex items-center justify-center shrink-0">
-                                        <CheckIcon className="w-3 h-3 stroke-[2.5]" />
-                                    </div>
-                                    <span>Smart DG-PV Synchronization (Save 60%+ Diesel)</span>
-                                </div>
-                                <div className="flex items-center gap-2">
-                                    <div className="w-5 h-5 rounded-full bg-amber-100 text-amber-800 flex items-center justify-center shrink-0">
-                                        <CheckIcon className="w-3 h-3 stroke-[2.5]" />
-                                    </div>
-                                    <span>STAAD-Pro 160+ km/h Cyclone Resilient Structures</span>
-                                </div>
-                                <div className="flex items-center gap-2">
-                                    <div className="w-5 h-5 rounded-full bg-amber-100 text-amber-800 flex items-center justify-center shrink-0">
-                                        <CheckIcon className="w-3 h-3 stroke-[2.5]" />
-                                    </div>
-                                    <span>100% Turnkey CEIG &amp; HT Net-Metering Liaison</span>
-                                </div>
-                            </div>
-
-                        </div>
-
-                        {/* RIGHT COLUMN: Warm Corporate Lead Assessment Card */}
-                        <div id="assessment-form" className="lg:col-span-5 scroll-mt-24">
-                            <div className="bg-white rounded-3xl p-6 sm:p-8 shadow-[0_16px_40px_-10px_rgba(44,34,30,0.1)] border border-[#e8dacd] relative overflow-hidden">
-                                
-                                <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-amber-600 via-yellow-500 to-amber-700" />
-
-                                <div className="mb-5">
-                                    <span className="text-[10px] font-semibold uppercase tracking-wider text-amber-900 bg-amber-100/80 px-3 py-0.5 rounded-full inline-block mb-2">
-                                        Corporate Feasibility Audit
-                                    </span>
-                                    <h3 className="text-xl sm:text-2xl font-semibold text-[#1c1511] leading-tight">
-                                        Request Free Site Assessment
-                                    </h3>
-                                    <p className="text-xs text-[#736055] mt-1 leading-relaxed font-normal">
-                                        Get an engineering load audit, tariff displacement report &amp; 25-year financial model within 24 hours.
-                                    </p>
-                                </div>
-
-                                {submitted ? (
-                                    <div className="bg-emerald-50 border border-emerald-200 rounded-2xl p-6 text-center space-y-4">
-                                        <div className="w-14 h-14 bg-emerald-100 text-emerald-700 rounded-full flex items-center justify-center mx-auto shadow-inner">
-                                            <CheckCircleIcon className="w-8 h-8" />
-                                        </div>
-                                        <div>
-                                            <h4 className="text-lg font-semibold text-emerald-950">Technical Request Confirmed!</h4>
-                                            <p className="text-xs text-emerald-800 leading-relaxed font-normal mt-1.5">
-                                                Your industrial audit request has been assigned to our senior commercial EPC engineering team. We will connect within <strong>30 minutes</strong> with initial metrics.
-                                            </p>
-                                        </div>
-                                        <a
-                                            href="tel:+919254986321"
-                                            className="inline-flex items-center justify-center gap-2 w-full bg-[#1c1511] hover:bg-[#2e231c] text-white font-medium py-3 px-4 rounded-xl text-xs transition shadow-sm hover:shadow-md"
-                                        >
-                                            <PhoneIcon className="w-4 h-4 text-amber-400" />
-                                            <span>Call Corporate Desk: 92549-86321</span>
-                                        </a>
-                                    </div>
-                                ) : (
-                                    <form onSubmit={handleFormSubmit} className="space-y-3.5">
-
-                                        {/* Contact Person Name */}
-                                        <div>
-                                            <label className="block text-[11px] font-medium text-[#4a3b32] mb-1">Contact Person Name *</label>
-                                            <input
-                                                type="text"
-                                                required
-                                                placeholder="e.g. Rajesh Singhal (Director / GM)"
-                                                value={formData.fullName}
-                                                onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
-                                                className="w-full bg-[#fbf8f5] border border-[#e3d0c1] rounded-xl px-4 py-2.5 text-xs sm:text-sm text-[#1c1511] placeholder-[#a69588] focus:outline-none focus:bg-white focus:border-amber-600 focus:ring-1 focus:ring-amber-600 transition-all font-normal"
-                                            />
-                                        </div>
-
-                                        {/* Company Name */}
-                                        <div>
-                                            <label className="block text-[11px] font-medium text-[#4a3b32] mb-1">Company / Facility Name *</label>
-                                            <input
-                                                type="text"
-                                                required
-                                                placeholder="e.g. Haryana Metal &amp; Polymers Ltd."
-                                                value={formData.companyName}
-                                                onChange={(e) => setFormData({ ...formData, companyName: e.target.value })}
-                                                className="w-full bg-[#fbf8f5] border border-[#e3d0c1] rounded-xl px-4 py-2.5 text-xs sm:text-sm text-[#1c1511] placeholder-[#a69588] focus:outline-none focus:bg-white focus:border-amber-600 focus:ring-1 focus:ring-amber-600 transition-all font-normal"
-                                            />
-                                        </div>
-
-                                        {/* Mobile */}
-                                        <div>
-                                            <label className="block text-[11px] font-medium text-[#4a3b32] mb-1">Mobile / WhatsApp Number *</label>
-                                            <div className="relative flex items-center border border-[#e3d0c1] rounded-xl overflow-hidden bg-[#fbf8f5] focus-within:bg-white focus-within:border-amber-600 focus-within:ring-1 focus-within:ring-amber-600 transition-all">
-                                                <div className="flex items-center gap-1 px-3 bg-[#f5ede4] text-xs font-semibold text-[#4a3b32] border-r border-[#e3d0c1] shrink-0">
-                                                    <span>🇮🇳 +91</span>
-                                                </div>
-                                                <input
-                                                    type="tel"
-                                                    required
-                                                    maxLength={10}
-                                                    pattern="[0-9]{10}"
-                                                    placeholder="10-digit mobile number"
-                                                    value={formData.mobileNumber}
-                                                    onChange={(e) => setFormData({ ...formData, mobileNumber: e.target.value.replace(/\D/g, '') })}
-                                                    className="w-full bg-transparent px-3 py-2.5 text-xs sm:text-sm text-[#1c1511] placeholder-[#a69588] focus:outline-none font-normal"
-                                                />
-                                            </div>
-                                        </div>
-
-                                        {/* Location */}
-                                        <div>
-                                            <label className="block text-[11px] font-medium text-[#4a3b32] mb-1">Plant Location / Industrial Area *</label>
-                                            <input
-                                                type="text"
-                                                required
-                                                placeholder="e.g. Manesar, Panipat, Focal Point Ludhiana"
-                                                value={formData.cityState}
-                                                onChange={(e) => setFormData({ ...formData, cityState: e.target.value })}
-                                                className="w-full bg-[#fbf8f5] border border-[#e3d0c1] rounded-xl px-4 py-2.5 text-xs sm:text-sm text-[#1c1511] placeholder-[#a69588] focus:outline-none focus:bg-white focus:border-amber-600 focus:ring-1 focus:ring-amber-600 transition-all font-normal"
-                                            />
-                                        </div>
-
-                                        {/* Industry Type */}
-                                        <div>
-                                            <label className="block text-[11px] font-medium text-[#4a3b32] mb-1">Industry Type</label>
-                                            <select
-                                                value={formData.industryType}
-                                                onChange={(e) => setFormData({ ...formData, industryType: e.target.value })}
-                                                className="w-full bg-[#fbf8f5] border border-[#e3d0c1] rounded-xl px-3.5 py-2.5 text-xs text-[#2c221e] focus:outline-none focus:bg-white focus:border-amber-600 font-normal"
-                                            >
-                                                <option value="">Select Industry Type (Optional)</option>
-                                                <option value="Manufacturing / Heavy Industry">Manufacturing / Heavy Industry</option>
-                                                <option value="Textile & Garments">Textile &amp; Garments</option>
-                                                <option value="Plastics & Packaging">Plastics &amp; Packaging</option>
-                                                <option value="Cold Storage & Food Processing">Cold Storage &amp; Food Processing</option>
-                                                <option value="Warehouse & Logistics">Warehouse &amp; Logistics</option>
-                                                <option value="Commercial Complex / Mall / Hospital">Commercial / Hospital / Institutional</option>
-                                            </select>
-                                        </div>
-
-                                        {/* Warm Embedded Power Bill Slider in Form */}
-                                        <div className="p-3 bg-amber-50/70 rounded-2xl border border-amber-200/80 space-y-1.5">
-                                            <div className="flex justify-between items-center text-xs">
-                                                <span className="font-medium text-[#524136]">Monthly Power Bill</span>
-                                                <span className="font-semibold text-amber-800">₹{monthlyPowerSpend} Lakh / mo</span>
-                                            </div>
-                                            <input
-                                                type="range"
-                                                min={1}
-                                                max={30}
-                                                step={1}
-                                                value={monthlyPowerSpend}
-                                                onChange={(e) => setMonthlyPowerSpend(Number(e.target.value))}
-                                                className="w-full accent-amber-600 cursor-pointer h-2 bg-[#ebdcd0] rounded-lg"
-                                            />
-                                            <div className="flex justify-between items-center text-[10px] text-[#736055]">
-                                                <span>Est: <strong className="text-[#1c1511]">{indCalc.recKw} kWp Plant</strong></span>
-                                                <span className="text-emerald-800 font-semibold">Yr 1 Tax Write-Off: ₹{indCalc.estYr1TaxWriteOffLakh} Lakh</span>
-                                            </div>
-                                        </div>
-
-                                        {errorMsg && (
-                                            <p className="text-xs font-medium text-rose-700 bg-rose-50 p-2 rounded-lg border border-rose-200">{errorMsg}</p>
-                                        )}
-
-                                        <button
-                                            type="submit"
-                                            disabled={submitting}
-                                            className="w-full bg-[#1c1511] hover:bg-[#2e231c] text-white font-medium py-3 px-6 rounded-xl text-xs sm:text-sm transition-all shadow-[0_4px_14px_rgba(28,21,17,0.2)] hover:-translate-y-0.5 flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
-                                        >
-                                            {submitting ? (
-                                                <span>Registering Feasibility...</span>
-                                            ) : (
-                                                <>
-                                                    <span>Request Free Industrial Site Assessment</span>
-                                                    <ArrowRightIcon className="w-4 h-4 text-amber-400 stroke-[2]" />
-                                                </>
-                                            )}
-                                        </button>
-
-                                        <div className="flex items-center justify-center gap-3 pt-0.5 text-[10px] text-[#8c7b6f] font-normal">
-                                            <span className="flex items-center gap-1"><LockClosedIcon className="w-3 h-3 text-emerald-700" /> Enterprise NDA Protected</span>
-                                            <span>•</span>
-                                            <span>Zero Production Halt</span>
-                                        </div>
-
-                                    </form>
-                                )}
-
-                            </div>
-
-                            {/* Credentials Strip */}
-                            <div className="mt-4 bg-white rounded-2xl p-3 border border-[#e8dacd] shadow-xs flex items-center justify-between gap-2 text-center text-[11px] font-medium text-[#524136]">
-                                <div>
-                                    <span className="block text-[#1c1511] font-semibold">Section 32</span>
-                                    <span className="text-[10px] text-[#8c7b6f] font-normal">Income Tax Act</span>
-                                </div>
-                                <span className="text-[#c7b3a3]">•</span>
-                                <div>
-                                    <span className="block text-[#1c1511] font-semibold">CEIG Approved</span>
-                                    <span className="text-[10px] text-[#8c7b6f] font-normal">Govt. Certified</span>
-                                </div>
-                                <span className="text-[#c7b3a3]">•</span>
-                                <div>
-                                    <span className="block text-[#1c1511] font-semibold">HT Synchronized</span>
-                                    <span className="text-[10px] text-[#8c7b6f] font-normal">State DISCOMs</span>
-                                </div>
-                            </div>
-
-                        </div>
-
-                    </div>
-                </div>
-            </section>
-
-            {/* ════════════════════════════════════════════════════════════════
-                SECTION 2: WARM INDUSTRIAL PAYBACK & TAX WRITE-OFF MATRIX
-            ════════════════════════════════════════════════════════════════ */}
-            <section className="py-20 bg-white border-b border-[#ebdcd0] relative">
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                    
-                    <div className="text-center max-w-3xl mx-auto mb-14">
-                        <span className="text-xs font-semibold text-amber-900 uppercase tracking-widest bg-amber-100/70 px-3 py-1 rounded-full border border-amber-200">
-                            Corporate Yield &amp; Cash Flow
-                        </span>
-                        <h2 className="text-2xl sm:text-4xl font-normal text-[#1c1511] mt-3 tracking-tight">
-                            Industrial Solar EPC Payback &amp; Tax Depreciation Matrix
-                        </h2>
-                        <p className="text-sm text-[#736055] mt-2 font-normal">
-                            Estimated returns calculated against standard industrial HT tariffs and Section 32 Income Tax benefits:
-                        </p>
-                    </div>
-
-                    {/* Interactive Industrial Calculator */}
-                    <div className="bg-[#fbf8f5] border border-[#e8dacd] rounded-3xl p-6 sm:p-10 shadow-[0_10px_30px_rgba(28,21,17,0.03)] mb-14">
-                        <div className="max-w-3xl mx-auto space-y-7">
-                            
-                            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                                <div>
-                                    <span className="text-xs font-medium uppercase tracking-wider text-[#7a675b]">Step 1: Adjust Your Monthly Industrial Power Bill</span>
-                                    <h3 className="text-xl font-medium text-[#1c1511]">What does your facility spend on grid electricity?</h3>
-                                </div>
-                                <div className="text-left sm:text-right">
-                                    <span className="text-3xl sm:text-4xl font-semibold text-amber-800">₹{monthlyPowerSpend} Lakh</span>
-                                    <span className="text-xs text-[#7a675b] block font-normal">/ month (~{(monthlyPowerSpend * 100000 / 9.2).toFixed(0)} units)</span>
-                                </div>
-                            </div>
-
-                            <input
-                                type="range"
-                                min={1}
-                                max={30}
-                                step={1}
-                                value={monthlyPowerSpend}
-                                onChange={(e) => setMonthlyPowerSpend(Number(e.target.value))}
-                                className="w-full accent-amber-600 cursor-pointer h-2 bg-[#ebdcd0] rounded-lg"
-                            />
-
-                            {/* Stat Output Cards */}
-                            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 pt-2">
-                                <div className="p-4 bg-white rounded-2xl border border-[#e8dacd] shadow-xs">
-                                    <span className="text-[11px] font-medium uppercase tracking-wider text-[#7a675b] block">Optimal Plant Size</span>
-                                    <span className="text-2xl font-semibold text-[#1c1511] mt-1 block">{indCalc.recKw} kWp</span>
-                                    <span className="text-[11px] text-[#7a675b] mt-0.5 block">Needs ~{indCalc.roofAreaSqFt} sq. ft.</span>
-                                </div>
-
-                                <div className="p-4 bg-amber-50/70 rounded-2xl border border-amber-200/80 shadow-xs">
-                                    <span className="text-[11px] font-medium uppercase tracking-wider text-amber-900 block">Yr 1 Tax Write-Off</span>
-                                    <span className="text-2xl font-semibold text-amber-800 mt-1 block">₹{indCalc.estYr1TaxWriteOffLakh}L</span>
-                                    <span className="text-[11px] text-amber-800 mt-0.5 block">40% Sec 32 IT Act</span>
-                                </div>
-
-                                <div className="p-4 bg-white rounded-2xl border border-[#e8dacd] shadow-xs">
-                                    <span className="text-[11px] font-medium uppercase tracking-wider text-[#7a675b] block">Est. Annual Savings</span>
-                                    <span className="text-2xl font-semibold text-emerald-700 mt-1 block">₹{indCalc.estAnnualSavingsCr} Cr</span>
-                                    <span className="text-[11px] text-[#7a675b] mt-0.5 block">Every operational year</span>
-                                </div>
-
-                                <div className="p-4 bg-white rounded-2xl border border-[#e8dacd] shadow-xs">
-                                    <span className="text-[11px] font-medium uppercase tracking-wider text-[#7a675b] block">Corporate Payback</span>
-                                    <span className="text-2xl font-semibold text-amber-700 mt-1 block">&lt; 3.0 Yrs</span>
-                                    <span className="text-[11px] text-[#7a675b] mt-0.5 block">Post-payback power is free</span>
-                                </div>
-                            </div>
-
-                            {/* Action Strip */}
-                            <div className="p-4 rounded-2xl bg-[#1c1511] text-white flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 text-xs shadow-sm">
-                                <div>
-                                    <span className="text-[#d4c5b9]">Target Levelized Cost of Solar Generation:</span>
-                                    <span className="font-semibold text-amber-400 text-base sm:text-lg ml-2">₹3.20 - ₹3.60 / unit</span>
-                                    <span className="text-[#a89586] block text-[11px] mt-0.5">(Displacing state grid tariffs of ₹9.00 - ₹11.50 / unit)</span>
-                                </div>
-                                <button
-                                    type="button"
-                                    onClick={scrollToForm}
-                                    className="bg-amber-400 hover:bg-amber-300 text-[#1c1511] font-medium px-5 py-2.5 rounded-xl transition-all shadow-xs cursor-pointer shrink-0"
-                                >
-                                    Get Engineering Feasibility →
-                                </button>
-                            </div>
-
-                        </div>
-                    </div>
-
-                    {/* Standard Industrial Tiers Grid */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                        {ROI_TIERS.map((tier) => (
-                            <div
-                                key={tier.category}
-                                className={`rounded-3xl p-6 relative flex flex-col justify-between transition-all duration-300 ${
-                                    tier.popular
-                                        ? 'bg-white border-2 border-amber-600 shadow-[0_12px_30px_-5px_rgba(217,119,6,0.18)] scale-[1.02]'
-                                        : 'bg-white border border-[#e8dacd] hover:border-amber-300 shadow-xs hover:-translate-y-0.5'
-                                }`}
-                            >
-                                {tier.popular && (
-                                    <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-amber-600 text-white text-[10px] font-semibold tracking-wider uppercase px-3 py-0.5 rounded-full shadow-xs whitespace-nowrap">
-                                        ★ Most In-Demand Capacity
-                                    </div>
-                                )}
-
-                                <div>
-                                    <h3 className="text-xl font-medium text-[#1c1511]">{tier.category}</h3>
-                                    <p className="text-xs text-amber-800 font-medium mt-0.5">{tier.scope}</p>
-
-                                    <div className="my-5 p-4 rounded-2xl bg-[#fbf8f5] border border-[#e8dacd] space-y-2 text-xs font-normal">
-                                        <div className="flex justify-between">
-                                            <span className="text-[#7a675b]">Power Bill:</span>
-                                            <span className="text-[#2c221e] font-medium">{tier.monthlyBill}</span>
-                                        </div>
-                                        <div className="flex justify-between">
-                                            <span className="text-[#7a675b]">Est. Annual Savings:</span>
-                                            <span className="text-emerald-700 font-semibold">{tier.estAnnualSavings}</span>
-                                        </div>
-                                        <div className="flex justify-between">
-                                            <span className="text-[#7a675b]">Payback Period:</span>
-                                            <span className="text-[#2c221e] font-medium">{tier.payback}</span>
-                                        </div>
-                                        <div className="flex justify-between pt-1 border-t border-[#ebdcd0]">
-                                            <span className="text-[#7a675b]">Yr 1 Tax Write-Off:</span>
-                                            <span className="text-amber-800 font-semibold">{tier.taxDeprec}</span>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <button
-                                    type="button"
-                                    onClick={scrollToForm}
-                                    className={`w-full py-3 rounded-xl font-medium text-xs text-center transition-all cursor-pointer ${
-                                        tier.popular
-                                            ? 'bg-amber-600 hover:bg-amber-700 text-white shadow-xs'
-                                            : 'bg-[#f5ede4] hover:bg-[#ebdcd0] text-[#2c221e]'
-                                    }`}
-                                >
-                                    Enquire For {tier.category}
-                                </button>
-                            </div>
-                        ))}
-                    </div>
-
-                </div>
-            </section>
-
-            {/* ════════════════════════════════════════════════════════════════
-                SECTION 3: REAL VERIFIED MEGA INDUSTRIAL PROJECTS
-            ════════════════════════════════════════════════════════════════ */}
-            <section className="py-20 bg-[#f5ede4] border-b border-[#ebdcd0]">
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                    
-                    <div className="text-center max-w-3xl mx-auto mb-14">
-                        <span className="text-xs font-semibold text-amber-900 uppercase tracking-widest bg-white px-3 py-1 rounded-full border border-[#e3d0c1]">
-                            Proven MW-Scale Engineering
-                        </span>
-                        <h2 className="text-2xl sm:text-4xl font-normal text-[#1c1511] mt-3 tracking-tight">
-                            Verified Completed Industrial Solar Plants
-                        </h2>
-                        <p className="text-sm text-[#736055] mt-2 font-normal">
-                            Actual on-ground commercial rooftop &amp; ground-mount installations engineered across North India:
-                        </p>
-                    </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                        {COMPLETED_PROJECTS.map((proj) => (
-                            <div key={proj.title} className="bg-white rounded-3xl overflow-hidden border border-[#e8dacd] shadow-xs hover:shadow-md transition-all duration-300">
-                                
-                                <div className="relative h-64 w-full overflow-hidden bg-[#e8dacd]">
-                                    <Image
-                                        src={proj.image}
-                                        alt={proj.title}
-                                        fill
-                                        sizes="(max-width: 768px) 100vw, 50vw"
-                                        className="object-cover transition-transform duration-700 hover:scale-105"
-                                    />
-                                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
-                                    <div className="absolute top-4 left-4 bg-white/95 backdrop-blur-md px-3 py-1 rounded-full text-[11px] font-semibold text-[#1c1511] shadow-xs">
-                                        {proj.sector}
-                                    </div>
-                                    <div className="absolute top-4 right-4 bg-amber-600 text-white px-3 py-1 rounded-full text-xs font-semibold shadow-xs">
-                                        {proj.capacity}
-                                    </div>
-                                    <div className="absolute bottom-4 left-4 right-4 text-white">
-                                        <h3 className="text-base sm:text-lg font-medium leading-snug">{proj.title}</h3>
-                                        <p className="text-xs text-[#d4c5b9] mt-0.5">{proj.location}</p>
-                                    </div>
-                                </div>
-
-                                <div className="p-5 grid grid-cols-2 gap-3 text-xs border-t border-[#f5ede4] font-normal">
-                                    <div className="p-3 bg-[#fbf8f5] rounded-xl border border-[#ebdcd0]">
-                                        <span className="block text-[10px] text-[#7a675b] uppercase font-medium">Estimated Tariff Savings</span>
-                                        <span className="font-semibold text-emerald-800 text-sm mt-0.5 block">{proj.annualSavings}</span>
-                                    </div>
-                                    <div className="p-3 bg-[#fbf8f5] rounded-xl border border-[#ebdcd0]">
-                                        <span className="block text-[10px] text-[#7a675b] uppercase font-medium">Mounting Engineering</span>
-                                        <span className="font-medium text-[#2c221e] text-xs mt-0.5 block truncate">{proj.structure}</span>
-                                    </div>
-                                </div>
-
-                            </div>
-                        ))}
-                    </div>
-
-                </div>
-            </section>
-
-            {/* ════════════════════════════════════════════════════════════════
-                SECTION 4: INDUSTRIAL ENGINEERING RIGOR & ZERO DOWNTIME
-            ════════════════════════════════════════════════════════════════ */}
-            <section className="py-20 bg-white border-b border-[#ebdcd0]">
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                    <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
-                        
-                        <div className="lg:col-span-7 space-y-6">
-                            <span className="text-xs font-semibold text-amber-900 uppercase tracking-widest bg-amber-100/70 px-3 py-1 rounded-full border border-amber-200">
-                                Engineering Benchmarks
-                            </span>
-                            <h2 className="text-2xl sm:text-4xl font-normal text-[#1c1511] tracking-tight">
-                                Built for Harsh Industrial Environments &amp; Zero Downtime
-                            </h2>
-                            <p className="text-[#524136] text-sm sm:text-base leading-relaxed font-normal">
-                                Industrial rooftops endure chemical fumes, thermal expansion cycles, and high mechanical vibrations. We design heavy-duty EPC plants that protect both your building and your power yields.
-                            </p>
-
-                            <div className="space-y-3.5 pt-2">
-                                {ENGINEERING_STANDARDS.map((std, i) => (
-                                    <div key={i} className="p-4 rounded-2xl bg-[#fbf8f5] border border-[#ebdcd0] shadow-xs flex gap-4">
-                                        <div className="w-10 h-10 rounded-xl bg-[#1c1511] text-amber-400 font-semibold text-sm flex items-center justify-center shrink-0">
-                                            {std.num}
-                                        </div>
-                                        <div>
-                                            <h3 className="text-sm font-medium text-[#1c1511]">{std.title}</h3>
-                                            <p className="text-xs text-[#736055] leading-relaxed mt-1 font-normal">{std.desc}</p>
+                                        <div style={{ fontSize: '0.68rem', color: 'rgba(186,210,255,0.85)', marginTop: 4, lineHeight: 1.4, fontWeight: 500 }}>
+                                            {chip.label}
                                         </div>
                                     </div>
                                 ))}
                             </div>
+
+                            {/* 3 check bullets */}
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                                {[
+                                    'Non-penetrating clamps designed to avoid roof drilling',
+                                    'DG-PV synchronisation to reduce diesel usage',
+                                    'Turnkey CEIG and DISCOM approval support',
+                                ].map((item, i) => (
+                                    <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                                        <div style={{
+                                            width: 22, height: 22, borderRadius: '50%', flexShrink: 0,
+                                            background: '#FFC400', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                            boxShadow: '0 0 14px rgba(255,196,0,0.5)',
+                                        }}>
+                                            <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+                                                <path d="M2 6l3 3 5-5" stroke="#0A0A0F" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                                            </svg>
+                                        </div>
+                                        <span style={{ fontSize: '0.875rem', color: 'rgba(226,232,255,0.9)', fontWeight: 500 }}>{item}</span>
+                                    </div>
+                                ))}
+                            </div>
+
+                            {/* Footnote */}
+                            <p style={{ fontSize: '0.68rem', color: 'rgba(148,163,200,0.65)', lineHeight: 1.6, maxWidth: 480, paddingTop: 4 }}>
+                                ₹3.50/unit is the estimated 25-year levelised cost. Assumptions: [VERIFY]. Grid tariff source: [VERIFY]. Depreciation subject to eligibility; consult your CA.
+                            </p>
                         </div>
 
-                        {/* Right: Technical Blueprint Graphic */}
-                        <div className="lg:col-span-5">
-                            <div className="bg-[#fbf8f5] rounded-3xl p-6 sm:p-8 border border-[#e8dacd] shadow-sm space-y-6">
-                                <div className="relative h-60 rounded-2xl overflow-hidden border border-[#ebdcd0]">
-                                    <Image
-                                        src="/industrial_4k.webp"
-                                        alt="Industrial Solar Technical Execution"
-                                        fill
-                                        sizes="(max-width: 768px) 100vw, 40vw"
-                                        className="object-cover"
-                                    />
-                                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent p-5 flex flex-col justify-end">
-                                        <span className="text-white font-medium text-base">Corporate Solar Engineering</span>
-                                        <span className="text-amber-400 text-xs font-normal">Direct CEIG &amp; HT Transformer Tie-In</span>
-                                    </div>
+                        {/* RIGHT COLUMN — Lead Form Card */}
+                        <div id="epc-form" className="lg:col-span-5 scroll-mt-24">
+                            <div style={{
+                                background: '#ffffff',
+                                borderRadius: 24,
+                                padding: '32px',
+                                boxShadow: '0 30px 80px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.3), 0 0 60px rgba(37,99,235,0.2)',
+                                position: 'relative',
+                                overflow: 'hidden',
+                                transform: `perspective(900px) rotateY(${-px * 2}deg) rotateX(${py * 1}deg)`,
+                                transition: 'transform 0.2s ease-out',
+                            }}>
+                                {/* Yellow top bar */}
+                                <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 4, background: 'linear-gradient(90deg, #FFC400, #FFD740, #FFC400)' }} />
+
+                                {/* Subtle inner glow */}
+                                <div style={{
+                                    position: 'absolute', top: -60, right: -60, width: 200, height: 200, borderRadius: '50%',
+                                    background: 'radial-gradient(circle, rgba(255,196,0,0.07) 0%, transparent 70%)',
+                                    pointerEvents: 'none',
+                                }} />
+
+                                <div style={{ marginBottom: 20, paddingTop: 8 }}>
+                                    <span style={{
+                                        ...GG.heading, fontSize: '0.65rem', fontWeight: 800, letterSpacing: '0.12em',
+                                        textTransform: 'uppercase', color: '#1d4ed8',
+                                        background: '#eff6ff', padding: '4px 10px', borderRadius: 20, display: 'inline-block', marginBottom: 10
+                                    }}>
+                                        Fast Feasibility Assessment
+                                    </span>
+                                    <h2 style={{ ...GG.heading, fontWeight: 800, fontSize: '1.3rem', color: '#0f172a', lineHeight: 1.3, letterSpacing: '-0.02em' }}>
+                                        Get your factory&apos;s solar payback report
+                                    </h2>
+                                    <p style={{ fontSize: '0.75rem', color: '#64748b', marginTop: 4 }}>
+                                        Custom generation simulation &amp; load analysis in 30 mins
+                                    </p>
                                 </div>
 
-                                <div className="space-y-3 text-xs text-[#4a3b32] font-normal">
-                                    <div className="flex items-center gap-2.5">
-                                        <div className="w-4 h-4 rounded-full bg-emerald-100 text-emerald-800 flex items-center justify-center text-[10px] font-bold">✓</div>
-                                        <span>STAAD-Pro load certified structures with 10-year warranty</span>
-                                    </div>
-                                    <div className="flex items-center gap-2.5">
-                                        <div className="w-4 h-4 rounded-full bg-emerald-100 text-emerald-800 flex items-center justify-center text-[10px] font-bold">✓</div>
-                                        <span>Bi-directional net/gross meter liaison with DHBVN / PSPCL</span>
-                                    </div>
-                                    <div className="flex items-center gap-2.5">
-                                        <div className="w-4 h-4 rounded-full bg-emerald-100 text-emerald-800 flex items-center justify-center text-[10px] font-bold">✓</div>
-                                        <span>25-year manufacturer power warranty on Tier-1 TOPCon modules</span>
-                                    </div>
-                                </div>
+                                {/* Honeypot */}
+                                <input type="text" name="website_url_hp" value={honeypot} onChange={e => setHoneypot(e.target.value)} className="hidden" tabIndex={-1} autoComplete="off" />
 
-                                <button
-                                    type="button"
-                                    onClick={scrollToForm}
-                                    className="w-full bg-[#1c1511] hover:bg-[#2e231c] text-white font-medium py-3 px-5 rounded-xl text-xs sm:text-sm shadow-xs transition cursor-pointer flex items-center justify-center gap-2"
-                                >
-                                    <span>Schedule Factory Feasibility Visit</span>
-                                    <ArrowRightIcon className="w-4 h-4 text-amber-400" />
-                                </button>
+                                <form onSubmit={handleFormSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+
+                                    {/* Full Name */}
+                                    <div>
+                                        <label style={{ display: 'block', fontSize: '0.72rem', fontWeight: 700, color: '#374151', marginBottom: 6 }}>
+                                            Full Name <span style={{ color: '#ef4444' }}>*</span>
+                                        </label>
+                                        <input
+                                            type="text" required placeholder="e.g. Rajesh Singhal"
+                                            value={formData.name} onChange={e => setFormData({ ...formData, name: e.target.value })}
+                                            style={{ width: '100%', padding: '11px 14px', border: '1.5px solid #e2e8f0', borderRadius: 12, fontSize: '0.875rem', color: '#0f172a', background: '#f8fafc', outline: 'none', boxSizing: 'border-box' }}
+                                            onFocus={e => { e.target.style.borderColor = '#2563eb'; e.target.style.background = '#fff'; e.target.style.boxShadow = '0 0 0 3px rgba(37,99,235,0.12)'; }}
+                                            onBlur={e => { e.target.style.borderColor = '#e2e8f0'; e.target.style.background = '#f8fafc'; e.target.style.boxShadow = 'none'; }}
+                                        />
+                                    </div>
+
+                                    {/* Mobile */}
+                                    <div>
+                                        <label style={{ display: 'block', fontSize: '0.72rem', fontWeight: 700, color: '#374151', marginBottom: 6 }}>
+                                            Mobile / WhatsApp <span style={{ color: '#ef4444' }}>*</span>
+                                        </label>
+                                        <div style={{ display: 'flex', border: '1.5px solid #e2e8f0', borderRadius: 12, overflow: 'hidden', background: '#f8fafc' }}>
+                                            <span style={{ padding: '11px 12px', fontSize: '0.75rem', fontWeight: 700, color: '#374151', background: '#f1f5f9', borderRight: '1.5px solid #e2e8f0', flexShrink: 0 }}>🇮🇳 +91</span>
+                                            <input
+                                                type="tel" required maxLength={10} pattern="[6-9][0-9]{9}" placeholder="10-digit number"
+                                                value={formData.phone} onChange={e => setFormData({ ...formData, phone: e.target.value.replace(/\D/g, '') })}
+                                                style={{ flex: 1, padding: '11px 14px', fontSize: '0.875rem', color: '#0f172a', background: 'transparent', outline: 'none', border: 'none' }}
+                                            />
+                                        </div>
+                                    </div>
+
+                                    {/* Monthly Bill */}
+                                    <div>
+                                        <label style={{ display: 'block', fontSize: '0.72rem', fontWeight: 700, color: '#374151', marginBottom: 6 }}>
+                                            Monthly Power Bill <span style={{ color: '#ef4444' }}>*</span>
+                                        </label>
+                                        <select
+                                            required value={formData.monthlyBill} onChange={e => setFormData({ ...formData, monthlyBill: e.target.value })}
+                                            style={{ width: '100%', padding: '11px 14px', border: '1.5px solid #e2e8f0', borderRadius: 12, fontSize: '0.875rem', color: formData.monthlyBill ? '#0f172a' : '#94a3b8', background: '#f8fafc', outline: 'none', boxSizing: 'border-box', cursor: 'pointer' }}
+                                        >
+                                            <option value="">Select Monthly Bill Range</option>
+                                            <option value="₹1L - ₹3L / mo">₹1 Lakh – ₹3 Lakh / month</option>
+                                            <option value="₹3L - ₹5L / mo">₹3 Lakh – ₹5 Lakh / month</option>
+                                            <option value="₹5L - ₹10L / mo">₹5 Lakh – ₹10 Lakh / month</option>
+                                            <option value="₹10L - ₹25L / mo">₹10 Lakh – ₹25 Lakh / month</option>
+                                            <option value="₹25L+ / mo">₹25 Lakh+ / month</option>
+                                        </select>
+                                    </div>
+
+                                    {/* Location */}
+                                    <div>
+                                        <label style={{ display: 'block', fontSize: '0.72rem', fontWeight: 700, color: '#374151', marginBottom: 6 }}>
+                                            Plant / Factory Location <span style={{ color: '#ef4444' }}>*</span>
+                                        </label>
+                                        <input
+                                            type="text" required placeholder="e.g. Panipat, Ludhiana, Hisar"
+                                            value={formData.location} onChange={e => setFormData({ ...formData, location: e.target.value })}
+                                            style={{ width: '100%', padding: '11px 14px', border: '1.5px solid #e2e8f0', borderRadius: 12, fontSize: '0.875rem', color: '#0f172a', background: '#f8fafc', outline: 'none', boxSizing: 'border-box' }}
+                                            onFocus={e => { e.target.style.borderColor = '#2563eb'; e.target.style.background = '#fff'; e.target.style.boxShadow = '0 0 0 3px rgba(37,99,235,0.12)'; }}
+                                            onBlur={e => { e.target.style.borderColor = '#e2e8f0'; e.target.style.background = '#f8fafc'; e.target.style.boxShadow = 'none'; }}
+                                        />
+                                    </div>
+
+                                    {errorMsg && (
+                                        <p style={{ fontSize: '0.75rem', fontWeight: 600, color: '#dc2626', background: '#fef2f2', padding: '10px 14px', borderRadius: 10, border: '1px solid #fecaca' }}>
+                                            {errorMsg}
+                                        </p>
+                                    )}
+
+                                    <button
+                                        type="submit" disabled={submitting}
+                                        style={{
+                                            width: '100%', padding: '14px 24px', borderRadius: 14,
+                                            background: submitting ? '#1e293b' : '#0A0A0F',
+                                            color: '#FFC400', fontWeight: 800, fontSize: '0.9rem',
+                                            border: '1.5px solid rgba(255,196,0,0.3)',
+                                            cursor: submitting ? 'not-allowed' : 'pointer', outline: 'none',
+                                            display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+                                            boxShadow: '0 4px 24px rgba(0,0,0,0.25)',
+                                            transition: 'transform 0.15s, box-shadow 0.15s',
+                                            ...GG.heading,
+                                        }}
+                                        onMouseOver={e => { if (!submitting) { e.currentTarget.style.transform = 'translateY(-1px)'; e.currentTarget.style.boxShadow = '0 8px 32px rgba(0,0,0,0.35)'; }}}
+                                        onMouseOut={e => { e.currentTarget.style.transform = 'none'; e.currentTarget.style.boxShadow = '0 4px 24px rgba(0,0,0,0.25)'; }}
+                                    >
+                                        {submitting ? 'Submitting...' : (
+                                            <>
+                                                Get Free Solar Assessment
+                                                <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                                                    <path d="M3 8h10M9 4l4 4-4 4" stroke="#FFC400" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                                                </svg>
+                                            </>
+                                        )}
+                                    </button>
+
+                                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10, fontSize: '0.68rem', color: '#94a3b8', fontWeight: 500 }}>
+                                        <span>🔒 100% Confidential</span>
+                                        <span>·</span>
+                                        <span>Zero Obligation</span>
+                                        <span>·</span>
+                                        <span>No Sales Spam</span>
+                                    </div>
+                                </form>
                             </div>
                         </div>
 
                     </div>
                 </div>
+
+                {/* Bottom fade into white */}
+                <div className="absolute bottom-0 left-0 right-0 h-20 z-10 pointer-events-none" style={{
+                    background: 'linear-gradient(to bottom, transparent, rgba(4,14,36,0.5))',
+                }} />
             </section>
 
-            {/* SECTION 5: Customer Reviews */}
-            <Testimonials />
+            {/* ═══════════════════════════════════════════════════════════════
+                SECTION 2 — COMMISSIONED PLANTS
+            ═══════════════════════════════════════════════════════════════ */}
+            <section id="commissioned-plants" className="py-14 sm:py-20 bg-white border-t border-slate-100 scroll-mt-16">
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 
-            {/* MAIN WEBSITE FOOTER */}
-            <Footer />
+                    {/* Section header — no filter pills */}
+                    <div className="mb-10">
+                        <span style={{
+                            fontSize: '0.65rem', fontWeight: 800, letterSpacing: '0.12em',
+                            textTransform: 'uppercase', color: '#1d4ed8',
+                            background: '#eff6ff', padding: '5px 12px', borderRadius: 20,
+                            border: '1px solid #bfdbfe', display: 'inline-block', marginBottom: 12,
+                        }}>
+                            Commissioned Plants
+                        </span>
+                        <h2 style={{ ...GG.heading, fontWeight: 800, fontSize: 'clamp(1.5rem, 3vw, 2.2rem)', color: '#0f172a', letterSpacing: '-0.03em', lineHeight: 1.1 }}>
+                            Factories already running on our solar
+                        </h2>
+                        <p style={{ fontSize: '0.9rem', color: '#475569', marginTop: 6, maxWidth: 540 }}>
+                            HT grid-synchronized rooftop and ground-mount installations across Haryana, Punjab &amp; NCR.
+                        </p>
+                    </div>
 
-            {/* MOBILE FLOATING CTA BAR */}
-            <div className="fixed bottom-0 left-0 right-0 z-50 p-3 bg-[#fbf8f5]/95 backdrop-blur-md border-t border-[#ebdcd0] md:hidden flex gap-2 shadow-lg">
-                <a
-                    href="tel:+919254986321"
-                    className="flex-1 bg-white border border-[#ebdcd0] text-[#1c1511] font-medium py-3 rounded-xl text-center text-xs flex items-center justify-center gap-1.5"
-                >
-                    <PhoneIcon className="w-4 h-4 text-amber-700" />
-                    <span>Call Desk</span>
+                    {/* Compact project cards — 3 columns */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+                        {projects.map(p => (
+                            <div key={p.id} style={{
+                                background: '#071A3E', borderRadius: 16, overflow: 'hidden',
+                                border: '1px solid rgba(255,255,255,0.07)',
+                                boxShadow: '0 12px 40px rgba(0,0,0,0.22)',
+                                display: 'flex', flexDirection: 'column',
+                                transition: 'transform 0.25s, box-shadow 0.25s',
+                            }}
+                                onMouseOver={e => { e.currentTarget.style.transform = 'translateY(-3px)'; e.currentTarget.style.boxShadow = '0 20px 55px rgba(0,0,0,0.3)'; }}
+                                onMouseOut={e => { e.currentTarget.style.transform = 'none'; e.currentTarget.style.boxShadow = '0 12px 40px rgba(0,0,0,0.22)'; }}
+                            >
+                                {/* Image — compact height */}
+                                <div style={{ position: 'relative', height: 155, background: '#040e24', flexShrink: 0 }}>
+                                    <Image src={p.image} alt={p.companyName} fill sizes="(max-width:768px) 100vw, 33vw" className="object-cover" style={{ opacity: 0.82 }} />
+                                    <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(7,26,62,0.97) 0%, rgba(7,26,62,0.3) 55%, transparent 100%)' }} />
+                                    {/* kWp badge */}
+                                    <div style={{ position: 'absolute', top: 10, right: 10, background: '#FFC400', color: '#0A0A0F', fontSize: '0.72rem', fontWeight: 800, padding: '4px 10px', borderRadius: 20, ...GG.heading }}>
+                                        {p.kWp.toLocaleString()} kWp
+                                    </div>
+                                    {/* Name overlay */}
+                                    <div style={{ position: 'absolute', bottom: 10, left: 12, right: 12 }}>
+                                        <h3 style={{ ...GG.heading, fontWeight: 700, fontSize: '0.95rem', color: '#fff', lineHeight: 1.2 }}>{p.companyName}</h3>
+                                        <p style={{ fontSize: '0.68rem', color: 'rgba(186,210,255,0.8)', marginTop: 2 }}>📍 {p.location}</p>
+                                    </div>
+                                </div>
+
+                                {/* Card body */}
+                                <div style={{ padding: '14px 16px', display: 'flex', flexDirection: 'column', gap: 10, flex: 1 }}>
+                                    {/* Roof type chip */}
+                                    <span style={{ fontSize: '0.62rem', fontWeight: 700, color: '#FFC400', background: 'rgba(255,196,0,0.1)', border: '1px solid rgba(255,196,0,0.2)', padding: '3px 10px', borderRadius: 20, display: 'inline-block', width: 'fit-content' }}>
+                                        {p.roofType}
+                                    </span>
+
+                                    {/* Highlights */}
+                                    <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
+                                        {p.highlights.map((h, i) => (
+                                            <div key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: 7, fontSize: '0.7rem', color: 'rgba(186,210,255,0.85)' }}>
+                                                <span style={{ color: '#FFC400', fontWeight: 700, flexShrink: 0, fontSize: '0.65rem' }}>✓</span>
+                                                <span>{h}</span>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+
+                                {/* Footer CTA */}
+                                <div style={{ padding: '10px 16px 14px', borderTop: '1px solid rgba(255,255,255,0.06)', display: 'flex', justifyContent: 'flex-end' }}>
+                                    <button type="button" onClick={scrollToForm} style={{ fontSize: '0.7rem', fontWeight: 700, color: '#FFC400', background: 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4, padding: 0 }}>
+                                        Get Feasibility →
+                                    </button>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+
+                </div>
+            </section>
+
+            {/* ═══════════════════════════════════════════════════════════════
+                SECTION 3 — CLIENT REVIEWS (6 Distinct Clients & Testimonials)
+            ═══════════════════════════════════════════════════════════════ */}
+            <section id="client-reviews" className="py-14 sm:py-20 border-t border-slate-100 scroll-mt-16" style={{ background: '#f8faff' }}>
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+
+                    {/* Header */}
+                    <div className="mb-10 text-center">
+                        <span style={{
+                            fontSize: '0.65rem', fontWeight: 800, letterSpacing: '0.12em', textTransform: 'uppercase',
+                            color: '#1d4ed8', background: '#dbeafe', padding: '5px 14px', borderRadius: 20,
+                            border: '1px solid #bfdbfe', display: 'inline-block', marginBottom: 12,
+                        }}>
+                            Client Testimonials
+                        </span>
+                        <h2 style={{ ...GG.heading, fontWeight: 800, fontSize: 'clamp(1.5rem, 3vw, 2.2rem)', color: '#0f172a', letterSpacing: '-0.03em' }}>
+                            What our clients say
+                        </h2>
+                        <p style={{ fontSize: '0.9rem', color: '#475569', marginTop: 6, maxWidth: 500, margin: '8px auto 0' }}>
+                            Verbatim feedback from factory owners and plant managers who commissioned Divvy Solar.
+                        </p>
+                    </div>
+
+                    {/* Review cards — 6 completely distinct clients from commissioned projects */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+                        {projects.slice(0, 6).map((p, i) => {
+                            const colors = ['#1d4ed8', '#7c3aed', '#0284c7', '#059669', '#d97706', '#0d9488'];
+                            const cardColor = colors[i % colors.length];
+                            return (
+                                <div key={p.id} style={{
+                                    background: '#fff',
+                                    borderRadius: 16,
+                                    padding: '20px',
+                                    border: '1px solid #e2e8f0',
+                                    boxShadow: '0 2px 16px rgba(0,0,0,0.05)',
+                                    display: 'flex', flexDirection: 'column', gap: 14,
+                                    transition: 'transform 0.25s, box-shadow 0.25s, border-color 0.25s',
+                                    position: 'relative',
+                                }}
+                                    onMouseOver={e => { e.currentTarget.style.transform = 'translateY(-3px)'; e.currentTarget.style.boxShadow = '0 16px 40px rgba(0,0,0,0.1)'; e.currentTarget.style.borderColor = `${cardColor}40`; }}
+                                    onMouseOut={e => { e.currentTarget.style.transform = 'none'; e.currentTarget.style.boxShadow = '0 2px 16px rgba(0,0,0,0.05)'; e.currentTarget.style.borderColor = '#e2e8f0'; }}
+                                >
+                                    {/* Top accent line */}
+                                    <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 3, borderRadius: '16px 16px 0 0', background: cardColor }} />
+
+                                    {/* Quote mark + highlight chip */}
+                                    <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 8, paddingTop: 4 }}>
+                                        <svg width="24" height="18" viewBox="0 0 24 18" fill="none">
+                                            <path d="M0 18V11.1C0 7.5 1.05 4.65 3.15 2.55 5.25 0.85 7.9 0 11.1 0v3.3C9.1 3.3 7.5 3.9 6.3 5.1 5.1 6.3 4.5 7.95 4.5 10.05H9V18H0zm13.5 0V11.1c0-3.6 1.05-6.45 3.15-8.55C18.75 0.85 21.4 0 24.6 0v3.3c-2 0-3.6.6-4.8 1.8-1.2 1.2-1.8 2.85-1.8 4.95H22.5V18H13.5z" fill={cardColor} opacity="0.3"/>
+                                        </svg>
+                                        <span style={{
+                                            fontSize: '0.58rem', fontWeight: 800, color: cardColor,
+                                            background: `${cardColor}12`, padding: '3px 8px', borderRadius: 20,
+                                            border: `1px solid ${cardColor}25`, letterSpacing: '0.06em', textTransform: 'uppercase', whiteSpace: 'nowrap',
+                                        }}>
+                                            {p.testimonialHighlight}
+                                        </span>
+                                    </div>
+
+                                    {/* Quote text */}
+                                    <p style={{ fontSize: '0.8rem', color: '#334155', lineHeight: 1.7, flex: 1, fontStyle: 'italic' }}>
+                                        &ldquo;{p.testimonialQuote}&rdquo;
+                                    </p>
+
+                                    {/* Client info */}
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: 10, borderTop: '1px solid #f1f5f9', paddingTop: 12 }}>
+                                        <div style={{
+                                            width: 36, height: 36, borderRadius: '50%', background: cardColor,
+                                            display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                            color: '#fff', fontWeight: 800, fontSize: '0.9rem', flexShrink: 0,
+                                            ...GG.heading,
+                                        }}>
+                                            {p.ownerName.charAt(0)}
+                                        </div>
+                                        <div>
+                                            <p style={{ ...GG.heading, fontWeight: 700, fontSize: '0.8rem', color: '#0f172a', lineHeight: 1.2 }}>{p.ownerName}</p>
+                                            <p style={{ fontSize: '0.68rem', color: '#64748b', marginTop: 1 }}>{p.companyName}</p>
+                                            <p style={{ fontSize: '0.62rem', color: '#94a3b8', marginTop: 1 }}>📍 {p.location} · {p.kWp.toLocaleString()} kWp</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            );
+                        })}
+                    </div>
+                </div>
+            </section>
+
+            {/* ═══════════════════════════════════════════════════════════════
+                OFFICIAL FOOTER (Landing Page Mode: Privacy Policy active, on-page anchors)
+            ═══════════════════════════════════════════════════════════════ */}
+            <Footer isLandingPage={true} />
+
+            {/* ═══════════════════════════════════════════════════════════════
+                MOBILE STICKY BAR
+            ═══════════════════════════════════════════════════════════════ */}
+            <div className="fixed bottom-0 left-0 right-0 z-50 md:hidden flex gap-2 p-2.5" style={{
+                background: 'rgba(7,26,62,0.97)', backdropFilter: 'blur(12px)',
+                borderTop: '1px solid rgba(255,196,0,0.2)',
+                boxShadow: '0 -4px 20px rgba(0,0,0,0.3)',
+            }}>
+                <a href="tel:+919254986321" style={{
+                    flex: 1, background: '#0f172a', color: '#fff', fontWeight: 700,
+                    padding: '12px', borderRadius: 12, textAlign: 'center', fontSize: '0.75rem',
+                    border: '1px solid rgba(255,255,255,0.1)', textDecoration: 'none',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
+                }}>
+                    <svg width="14" height="14" fill="#FFC400" viewBox="0 0 24 24"><path d="M6.62 10.79a15.053 15.053 0 006.59 6.59l2.2-2.2a1 1 0 011.01-.24 11.36 11.36 0 003.56.57 1 1 0 011 1V20a1 1 0 01-1 1A17 17 0 013 4a1 1 0 011-1h3.5a1 1 0 011 1 11.36 11.36 0 00.57 3.57 1 1 0 01-.25 1.01l-2.2 2.21z"/></svg>
+                    Call
                 </a>
-                <button
-                    type="button"
-                    onClick={scrollToForm}
-                    className="flex-1 bg-[#1c1511] text-white font-medium py-3 rounded-xl text-center text-xs shadow-md flex items-center justify-center gap-1 cursor-pointer"
-                >
-                    <span>Request Audit</span>
-                    <ArrowRightIcon className="w-3.5 h-3.5 text-amber-400" />
+                <a href={whatsappUrl} target="_blank" rel="noopener noreferrer" style={{
+                    flex: 1, background: '#16a34a', color: '#fff', fontWeight: 700,
+                    padding: '12px', borderRadius: 12, textAlign: 'center', fontSize: '0.75rem',
+                    textDecoration: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
+                }}>
+                    <svg width="14" height="14" fill="#fff" viewBox="0 0 24 24"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981z"/></svg>
+                    WhatsApp
+                </a>
+                <button type="button" onClick={scrollToForm} style={{
+                    flex: 1, background: '#FFC400', color: '#0A0A0F', fontWeight: 800,
+                    padding: '12px', borderRadius: 12, fontSize: '0.75rem', border: 'none', cursor: 'pointer',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4,
+                }}>
+                    Get Report →
                 </button>
             </div>
+
         </div>
     );
 }

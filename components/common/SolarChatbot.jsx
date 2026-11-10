@@ -38,7 +38,7 @@ const PROPERTY_TYPES = [
 
 export default function SolarChatbot() {
     const pathname = usePathname();
-    const isAdmin = pathname?.startsWith('/admin') || pathname?.startsWith('/sales') || pathname?.startsWith('/leads-portal');
+    const isAdmin = pathname?.startsWith('/admin') || pathname?.startsWith('/sales') || pathname?.startsWith('/leads-portal') || pathname?.startsWith('/industrial-solar-epc');
 
     const [isOpen, setIsOpen] = useState(false);
     const [activeTab, setActiveTab] = useState("chat"); // "chat" | "form"
