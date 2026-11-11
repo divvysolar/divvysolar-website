@@ -5,7 +5,8 @@ import Lead from '@/models/Lead';
 export async function POST(req) {
     try {
         const body = await req.json();
-        const { id, name, phone, monthlyBill, location, honeypot } = body;
+        const { id, name, phone, monthlyBill, location, honeypot, landingPage } = body;
+        const sourceLandingPage = typeof landingPage === 'string' && landingPage.trim() ? landingPage.trim() : '/industrial-solar-epc';
 
         // Hidden honeypot field protection against automated bots
         if (honeypot) {
@@ -40,7 +41,7 @@ export async function POST(req) {
                 monthlyBill: monthlyBill.trim(),
                 location: location.trim(),
                 serviceType: 'Industrial Solar EPC',
-                landingPage: '/industrial-solar-epc'
+                landingPage: sourceLandingPage
             });
             savedLeadId = lead._id ? lead._id.toString() : null;
         } catch (dbErr) {
@@ -70,7 +71,7 @@ export async function POST(req) {
                     phone: cleanPhone,
                     monthlyBill: monthlyBill.trim(),
                     location: location.trim(),
-                    landingPage: '/industrial-solar-epc',
+                    landingPage: sourceLandingPage,
                     timestamp: new Date().toISOString()
                 })
             });

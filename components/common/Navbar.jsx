@@ -64,7 +64,13 @@ const Navbar = ({ isLandingPage = false }) => {
     const [activeMobileDropdown, setActiveMobileDropdown] = useState(null);
     const [fromParam, setFromParam] = useState(() => {
         if (typeof window !== 'undefined') {
-            return new URLSearchParams(window.location.search).get('from') || sessionStorage.getItem('divvy_landing_from');
+            try {
+                const p = new URLSearchParams(window.location.search).get('from');
+                if (p) return p;
+                if (window.location.pathname === '/privacy-policy') {
+                    return sessionStorage.getItem('divvy_landing_from');
+                }
+            } catch {}
         }
         return null;
     });
@@ -79,8 +85,10 @@ const Navbar = ({ isLandingPage = false }) => {
             } else if (pathname === '/privacy-policy') {
                 try {
                     const stored = sessionStorage.getItem('divvy_landing_from');
-                    if (stored) setFromParam(stored);
+                    setFromParam(stored || null);
                 } catch {}
+            } else {
+                setFromParam(null);
             }
         }
     }, [pathname]);

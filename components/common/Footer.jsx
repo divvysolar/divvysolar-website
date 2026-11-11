@@ -2,10 +2,23 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
+import { usePathname } from 'next/navigation';
 
-const Footer = ({ isLandingPage = false }) => {
+const Footer = ({ isLandingPage = false, landingSlug }) => {
     const currentYear = new Date().getFullYear();
-    const [fromParam, setFromParam] = useState(null);
+    const pathname = usePathname();
+    const [fromParam, setFromParam] = useState(() => {
+        if (typeof window !== 'undefined') {
+            try {
+                const p = new URLSearchParams(window.location.search).get('from');
+                if (p) return p;
+                if (window.location.pathname === '/privacy-policy') {
+                    return sessionStorage.getItem('divvy_landing_from');
+                }
+            } catch {}
+        }
+        return null;
+    });
 
     useEffect(() => {
         if (typeof window !== 'undefined') {
@@ -13,24 +26,28 @@ const Footer = ({ isLandingPage = false }) => {
             if (p) {
                 setFromParam(p);
                 try { sessionStorage.setItem('divvy_landing_from', p); } catch {}
-            } else if (window.location.pathname === '/privacy-policy') {
+            } else if (pathname === '/privacy-policy') {
                 try {
                     const stored = sessionStorage.getItem('divvy_landing_from');
-                    if (stored) setFromParam(stored);
+                    setFromParam(stored || null);
                 } catch {}
+            } else {
+                setFromParam(null);
             }
         }
-    }, []);
+    }, [pathname]);
 
-    const isLanding = isLandingPage || Boolean(fromParam);
-    const landingRoute = fromParam ? `/${fromParam}` : '';
+    const detectedSlug = landingSlug || (pathname?.includes('industrial-solar-epc2') ? 'industrial-solar-epc2' : 'industrial-solar-epc');
+    const isLanding = isLandingPage || Boolean(fromParam) || Boolean(pathname?.includes('industrial-solar-epc'));
+    const activeSlug = fromParam || detectedSlug;
+    const landingRoute = `/${activeSlug}`;
 
     const quickLinks = isLanding
         ? [
             { href: isLandingPage ? '#epc-form' : `${landingRoute}#epc-form`, label: 'Get Feasibility Report' },
             { href: isLandingPage ? '#commissioned-plants' : `${landingRoute}#commissioned-plants`, label: 'Commissioned Plants' },
             { href: isLandingPage ? '#client-reviews' : `${landingRoute}#client-reviews`, label: 'Client Testimonials' },
-            { href: fromParam ? `/privacy-policy?from=${fromParam}` : '/privacy-policy?from=industrial-solar-epc', label: 'Privacy Policy' },
+            { href: `/privacy-policy?from=${activeSlug}`, label: 'Privacy Policy' },
         ]
         : [
             { href: '/', label: 'Home' },
@@ -219,16 +236,18 @@ const Footer = ({ isLandingPage = false }) => {
                             </a>
 
                             {/* Website */}
-                            <a href="https://divvysolar.in" target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 group">
-                                <div className="w-7 h-7 rounded-md bg-[#fecb00]/10 border border-[#fecb00]/20 flex items-center justify-center flex-shrink-0 group-hover:bg-[#fecb00]/20 group-hover:border-[#fecb00]/40 transition-all duration-300">
-                                    <svg className="w-3.5 h-3.5 text-[#fecb00]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
-                                        <path strokeLinecap="round" strokeLinejoin="round" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9" />
-                                    </svg>
-                                </div>
-                                <span className="text-gray-300 text-[15px] group-hover:text-[#fecb00] transition-colors font-medium">
-                                    www.divvysolar.in
-                                </span>
-                            </a>
+                            {!isLanding && (
+                                <a href="https://divvysolar.in" target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 group">
+                                    <div className="w-7 h-7 rounded-md bg-[#fecb00]/10 border border-[#fecb00]/20 flex items-center justify-center flex-shrink-0 group-hover:bg-[#fecb00]/20 group-hover:border-[#fecb00]/40 transition-all duration-300">
+                                        <svg className="w-3.5 h-3.5 text-[#fecb00]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
+                                            <path strokeLinecap="round" strokeLinejoin="round" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9" />
+                                        </svg>
+                                    </div>
+                                    <span className="text-gray-300 text-[15px] group-hover:text-[#fecb00] transition-colors font-medium">
+                                        www.divvysolar.in
+                                    </span>
+                                </a>
+                            )}
                         </div>
                     </div>
 
@@ -243,7 +262,7 @@ const Footer = ({ isLandingPage = false }) => {
                     </p>
                     <div className="flex items-center gap-4 text-gray-400">
                         <Link
-                            href={fromParam ? `/privacy-policy?from=${fromParam}` : isLandingPage ? "/privacy-policy?from=industrial-solar-epc" : "/privacy-policy"}
+                            href={isLanding ? `/privacy-policy?from=${activeSlug}` : "/privacy-policy"}
                             className="hover:text-[#fecb00] transition-colors underline-offset-4 hover:underline"
                         >
                             Privacy Policy

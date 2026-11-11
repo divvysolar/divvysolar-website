@@ -19,8 +19,9 @@ export const metadata = {
 export default function PrivacyPolicyPage({ searchParams }) {
     const lastUpdated = "October 16, 2026";
     const from = searchParams?.from;
+    const isIndustrialFunnel = from === 'industrial-solar-epc' || from === 'industrial-solar-epc2';
     const backHref = from ? `/${from}` : '/';
-    const backLabel = from === 'industrial-solar-epc' ? '← Back to Industrial Solar Feasibility' : '← Back to Divvy Solar Home';
+    const backLabel = isIndustrialFunnel ? '← Back to Industrial Solar Feasibility' : '← Back to Divvy Solar Home';
 
     const keyHighlights = [
         {

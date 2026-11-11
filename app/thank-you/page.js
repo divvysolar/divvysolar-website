@@ -8,7 +8,9 @@ export const metadata = {
     description: 'Thank you for requesting an industrial solar feasibility assessment with Divvy Solar.'
 };
 
-export default function ThankYouPage() {
+export default function ThankYouPage({ searchParams }) {
+    const fromSlug = searchParams?.from === 'industrial-solar-epc2' ? 'industrial-solar-epc2' : 'industrial-solar-epc';
+    const backRoute = `/${fromSlug}`;
     const whatsappNumber = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || '919254986321';
     const whatsappUrl = `https://wa.me/${whatsappNumber}?text=${encodeURIComponent('Hi Divvy Solar, I just submitted an industrial solar feasibility request. Please connect with me.')}`;
 
@@ -17,7 +19,7 @@ export default function ThankYouPage() {
             {/* ── MINIMAL HEADER ── */}
             <header className="sticky top-0 z-50 bg-white/95 backdrop-blur-md border-b border-slate-200">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-18 sm:h-20 flex items-center justify-between">
-                    <Link href="/industrial-solar-epc" className="relative w-40 sm:w-48 h-12 block">
+                    <Link href={backRoute} className="relative w-40 sm:w-48 h-12 block">
                         <Image
                             src="/divvy_photo.png"
                             alt="Divvy Solar"
@@ -90,7 +92,7 @@ export default function ThankYouPage() {
 
                     <div className="pt-2">
                         <Link
-                            href="/industrial-solar-epc"
+                            href={backRoute}
                             className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-500 hover:text-blue-700 transition"
                         >
                             <ArrowLeftIcon className="w-3.5 h-3.5" />
@@ -121,7 +123,7 @@ export default function ThankYouPage() {
                             info@divvysolar.in
                         </a>
                         <span className="hidden sm:inline text-slate-700">•</span>
-                        <Link href="/privacy-policy" className="hover:text-yellow-400 transition text-slate-400">
+                        <Link href={`/privacy-policy?from=${fromSlug}`} className="hover:text-yellow-400 transition text-slate-400">
                             Privacy Policy
                         </Link>
                     </div>
