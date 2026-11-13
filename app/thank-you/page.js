@@ -9,7 +9,7 @@ export const metadata = {
 };
 
 export default function ThankYouPage({ searchParams }) {
-    const fromSlug = searchParams?.from === 'industrial-solar-epc2' ? 'industrial-solar-epc2' : 'industrial-solar-epc';
+    const fromSlug = (searchParams?.from === 'industrial-solar-epc2' || searchParams?.from === 'industrial-solar-epc3') ? searchParams.from : 'industrial-solar-epc';
     const backRoute = `/${fromSlug}`;
     const whatsappNumber = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || '919254986321';
     const whatsappUrl = `https://wa.me/${whatsappNumber}?text=${encodeURIComponent('Hi Divvy Solar, I just submitted an industrial solar feasibility request. Please connect with me.')}`;

@@ -78,6 +78,11 @@ const nextConfig = {
         permanent: true,
       },
       {
+        source: '/industrial_solar_epc3',
+        destination: '/industrial-solar-epc3',
+        permanent: true,
+      },
+      {
         source: '/haryana_industrial',
         destination: '/haryana-industrial',
         permanent: true,
