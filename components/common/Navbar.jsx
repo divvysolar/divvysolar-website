@@ -62,18 +62,7 @@ const Navbar = ({ isLandingPage = false }) => {
     const [isScrolled, setIsScrolled] = useState(false);
     const [openDropdown, setOpenDropdown] = useState(null);
     const [activeMobileDropdown, setActiveMobileDropdown] = useState(null);
-    const [fromParam, setFromParam] = useState(() => {
-        if (typeof window !== 'undefined') {
-            try {
-                const p = new URLSearchParams(window.location.search).get('from');
-                if (p) return p;
-                if (window.location.pathname === '/privacy-policy') {
-                    return sessionStorage.getItem('divvy_landing_from');
-                }
-            } catch {}
-        }
-        return null;
-    });
+    const [fromParam, setFromParam] = useState(null);
     const closeTimer = useRef(null);
 
     useEffect(() => {
