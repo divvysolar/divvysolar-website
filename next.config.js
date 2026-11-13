@@ -78,16 +78,6 @@ const nextConfig = {
         permanent: true,
       },
       {
-        source: '/industrial-solar-epc3',
-        destination: '/industrial-solar-epc3new',
-        permanent: false,
-      },
-      {
-        source: '/industrial_solar_epc3',
-        destination: '/industrial-solar-epc3new',
-        permanent: false,
-      },
-      {
         source: '/industrial_solar_epc3new',
         destination: '/industrial-solar-epc3new',
         permanent: true,
