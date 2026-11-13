@@ -7,12 +7,7 @@ import Footer from '@/components/common/Footer';
 import { gridTariff, solarTariff, projects } from '@/data/projects';
 
 // ─────────────────────────────────────────────────────────────────────────────
-// INDUSTRIAL SOLAR EPC 3 & 3NEW — TOP-NOTCH CLEAN INDUSTRIAL LANDING PAGE
-// Visual Grammar:
-// - Luminous crisp white & slate base (no dirty cream/beige tint)
-// - Bold ink-black executive typography (#0F172A)
-// - Divvy Solar signature yellow accents (#FECB00)
-// - 100% hydration-safe, 0 console errors, 0 forbidden strings
+// INDUSTRIAL SOLAR EPC 3NEW — CLEAN INDUSTRIAL LANDING PAGE
 // ─────────────────────────────────────────────────────────────────────────────
 
 const BRANDS = [
@@ -59,7 +54,7 @@ const BENEFITS = [
     },
 ];
 
-export default function IndustrialSolarEpc3Page() {
+export default function IndustrialSolarEpc3NewPage() {
     const [formData, setFormData] = useState({ name: '', phone: '', monthlyBill: '', location: '' });
     const [honeypot, setHoneypot] = useState('');
     const [submitting, setSubmitting] = useState(false);
@@ -69,7 +64,8 @@ export default function IndustrialSolarEpc3Page() {
 
     const scrollToForm = (e) => {
         if (e && e.preventDefault) e.preventDefault();
-        document.getElementById('epc-hero-form')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        const el = document.getElementById('epc-form') || document.getElementById('epc-hero-form');
+        el?.scrollIntoView({ behavior: 'smooth', block: 'center' });
     };
 
     const handleFormSubmit = async (e) => {
@@ -106,7 +102,7 @@ export default function IndustrialSolarEpc3Page() {
                     phone: cleanPhone,
                     monthlyBill: formData.monthlyBill,
                     location: formData.location.trim(),
-                    landingPage: '/industrial-solar-epc3newnew',
+                    landingPage: '/industrial-solar-epc3new',
                     honeypot,
                 }),
             });
@@ -132,7 +128,7 @@ export default function IndustrialSolarEpc3Page() {
 
     return (
         <div className="min-h-screen bg-white text-slate-900 selection:bg-[#FECB00] selection:text-black antialiased font-sans">
-            {/* Custom marquee keyframes & animations */}
+            {/* Custom marquee keyframes */}
             <style>{`
                 [data-solar-chatbot], .solar-chatbot-widget, #solar-chatbot { display: none !important; }
 
@@ -172,7 +168,7 @@ export default function IndustrialSolarEpc3Page() {
                             </div>
 
                             {/* Catchy Main Tagline */}
-                            <h1 className="text-3xl sm:text-5xl lg:text-[50px] font-black text-slate-900 leading-[1.14] tracking-tight">
+                            <h1 className="text-3xl sm:text-5xl lg:text-[48px] font-black text-slate-900 leading-[1.14] tracking-tight">
                                 Cut energy costs by up to{' '}
                                 <span className="text-black bg-[#FECB00] px-2.5 py-0.5 rounded-lg inline-block shadow-xs">
                                     70%
@@ -233,8 +229,8 @@ export default function IndustrialSolarEpc3Page() {
                         </div>
 
                         {/* RIGHT COLUMN — SLEEK FEASIBILITY FORM */}
-                        <div id="epc-hero-form" className="lg:col-span-5 scroll-mt-24">
-                            <div className="rounded-2xl bg-white border border-slate-200 p-6 sm:p-8 shadow-xl relative overflow-hidden">
+                        <div id="epc-form" className="lg:col-span-5 scroll-mt-24">
+                            <div id="epc-hero-form" className="rounded-2xl bg-white border border-slate-200 p-6 sm:p-8 shadow-xl relative overflow-hidden">
                                 {/* Top Yellow Accent Strip */}
                                 <div className="absolute top-0 left-0 right-0 h-1.5 bg-[#FECB00]" />
 
@@ -465,7 +461,7 @@ export default function IndustrialSolarEpc3Page() {
                         >
                             <div className="relative h-40 bg-slate-900 shrink-0 overflow-hidden">
                                 <Image
-                                    src={p.image}
+                                    src={encodeURI(p.image)}
                                     alt={p.companyName}
                                     fill
                                     sizes="(max-width: 768px) 100vw, 33vw"
