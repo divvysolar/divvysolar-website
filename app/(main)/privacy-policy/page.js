@@ -20,8 +20,13 @@ export default function PrivacyPolicyPage({ searchParams }) {
     const lastUpdated = "October 16, 2026";
     const from = searchParams?.from;
     const isIndustrialFunnel = from === 'industrial-solar-epc' || from === 'industrial-solar-epc2' || from === 'industrial-solar-epc3' || from === 'industrial-solar-epc3new';
+    const isResidentialFunnel = from === 'residential-solar-1' || from === 'home-solar-installation';
     const backHref = from ? `/${from}` : '/';
-    const backLabel = isIndustrialFunnel ? '← Back to Industrial Solar Feasibility' : '← Back to Divvy Solar Home';
+    const backLabel = isIndustrialFunnel
+        ? '← Back to Industrial Solar Feasibility'
+        : isResidentialFunnel
+        ? '← Back to Residential Solar Subsidy'
+        : '← Back to Divvy Solar Home';
 
     const keyHighlights = [
         {
