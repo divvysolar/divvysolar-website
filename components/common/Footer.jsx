@@ -27,13 +27,14 @@ const Footer = ({ isLandingPage = false, landingSlug }) => {
     }, [pathname]);
 
     const detectedSlug = landingSlug || (
+        pathname?.includes('residential-solar-2') ? 'residential-solar-2' :
         pathname?.includes('residential-solar-1') ? 'residential-solar-1' :
         pathname?.includes('industrial-solar-epc3new') ? 'industrial-solar-epc3new' :
         pathname?.includes('industrial-solar-epc3') ? 'industrial-solar-epc3' :
         pathname?.includes('industrial-solar-epc2') ? 'industrial-solar-epc2' :
         'industrial-solar-epc'
     );
-    const isLanding = isLandingPage || Boolean(fromParam) || Boolean(pathname?.includes('industrial-solar-epc')) || Boolean(pathname?.includes('residential-solar-1'));
+    const isLanding = isLandingPage || Boolean(fromParam) || Boolean(pathname?.includes('industrial-solar-epc')) || Boolean(pathname?.includes('residential-solar'));
     const activeSlug = fromParam || detectedSlug;
     const landingRoute = `/${activeSlug}`;
 
