@@ -98,6 +98,16 @@ const nextConfig = {
         permanent: true,
       },
       {
+        source: '/residential_solar_2',
+        destination: '/residential-solar-2',
+        permanent: true,
+      },
+      {
+        source: '/residential-solar-resi2',
+        destination: '/residential-solar-2',
+        permanent: true,
+      },
+      {
         source: '/haryana_industrial',
         destination: '/haryana-industrial',
         permanent: true,
