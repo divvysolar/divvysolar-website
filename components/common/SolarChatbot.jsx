@@ -276,15 +276,15 @@ export default function SolarChatbot() {
                         {/* Subtle gold glow pulse */}
                         <span className="absolute inset-0 rounded-full bg-[#FECB00] animate-ping opacity-25 pointer-events-none"></span>
 
-                        <div className="w-full h-full rounded-full bg-white flex items-center justify-center overflow-hidden p-0 relative z-10">
+                        <div className="w-full h-full rounded-full bg-white flex items-center justify-center overflow-hidden p-1 relative z-10">
                             <Image
-                                src="/da1ab346-9490-40fd-8f47-b0dbcdd245db.png"
+                                src="/chatbot-logo.png"
                                 alt="Solar AI Assistant"
                                 width={64}
                                 height={64}
                                 quality={100}
                                 priority
-                                className="w-full h-full object-contain scale-110 drop-shadow-sm"
+                                className="w-full h-full object-contain drop-shadow-sm"
                             />
                         </div>
 
@@ -317,14 +317,14 @@ export default function SolarChatbot() {
                     <div className="px-4 py-3 bg-[#0e1b3d] border-b border-slate-700/80 flex items-center justify-between shrink-0">
                         <div className="flex items-center gap-2.5">
                             <div className="relative">
-                                <div className="w-12 h-12 rounded-2xl bg-white p-0.5 flex items-center justify-center shadow-md overflow-hidden border border-white/30">
+                                <div className="w-12 h-12 rounded-2xl bg-white p-1 flex items-center justify-center shadow-md overflow-hidden border border-white/30">
                                     <Image
-                                        src="/da1ab346-9490-40fd-8f47-b0dbcdd245db.png"
+                                        src="/chatbot-logo.png"
                                         alt="Solar Expert Assistant"
                                         width={48}
                                         height={48}
                                         quality={100}
-                                        className="w-full h-full object-contain scale-110"
+                                        className="w-full h-full object-contain"
                                     />
                                 </div>
                                 <span className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-emerald-400 rounded-full border-2 border-[#0e1b3d]"></span>
